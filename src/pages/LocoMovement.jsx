@@ -111,12 +111,7 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
         `&to=${encodedTo}` +
         `&logDir=${encodeURIComponent(logDir)}`;
 
-      const res = await fetch(url, {
-  headers: {
-    "ngrok-skip-browser-warning": "true"
-  }
-});
-
+      const res = await fetch(url);
       const json = await res.json();
 
       if (!json.success) {

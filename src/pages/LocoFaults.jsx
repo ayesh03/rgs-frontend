@@ -72,12 +72,7 @@ const LocoFaults = forwardRef((props, ref) => {
 
       const url = `${API_BASE}/api/loco-faults/by-date?from=${from}&to=${to}&logDir=${dir}`;
 
-      const res = await fetch(url, {
-  headers: {
-    "ngrok-skip-browser-warning": "true"
-  }
-});
-
+      const res = await fetch(url);
       const json = await res.json();
 
       if (!json.success) {
