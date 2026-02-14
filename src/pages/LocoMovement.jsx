@@ -81,7 +81,7 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
 
 
   /* ================= DATA FETCH ================= */
-const generate = async () => {
+  const generate = async () => {
     if (!fromDate || !toDate) {
       alert("Please select From and To date");
       return;
@@ -97,26 +97,23 @@ const generate = async () => {
     clearFilters();
 
     try {
+
+
       const normalizeDate = (v) =>
         v && v.length === 16 ? `${v}:00` : v;
 
-      const encodedFrom = encodeURIComponent(normalizeDate(fromDate));
-      const encodedTo = encodeURIComponent(normalizeDate(toDate));
-
       const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-      const url =
-        `${API_BASE}/api/loco-movement/by-date` +
-        `?from=${encodedFrom}` +
-        `&to=${encodedTo}` +
-        `&logDir=${encodeURIComponent(logDir)}`;
+      const formData = new FormData();
+      formData.append("file", logDir);
+      formData.append("from", normalizeDate(fromDate));
+      formData.append("to", normalizeDate(toDate));
 
-      // UPDATED: Added the fetch call with ngrok bypass header
-      const res = await fetch(url, {
-        headers: {
-          "ngrok-skip-browser-warning": "true",
-        },
+      const res = await fetch(`${API_BASE}/api/loco-movement/upload`, {
+        method: "POST",
+        body: formData,
       });
+
 
       const json = await res.json();
 
