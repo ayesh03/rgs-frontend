@@ -9,6 +9,8 @@ import {
   useTheme,
   useMediaQuery,
 } from "@mui/material";
+import { useOutletContext } from "react-router-dom";
+
 import { Select, MenuItem } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import MovingIcon from "@mui/icons-material/Moving";
@@ -528,7 +530,9 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
 
 
   /* ================= CONTEXT ================= */
-  const { fromDate, toDate, logDir, isDateRangeValid } = useAppContext();
+  const { fromDate, toDate, isDateRangeValid } = useAppContext();
+const { selectedFile } = useOutletContext();
+
   const { filteredRows, setFilter, clearFilters } = useTableFilter(rows);
 
   const rowsPerPage = isMobile ? 6 : 10;
@@ -725,6 +729,11 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
     return;
   }
 
+  if (!selectedFile) {
+    alert("Please select BIN file");
+    return;
+  }
+
   if (!isDateRangeValid) {
     alert("Invalid date range");
     return;
@@ -740,27 +749,24 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
 
     let endpoint = "regular";
 
-    if (tableType === "station_access") {
-      endpoint = "access";
-    }
-
-    if (tableType === "station_emergency") {
-      endpoint = "emergency";
-    }
+    if (tableType === "station_access") endpoint = "access";
+    if (tableType === "station_emergency") endpoint = "emergency";
 
     const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-    const url =
-      `${API_BASE}/api/stationary/${endpoint}/by-date` +
-      `?from=${encodeURIComponent(normalizeDate(fromDate))}` +
-      `&to=${encodeURIComponent(normalizeDate(toDate))}` +
-      `&logDir=${encodeURIComponent(logDir)}`;
+    const fileBuffer = await selectedFile.arrayBuffer();
 
-    const res = await fetch(url, {
-        headers: {
-          "ngrok-skip-browser-warning": "true",
-        },
-      });
+    const res = await fetch(
+  `${API_BASE}/api/stationary/${endpoint}/by-date?from=${encodeURIComponent(normalizeDate(fromDate))}&to=${encodeURIComponent(normalizeDate(toDate))}`,
+  {
+    method: "POST",
+    body: fileBuffer,
+    headers: {
+      "Content-Type": "application/octet-stream",
+    },
+  }
+);
+
 
     const json = await res.json();
 

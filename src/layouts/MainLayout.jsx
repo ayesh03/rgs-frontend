@@ -45,6 +45,7 @@ export default function MainLayout() {
   const [tempFromTime, setTempFromTime] = useState("");
   const [tempToDate, setTempToDate] = useState("");
   const [tempToTime, setTempToTime] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
 
   const {
     fromDate,
@@ -203,18 +204,27 @@ export default function MainLayout() {
               </Popover>
             </Stack>
 
-            {/* LOG FIELD */}
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <Typography variant="caption" sx={{ fontWeight: 700 }}>Log:</Typography>
-              <TextField 
-                size="small" 
-                variant="standard" 
-                value={logDir} 
-                onChange={(e) => setLogDir(e.target.value)}
-                sx={{ width: 120, '& .MuiInputBase-input': { fontSize: '0.75rem' } }}
-                InputProps={{ startAdornment: <FolderOpenIcon sx={{ fontSize: 14, mr: 0.5, color: "#666" }} /> }}
-              />
-            </Stack>
+            {/* FILE UPLOAD */}
+<Stack direction="row" alignItems="center" spacing={1}>
+  <Typography variant="caption" sx={{ fontWeight: 700 }}>BIN:</Typography>
+
+  <Button
+    component="label"
+    size="small"
+    variant="outlined"
+    startIcon={<FolderOpenIcon sx={{ fontSize: 14 }} />}
+    sx={{ textTransform: "none", fontSize: "0.75rem" }}
+  >
+    {selectedFile ? selectedFile.name : "Select File"}
+    <input
+      type="file"
+      hidden
+      accept=".bin"
+      onChange={(e) => setSelectedFile(e.target.files[0])}
+    />
+  </Button>
+</Stack>
+
 
             <Divider orientation="vertical" flexItem sx={{ height: 24, my: 'auto' }} />
 
@@ -255,7 +265,7 @@ export default function MainLayout() {
         <AnimatePresence mode="wait">
           <motion.div key={location.pathname} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
             <Paper elevation={0} sx={{ p: 2, borderRadius: 2, minHeight: "75vh", border: "1px solid #e0e4e8" }}>
-              <Outlet />
+              <Outlet context={{ selectedFile }} />
             </Paper>
           </motion.div>
         </AnimatePresence>

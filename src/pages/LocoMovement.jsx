@@ -44,7 +44,8 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
 
 
   /* ================= CONTEXT ================= */
-  const { fromDate, toDate, logDir, isDateRangeValid } = useAppContext();
+  const { fromDate, toDate, isDateRangeValid } = useAppContext();
+
   const { filteredRows, setFilter, clearFilters } = useTableFilter(rows);
 
   const rowsPerPage = isMobile ? 6 : 10;
@@ -108,15 +109,19 @@ const generate = async () => {
       const url =
         `${API_BASE}/api/loco-movement/by-date` +
         `?from=${encodedFrom}` +
-        `&to=${encodedTo}` +
-        `&logDir=${encodeURIComponent(logDir)}`;
+        `&to=${encodedTo}` 
+        ;
 
-      // UPDATED: Added the fetch call with ngrok bypass header
-      const res = await fetch(url, {
-        headers: {
-          "ngrok-skip-browser-warning": "true",
-        },
-      });
+      const res = await fetch(
+  `${API_BASE}/api/loco-movement/by-date?from=${encodedFrom}&to=${encodedTo}`,
+  {
+    method: "POST",
+    body: new Uint8Array(),
+  }
+);
+
+
+
 
       const json = await res.json();
 
