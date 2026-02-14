@@ -757,15 +757,10 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
       `&logDir=${encodeURIComponent(logDir)}`;
 
     const res = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!res.ok) {
-      throw new Error(`HTTP error ${res.status}`);
-    }
+        headers: {
+          "ngrok-skip-browser-warning": "true",
+        },
+      });
 
     const json = await res.json();
 
