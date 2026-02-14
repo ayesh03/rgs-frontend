@@ -1,0 +1,16 @@
+export const FAULT_ALL_COLUMNS = [
+  // { key: "id", label: "Sr No" },
+  { key: "event_time", label: "Fault Time" },
+  // { key: "packet_type", label: "Packet Type" },
+  // { key: "fault_origin", label: "Fault Origin" },
+  { key: "kavach_subsystem_id", label: "Kavach Subsystem ID" },
+  { key: "nms_system_id", label: "NMS System ID" },
+  { key: "system_version", label: "System Version" },
+  { key: "subsystem_type", label: "Subsystem Type" },
+  // { key: "message_sequence", label: "Message Sequence" },
+  { key: "fault_module_id", label: "Fault Module ID" },
+  { key: "fault_code", label: "Fault Code" },
+  { key: "fault_message", label: "Fault Message" },
+  { key: "fault_type", label: "Fault Type" },
+  // { key: "data_source", label: "Data Source" },
+];
