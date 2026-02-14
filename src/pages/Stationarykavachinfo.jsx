@@ -758,8 +758,22 @@ const url =
 
 
 
-      const res = await fetch(url);
-      const json = await res.json();
+      const res = await fetch(url, {
+  headers: {
+    "ngrok-skip-browser-warning": "true"
+  }
+});
+
+      const text = await res.text();
+
+let json;
+try {
+  json = JSON.parse(text);
+} catch (e) {
+  console.error("Response was not JSON:", text);
+  throw new Error("Backend returned invalid response");
+}
+
 
       if (!json.success) {
         throw new Error(json.error || "Backend error");
