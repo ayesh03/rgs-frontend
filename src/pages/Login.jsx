@@ -16,7 +16,6 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import TrainIcon from '@mui/icons-material/Train';
 import { useAuth } from "../auth/AuthContext";
 
-
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -26,54 +25,54 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
 
 
-  const handleLogin = async () => {
-    setError("");
-    setLoading(true);
+  const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-    try {
-      const res = await fetch("http://localhost:8080/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          username,
-          password
-        })
-      });
-      const data = await res.json();
+const handleLogin = async () => {
+  setError("");
+  setLoading(true);
 
-      if (!data.success) {
-        setError(data.error || "Login failed");
-        setLoading(false);
-        return;
-      }
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username,
+        password
+      })
+    });
 
-      //  store user info
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          username: data.username,
-          role: data.role
-        })
-      );
+    const data = await res.json();
 
-      //  THIS IS THE FIX
-      login({
+    if (!data.success) {
+      setError(data.error || "Login failed");
+      setLoading(false);
+      return;
+    }
+
+    localStorage.setItem(
+      "user",
+      JSON.stringify({
         username: data.username,
         role: data.role
-      });
+      })
+    );
 
-      //  navigate AFTER auth state updates
-      navigate("/app/loco", { replace: true });
+    login({
+      username: data.username,
+      role: data.role
+    });
 
+    navigate("/app/loco", { replace: true });
 
-    } catch (err) {
-      setError("Backend not reachable");
-    } finally {
-      setLoading(false);
-    }
-  };
+  } catch (err) {
+    setError("Backend not reachable");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
 
   return (
