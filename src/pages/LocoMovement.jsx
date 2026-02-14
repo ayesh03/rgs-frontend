@@ -116,11 +116,9 @@ const generate = async () => {
   method: "GET",
   headers: {
     "Accept": "application/json",
-    // This bypasses ngrok warning without triggering CORS header errors
-    "User-Agent": "Any-Custom-Agent-Name" 
+    "ngrok-skip-browser-warning": "true" // Matches the header added in Qt
   },
 });
-
     // Check if the response is actually JSON before parsing
     const contentType = res.headers.get("content-type");
     if (!contentType || !contentType.includes("application/json")) {
