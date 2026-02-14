@@ -113,12 +113,13 @@ const generate = async () => {
 
     // ADDED: The actual fetch call with ngrok bypass header
     const res = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "ngrok-skip-browser-warning": "69420", // This bypasses the ngrok splash screen
-      },
-    });
+  method: "GET",
+  headers: {
+    "Accept": "application/json",
+    // This bypasses ngrok warning without triggering CORS header errors
+    "User-Agent": "Any-Custom-Agent-Name" 
+  },
+});
 
     // Check if the response is actually JSON before parsing
     const contentType = res.headers.get("content-type");
