@@ -720,70 +720,80 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
 
   /* ================= DATA FETCH (TEMP) ================= */
   const generate = async () => {
-    if (!fromDate || !toDate) {
-      alert("Please select From and To date");
-      return;
+  if (!fromDate || !toDate) {
+    alert("Please select From and To date");
+    return;
+  }
+
+  if (!isDateRangeValid) {
+    alert("Invalid date range");
+    return;
+  }
+
+  setLoading(true);
+  setRows([]);
+  clearFilters();
+
+  try {
+    const normalizeDate = (v) =>
+      v && v.length === 16 ? `${v}:00` : v;
+
+    let endpoint = "regular";
+
+    if (tableType === "station_access") {
+      endpoint = "access";
     }
 
-    if (!isDateRangeValid) {
-      alert("Invalid date range");
-      return;
+    if (tableType === "station_emergency") {
+      endpoint = "emergency";
     }
 
-    setLoading(true);
-    setRows([]);
-    clearFilters();
+    const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-    try {
-      const normalizeDate = (v) =>
-        v && v.length === 16 ? `${v}:00` : v;
+    const url =
+      `${API_BASE}/api/stationary/${endpoint}/by-date` +
+      `?from=${encodeURIComponent(normalizeDate(fromDate))}` +
+      `&to=${encodeURIComponent(normalizeDate(toDate))}` +
+      `&logDir=${encodeURIComponent(logDir)}`;
 
-      let endpoint = "regular";
+    const res = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-      if (tableType === "station_access") {
-        endpoint = "access";
-      }
-
-      if (tableType === "station_emergency") {
-        endpoint = "emergency";
-      }
-
-      const API_BASE = import.meta.env.VITE_API_BASE_URL;
-
-const url =
-  `${API_BASE}/api/stationary/${endpoint}/by-date` +
-  `?from=${encodeURIComponent(normalizeDate(fromDate))}` +
-  `&to=${encodeURIComponent(normalizeDate(toDate))}` +
-  `&logDir=${encodeURIComponent(logDir)}`;
-
-
-
-      const res = await fetch(url);
-      const json = await res.json();
-
-      if (!json.success) {
-        throw new Error(json.error || "Backend error");
-      }
-
-      const mapped = json.data.map((r, idx) => {
-        const dt = new Date(r.event_time);
-        return {
-          id: idx + 1,
-          date: dt.toISOString().slice(0, 10),
-          time: dt.toTimeString().slice(0, 8),
-          ...r,
-        };
-      });
-
-      setAllRows(mapped);
-      setPage(1);
-    } catch (err) {
-      console.error("Stationary Kavach Info fetch error:", err);
-      alert(err.message);
-    } finally {
-      setLoading(false);
+    if (!res.ok) {
+      throw new Error(`HTTP error ${res.status}`);
     }
-  };
+
+    const json = await res.json();
+
+    if (json.success === false) {
+      throw new Error(json.error || "Backend error");
+    }
+
+    const mapped = (json.data || []).map((r, idx) => {
+      const dt = new Date(r.event_time);
+      return {
+        id: idx + 1,
+        date: dt.toISOString().slice(0, 10),
+        time: dt.toTimeString().slice(0, 8),
+        ...r,
+      };
+    });
+
+    setAllRows(mapped);
+    setPage(1);
+
+  } catch (err) {
+    console.error("Stationary Kavach Info fetch error:", err);
+    alert(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const clear = () => {
     setRows([]);

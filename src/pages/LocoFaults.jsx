@@ -50,58 +50,71 @@ const LocoFaults = forwardRef((props, ref) => {
 
   /* ===================== GENERATE ===================== */
   const generate = async () => {
-    if (!isDateRangeValid) {
-      alert("Invalid date range");
-      return;
+  if (!isDateRangeValid) {
+    alert("Invalid date range");
+    return;
+  }
+
+  if (!logDir) {
+    alert("BIN log directory not selected");
+    return;
+  }
+
+  setLoading(true);
+  setRows([]);
+
+  try {
+    const normalize = (v) =>
+      v && v.length === 16 ? `${v}:00` : v;
+
+    const from = encodeURIComponent(normalize(fromDate));
+    const to = encodeURIComponent(normalize(toDate));
+    const dir = encodeURIComponent(logDir);
+
+    const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+    const url = `${API_BASE}/api/loco-faults/by-date?from=${from}&to=${to}&logDir=${dir}`;
+
+    const res = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP error ${res.status}`);
     }
 
-    if (!logDir) {
-      alert("BIN log directory not selected");
-      return;
+    const json = await res.json();
+
+    // Some Qt APIs may not send success flag
+    if (json.success === false) {
+      throw new Error(json.error || "Backend error");
     }
 
-    setLoading(true);
+    const mappedRows = (json.data || []).map((r, idx) => {
+      const dt = new Date(r.event_time);
+
+      return {
+        id: idx + 1,
+        date: dt.toISOString().slice(0, 10),
+        time: dt.toTimeString().slice(0, 8),
+        ...r,
+      };
+    });
+
+    setRows(mappedRows);
+    setPage(1);
+
+  } catch (err) {
+    console.error("LocoFaults API error:", err);
+    alert(err.message);
     setRows([]);
-
-    try {
-      const normalize = (v) => (v.length === 16 ? `${v}:00` : v);
-
-      const from = encodeURIComponent(normalize(fromDate));
-      const to = encodeURIComponent(normalize(toDate));
-      const dir = encodeURIComponent(logDir);
-
-      const url = `${API_BASE}/api/loco-faults/by-date?from=${from}&to=${to}&logDir=${dir}`;
-
-      const res = await fetch(url);
-      const json = await res.json();
-
-      if (!json.success) {
-        throw new Error(json.error || "Backend error");
-      }
-
-      const mappedRows = (json.data || []).map((r, idx) => {
-        const dt = new Date(r.event_time);
-
-        return {
-          id: idx + 1,
-          date: dt.toISOString().slice(0, 10),
-          time: dt.toTimeString().slice(0, 8),
-          ...r, // keep RAW values
-        };
-      });
-
-      setRows(mappedRows);
-      setPage(1);
-
-
-      setPage(1);
-    } catch (err) {
-      console.error("LocoFaults API error:", err);
-      setRows([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
 
   /* ===================== CLEAR ===================== */
   const clear = () => {
