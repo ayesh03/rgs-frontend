@@ -81,65 +81,81 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
 
 
   /* ================= DATA FETCH ================= */
-  const generate = async () => {
-    if (!fromDate || !toDate) {
-      alert("Please select From and To date");
-      return;
+  /* ================= DATA FETCH ================= */
+const generate = async () => {
+  if (!fromDate || !toDate) {
+    alert("Please select From and To date");
+    return;
+  }
+
+  if (!isDateRangeValid) {
+    alert("Invalid date range");
+    return;
+  }
+
+  setLoading(true);
+  setRows([]);
+  clearFilters();
+
+  try {
+    const normalizeDate = (v) => (v && v.length === 16 ? `${v}:00` : v);
+
+    const encodedFrom = encodeURIComponent(normalizeDate(fromDate));
+    const encodedTo = encodeURIComponent(normalizeDate(toDate));
+
+    const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+    const url =
+      `${API_BASE}/api/loco-movement/by-date` +
+      `?from=${encodedFrom}` +
+      `&to=${encodedTo}` +
+      `&logDir=${encodeURIComponent(logDir)}`;
+
+    // ADDED: The actual fetch call with ngrok bypass header
+    const res = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "69420", // This bypasses the ngrok splash screen
+      },
+    });
+
+    // Check if the response is actually JSON before parsing
+    const contentType = res.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      const text = await res.text();
+      console.error("Expected JSON but got:", text);
+      throw new Error("Server returned HTML instead of JSON. Check ngrok/backend logs.");
     }
 
-    if (!isDateRangeValid) {
-      alert("Invalid date range");
-      return;
+    const json = await res.json();
+
+    // Your backend response logic
+    if (json.success === false) { // Adjusted to match typical API patterns
+      throw new Error(json.error || "Backend error");
     }
 
-    setLoading(true);
-    setRows([]);
-    clearFilters();
+    const dataArray = Array.isArray(json) ? json : json.data;
 
-    try {
-      const normalizeDate = (v) =>
-        v && v.length === 16 ? `${v}:00` : v;
+    const mappedRows = dataArray.map((r, idx) => {
+      const dt = new Date(r.event_time);
+      return {
+        id: idx + 1,
+        date: dt.toISOString().slice(0, 10),
+        time: dt.toTimeString().slice(0, 8),
+        ...r,
+      };
+    });
 
-      const encodedFrom = encodeURIComponent(normalizeDate(fromDate));
-      const encodedTo = encodeURIComponent(normalizeDate(toDate));
-
-      const API_BASE = import.meta.env.VITE_API_BASE_URL;
-
-      const url =
-        `${API_BASE}/api/loco-movement/by-date` +
-        `?from=${encodedFrom}` +
-        `&to=${encodedTo}` +
-        `&logDir=${encodeURIComponent(logDir)}`;
-
-      const res = await fetch(url);
-      const json = await res.json();
-
-      if (!json.success) {
-        throw new Error(json.error || "Backend error");
-      }
-
-      const mappedRows = json.data.map((r, idx) => {
-        const dt = new Date(r.event_time);
-
-        return {
-          id: idx + 1,
-          date: dt.toISOString().slice(0, 10),
-          time: dt.toTimeString().slice(0, 8),
-          ...r,
-        };
-      });
-
-
-      setAllRows(mappedRows);
-      setPage(1);
-
-    } catch (err) {
-      console.error("Loco Movement fetch error:", err);
-      alert(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+    setAllRows(mappedRows);
+    setPage(1);
+  } catch (err) {
+    console.error("Loco Movement fetch error:", err);
+    alert(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
 
   const clear = () => {
