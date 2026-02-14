@@ -103,11 +103,13 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
       const encodedFrom = encodeURIComponent(normalizeDate(fromDate));
       const encodedTo = encodeURIComponent(normalizeDate(toDate));
 
-      const url =
-        `http://localhost:8080/api/loco-movement/by-date` +
-        `?from=${encodedFrom}` +
-        `&to=${encodedTo}` +
-        `&logDir=${encodeURIComponent(logDir)}`;
+      const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+const url =
+  `${API_BASE}/api/loco-movement/by-date` +
+  `?from=${encodedFrom}` +
+  `&to=${encodedTo}` +
+  `&logDir=${encodeURIComponent(logDir)}`;
 
       const res = await fetch(url);
       const json = await res.json();
