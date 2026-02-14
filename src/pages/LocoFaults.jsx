@@ -78,16 +78,7 @@ const LocoFaults = forwardRef((props, ref) => {
   }
 });
 
-      const text = await res.text();
-
-let json;
-try {
-  json = JSON.parse(text);
-} catch (e) {
-  console.error("Response was not JSON:", text);
-  throw new Error("Backend returned invalid response");
-}
-
+      const json = await res.json();
 
       if (!json.success) {
         throw new Error(json.error || "Backend error");

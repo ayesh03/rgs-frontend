@@ -55,16 +55,7 @@ const ExceptionReport = forwardRef((props, ref) => {
 
 const res = await fetch(`${API_BASE}/api/loco-movement/latest`);
 
-    const text = await res.text();
-
-let json;
-try {
-  json = JSON.parse(text);
-} catch (e) {
-  console.error("Response was not JSON:", text);
-  throw new Error("Backend returned invalid response");
-}
-
+    const json = await res.json();
 
     const filtered = json.data.filter((r) => {
       switch (exceptionType) {
