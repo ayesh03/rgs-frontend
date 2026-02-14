@@ -51,7 +51,10 @@ const ExceptionReport = forwardRef((props, ref) => {
   setPage(1);
 
   try {
-    const res = await fetch("http://localhost:8080/api/loco-movement/latest");
+    const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+const res = await fetch(`${API_BASE}/api/loco-movement/latest`);
+
     const json = await res.json();
 
     const filtered = json.data.filter((r) => {

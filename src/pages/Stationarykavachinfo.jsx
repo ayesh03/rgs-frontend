@@ -748,11 +748,14 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
         endpoint = "emergency";
       }
 
-      const url =
-        `http://localhost:8080/api/stationary/${endpoint}/by-date` +
-        `?from=${encodeURIComponent(normalizeDate(fromDate))}` +
-        `&to=${encodeURIComponent(normalizeDate(toDate))}` +
-        `&logDir=${encodeURIComponent(logDir)}`;
+      const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+const url =
+  `${API_BASE}/api/stationary/${endpoint}/by-date` +
+  `?from=${encodeURIComponent(normalizeDate(fromDate))}` +
+  `&to=${encodeURIComponent(normalizeDate(toDate))}` +
+  `&logDir=${encodeURIComponent(logDir)}`;
+
 
 
       const res = await fetch(url);
