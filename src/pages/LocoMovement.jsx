@@ -1,3 +1,5 @@
+WORKING LOCOmOVEMENT.JSX
+
 import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import {
   Box,
@@ -80,73 +82,73 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
 
 
 
-  const generate = async () => {
-  if (!fromDate || !toDate) {
-    alert("Please select From and To date");
-    return;
-  }
-
-  if (!isDateRangeValid) {
-    alert("Invalid date range");
-    return;
-  }
-
-  if (!logDir) {
-    alert("Please upload a file");
-    return;
-  }
-
-  setLoading(true);
-  setRows([]);
-  clearFilters();
-
-  try {
-    const normalizeDate = (v) =>
-      v && v.length === 16 ? `${v}:00` : v;
-
-    const API_BASE = import.meta.env.VITE_API_BASE_URL;
-
-    const encodedFrom = encodeURIComponent(normalizeDate(fromDate));
-    const encodedTo   = encodeURIComponent(normalizeDate(toDate));
-
-    const formData = new FormData();
-    formData.append("file", logDir);   // THIS MUST BE File object
-
-    const res = await fetch(
-      `${API_BASE}/api/loco-movement/upload?from=${encodedFrom}&to=${encodedTo}`,
-      {
-        method: "POST",
-        body: formData,
-      }
-    );
-
-    const json = await res.json();
-
-    if (!res.ok || json.success === false) {
-      throw new Error(json.error || "Backend error");
+  /* ================= DATA FETCH ================= */
+const generate = async () => {
+    if (!fromDate || !toDate) {
+      alert("Please select From and To date");
+      return;
     }
 
-    const mappedRows = json.data.map((r, idx) => {
-      const dt = new Date(r.event_time);
-      return {
-        id: idx + 1,
-        date: dt.toISOString().slice(0, 10),
-        time: dt.toTimeString().slice(0, 8),
-        ...r,
-      };
-    });
+    if (!isDateRangeValid) {
+      alert("Invalid date range");
+      return;
+    }
 
-    setAllRows(mappedRows);
-    setPage(1);
+    setLoading(true);
+    setRows([]);
+    clearFilters();
 
-  } catch (err) {
-    console.error("Loco Movement fetch error:", err);
-    alert(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      const normalizeDate = (v) =>
+        v && v.length === 16 ? `${v}:00` : v;
 
+      const encodedFrom = encodeURIComponent(normalizeDate(fromDate));
+      const encodedTo = encodeURIComponent(normalizeDate(toDate));
+
+      const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+      const url =
+        `${API_BASE}/api/loco-movement/by-date` +
+        `?from=${encodedFrom}` +
+        `&to=${encodedTo}` +
+        `&logDir=${encodeURIComponent(logDir)}`;
+
+      // UPDATED: Added the fetch call with ngrok bypass header
+      const res = await fetch(url, {
+        headers: {
+          "ngrok-skip-browser-warning": "true",
+        },
+      });
+
+      const json = await res.json();
+
+      // Your Qt backend might not always send a "success" boolean, 
+      // but if it does, this logic remains:
+      if (json.success === false) {
+        throw new Error(json.error || "Backend error");
+      }
+
+      const mappedRows = json.data.map((r, idx) => {
+        const dt = new Date(r.event_time);
+
+        return {
+          id: idx + 1,
+          date: dt.toISOString().slice(0, 10),
+          time: dt.toTimeString().slice(0, 8),
+          ...r,
+        };
+      });
+
+      setAllRows(mappedRows);
+      setPage(1);
+
+    } catch (err) {
+      console.error("Loco Movement fetch error:", err);
+      alert(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   const clear = () => {

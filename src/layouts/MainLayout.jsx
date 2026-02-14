@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import areaLogo from "../assets/arecaLogo.png";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
@@ -124,7 +123,7 @@ export default function MainLayout() {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", width: "100%", minHeight: "100vh", background: "#f4f7fa" }}>
-
+      
       <AppBar position="sticky" elevation={0} sx={{ background: "rgba(255, 255, 255, 0.95)", backdropFilter: "blur(12px)", color: "#1a2027", borderBottom: "1px solid rgba(0, 0, 0, 0.05)" }}>
         <Toolbar sx={{ justifyContent: "space-between", minHeight: "56px !important", px: 2 }}>
           {/* LOGO SECTION */}
@@ -137,13 +136,13 @@ export default function MainLayout() {
 
           {/* FILTER BAR SECTION */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2, p: 0.5, px: 1.5, borderRadius: 2, bgcolor: "rgba(0,0,0,0.04)" }}>
-
+            
             {/* FROM PICKER */}
             <Stack direction="row" alignItems="center" spacing={1}>
               <Typography variant="caption" sx={{ fontWeight: 700 }}>From:</Typography>
               <Button
                 id="from-button"
-                size="small" variant="outlined"
+                size="small" variant="outlined" 
                 onClick={handleFromOpen}
                 startIcon={<CalendarTodayIcon sx={{ fontSize: 14 }} />}
                 sx={{ textTransform: "none", fontSize: "0.75rem", minWidth: 160, color: "#333", borderColor: "#ccc" }}
@@ -176,7 +175,7 @@ export default function MainLayout() {
               <Typography variant="caption" sx={{ fontWeight: 700 }}>To:</Typography>
               <Button
                 id="to-button"
-                size="small" variant="outlined"
+                size="small" variant="outlined" 
                 onClick={handleToOpen}
                 startIcon={<CalendarTodayIcon sx={{ fontSize: 14 }} />}
                 sx={{ textTransform: "none", fontSize: "0.75rem", minWidth: 160, color: "#333", borderColor: "#ccc" }}
@@ -204,36 +203,18 @@ export default function MainLayout() {
               </Popover>
             </Stack>
 
-            {/* BIN FILE UPLOAD */}
+            {/* LOG FIELD */}
             <Stack direction="row" alignItems="center" spacing={1}>
-              <Typography variant="caption" sx={{ fontWeight: 700 }}>BIN:</Typography>
-
-              <Button
-                component="label"
-                size="small"
-                variant="outlined"
-                startIcon={<FolderOpenIcon sx={{ fontSize: 14 }} />}
-                sx={{ textTransform: "none", fontSize: "0.75rem" }}
-              >
-                Upload
-                <input
-                  type="file"
-                  accept=".bin"
-                  hidden
-                  onChange={(e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                      setLogDir(file);   // store file instead of path
-                    }
-                  }}
-                />
-              </Button>
-
-              <Typography variant="caption" sx={{ maxWidth: 120 }} noWrap>
-                {logDir?.name || "No file"}
-              </Typography>
+              <Typography variant="caption" sx={{ fontWeight: 700 }}>Log:</Typography>
+              <TextField 
+                size="small" 
+                variant="standard" 
+                value={logDir} 
+                onChange={(e) => setLogDir(e.target.value)}
+                sx={{ width: 120, '& .MuiInputBase-input': { fontSize: '0.75rem' } }}
+                InputProps={{ startAdornment: <FolderOpenIcon sx={{ fontSize: 14, mr: 0.5, color: "#666" }} /> }}
+              />
             </Stack>
-
 
             <Divider orientation="vertical" flexItem sx={{ height: 24, my: 'auto' }} />
 
@@ -250,12 +231,12 @@ export default function MainLayout() {
           {navItems.map((item) => {
             const isActive = location.pathname.endsWith(item.path);
             return (
-              <Button
-                key={item.path}
-                component={Link}
-                to={item.path}
-                sx={{
-                  px: 1.5, py: 0.5, textTransform: "none", fontSize: "0.8rem",
+              <Button 
+                key={item.path} 
+                component={Link} 
+                to={item.path} 
+                sx={{ 
+                  px: 1.5, py: 0.5, textTransform: "none", fontSize: "0.8rem", 
                   fontWeight: isActive ? 700 : 500,
                   color: isActive ? "#fff" : "#555",
                   bgcolor: isActive ? "#0b4dbb" : "transparent",
