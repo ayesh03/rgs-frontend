@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion"; // Modern animation engine
 import PaginationControls from "../components/PaginationControls";
-import DataPreview from "../components/Datapreview";
+import DataPreview from "../components/DataPreview";
 
 const EXCEPTION_TYPES = [
   "Emergency Brake",
