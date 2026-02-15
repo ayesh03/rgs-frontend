@@ -17,7 +17,8 @@ import MovingIcon from "@mui/icons-material/Moving";
 import PaginationControls from "../components/PaginationControls";
 import ColumnFilterDialog from "../components/ColumnFilterDialog";
 import StationaryKavachTable from "../components/LocoMovementTable";
-import { formatHexDate } from "../utils/stationaryKavachFormatter";
+import { formatHexDate ,formatRefProfile,  
+  PKT_DIR_MAP, } from "../utils/stationaryKavachFormatter";
 
 import useTableFilter from "../hooks/useFilterTable";
 import { useAppContext } from "../context/AppContext";
@@ -78,6 +79,20 @@ const COMMON_HEADER_COLUMNS = [
   { key: "date_hex", label: "Packet Date" },
   { key: "time", label: "Time" },
   { key: "station_active_radio_desc", label: "Active Radio" },
+];
+const RADIO_HEADER_COLUMNS = [
+  { key: "pkt_type", label: "Packet Type" },
+  { key: "pkt_length", label: "Packet Length" },
+  { key: "frame_number", label: "Frame Number" },
+
+  { key: "source_stn_id", label: "Source Station ID" },
+  { key: "source_version", label: "Source Version" },
+
+  { key: "dest_loco_id", label: "Destination Loco ID" },
+  { key: "ref_profile_id", label: "Reference Profile ID" },
+  { key: "last_ref_rfid", label: "Last Reference RFID" },
+  { key: "dist_pkt_start_m", label: "Distance Packet Start (m)" },
+  { key: "pkt_direction", label: "Packet Direction" },
 ];
 
 const MA_COLUMNS = [
@@ -286,6 +301,13 @@ export const formatMovementAuthorityRow = (row) => {
   /* Packet Type */
   if (r.pkt_type !== undefined)
     r.pkt_type = decode(PKT_TYPE_MAP, r.pkt_type);
+  /* ===================== RADIO HEADER ===================== */
+
+  if (r.pkt_direction !== undefined)
+    r.pkt_direction = decode(PKT_DIR_MAP, r.pkt_direction);
+
+  if (r.ref_profile_id !== undefined)
+    r.ref_profile_id = formatRefProfile(r.ref_profile_id);
 
   /* ===================== MA ===================== */
   if (r.date_hex !== undefined)
@@ -508,9 +530,6 @@ export const formatMovementAuthorityRow = (row) => {
 
   /* ===================== EMERGENCY ===================== */
 
-  if (r.pkt_type !== undefined)
-    r.pkt_type = decode(PKT_TYPE_MAP, r.pkt_type);
-
   if (r.source_version !== undefined)
     r.source_version = decode(KAVACH_VERSION_MAP, r.source_version);
 
@@ -564,14 +583,34 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
 
 
     // default → Regular (MA)
-    if (subPacket === "ma") return [...COMMON_HEADER_COLUMNS, ...MA_COLUMNS];
-    if (subPacket === "ssp") return [...COMMON_HEADER_COLUMNS, ...SSP_COLUMNS]
-    if (subPacket === "gradient") return [...COMMON_HEADER_COLUMNS, ...GRADIENT_COLUMNS];
-    if (subPacket === "lc") return [...COMMON_HEADER_COLUMNS, ...LC_COLUMNS];
-    if (subPacket === "turnout") return [...COMMON_HEADER_COLUMNS, ...TURNOUT_COLUMNS];
-    if (subPacket === "tag") return [...COMMON_HEADER_COLUMNS, ...TAG_COLUMNS];
-    if (subPacket === "track") return [...COMMON_HEADER_COLUMNS, ...TRACK_COLUMNS];
-    if (subPacket === "tsr") return [...COMMON_HEADER_COLUMNS, ...TSR_COLUMNS];
+    if (subPacket === "ma")
+      return [
+        ...COMMON_HEADER_COLUMNS,
+        ...RADIO_HEADER_COLUMNS,
+        ...MA_COLUMNS,
+      ];
+
+    if (subPacket === "ssp")
+      return [...COMMON_HEADER_COLUMNS, ...RADIO_HEADER_COLUMNS, ...SSP_COLUMNS];
+
+    if (subPacket === "gradient")
+      return [...COMMON_HEADER_COLUMNS, ...RADIO_HEADER_COLUMNS, ...GRADIENT_COLUMNS];
+
+    if (subPacket === "lc")
+      return [...COMMON_HEADER_COLUMNS, ...RADIO_HEADER_COLUMNS, ...LC_COLUMNS];
+
+    if (subPacket === "turnout")
+      return [...COMMON_HEADER_COLUMNS, ...RADIO_HEADER_COLUMNS, ...TURNOUT_COLUMNS];
+
+    if (subPacket === "tag")
+      return [...COMMON_HEADER_COLUMNS, ...RADIO_HEADER_COLUMNS, ...TAG_COLUMNS];
+
+    if (subPacket === "track")
+      return [...COMMON_HEADER_COLUMNS, ...RADIO_HEADER_COLUMNS, ...TRACK_COLUMNS];
+
+    if (subPacket === "tsr")
+      return [...COMMON_HEADER_COLUMNS, ...RADIO_HEADER_COLUMNS, ...TSR_COLUMNS];
+
 
     return MA_COLUMNS;
   };
@@ -579,7 +618,8 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
 
   const columns = getColumns();
 
-const buildCommonHeader = (packet) => ({
+  const buildCommonHeader = (packet) => ({
+  // Annexure-G Header
   msg_type: packet.msg_type,
   msg_length: packet.msg_length,
   msg_sequence: packet.msg_sequence,
@@ -589,129 +629,142 @@ const buildCommonHeader = (packet) => ({
   date_hex: packet.date_hex,
   time: packet.time,
   station_active_radio_desc: packet.station_active_radio_desc,
+
+  // RADIO HEADER (NEW)
+  pkt_type: packet.pkt_type,
+  pkt_length: packet.pkt_length,
+  frame_number: packet.frame_number,
+  source_stn_id: packet.source_stn_id,
+  source_version: packet.source_version,
+  dest_loco_id: packet.dest_loco_id,
+  ref_profile_id: packet.ref_profile_id,
+  last_ref_rfid: packet.last_ref_rfid,
+  dist_pkt_start_m: packet.dist_pkt_start_m,
+  pkt_direction: packet.pkt_direction,
 });
+
 
 
   /* ================= FILTER ON TYPE CHANGE ================= */
   useEffect(() => {
-  if (!allRows.length) {
-    setRows([]);
-    return;
-  }
+    if (!allRows.length) {
+      setRows([]);
+      return;
+    }
 
-  if (tableType !== "station_regular") {
-    setRows(allRows);
+    if (tableType !== "station_regular") {
+      setRows(allRows);
+      setPage(1);
+      clearFilters();
+      return;
+    }
+
+    if (subPacket === "ma") {
+      setRows(allRows);
+      setPage(1);
+      clearFilters();
+      return;
+    }
+
+    let flattened = [];
+
+    allRows.forEach((packet) => {
+
+      const header = buildCommonHeader(packet);
+
+      if (subPacket === "ssp" && packet.static_speed_profile?.length) {
+        packet.static_speed_profile.forEach((ssp) => {
+          flattened.push({
+            ...header,
+            sub_pkt_type_ssp: packet.sub_pkt_type_ssp,
+            sub_pkt_len_ssp: packet.sub_pkt_len_ssp,
+            lm_speed_info_cnt: packet.lm_speed_info_cnt,
+            ...ssp,
+          });
+        });
+      }
+
+      if (subPacket === "gradient" && packet.gradient_profile?.length) {
+        packet.gradient_profile.forEach((g) => {
+          flattened.push({
+            ...header,
+            sub_pkt_type_grad: packet.sub_pkt_type_grad,
+            sub_pkt_len_grad: packet.sub_pkt_len_grad,
+            lm_grad_info_cnt: packet.lm_grad_info_cnt,
+            ...g,
+          });
+        });
+      }
+
+      if (subPacket === "lc" && packet.lc_gate_profile?.length) {
+        packet.lc_gate_profile.forEach((lc) => {
+          flattened.push({
+            ...header,
+            sub_pkt_type_lc: packet.sub_pkt_type_lc,
+            sub_pkt_len_lc: packet.sub_pkt_len_lc,
+            lm_lc_info_cnt: packet.lm_lc_info_cnt,
+            ...lc,
+          });
+        });
+      }
+
+      if (subPacket === "turnout" && packet.turnout_speed_profile?.length) {
+        packet.turnout_speed_profile.forEach((t) => {
+          flattened.push({
+            ...header,
+            sub_pkt_type_to: packet.sub_pkt_type_to,
+            sub_pkt_len_to: packet.sub_pkt_len_to,
+            to_cnt: packet.to_cnt,
+            ...t,
+          });
+        });
+      }
+
+      if (subPacket === "tag" && packet.rfid_list?.length) {
+        packet.rfid_list.forEach((r) => {
+          flattened.push({
+            ...header,
+            sub_pkt_type_tag: packet.sub_pkt_type_tag,
+            sub_pkt_len_tag: packet.sub_pkt_len_tag,
+            dist_dup_tag_m: packet.dist_dup_tag_m,
+            route_rfid_count: packet.route_rfid_count,
+            ...r,
+          });
+        });
+      }
+
+      if (subPacket === "track" && packet.track_conditions?.length) {
+        packet.track_conditions.forEach((tc) => {
+          flattened.push({
+            ...header,
+            sub_pkt_type_track: packet.sub_pkt_type_track,
+            sub_pkt_len_track: packet.sub_pkt_len_track,
+            track_condition_count: packet.track_condition_count,
+            ...tc,
+          });
+        });
+      }
+
+      if (subPacket === "tsr" && packet.tsr_list?.length) {
+        packet.tsr_list.forEach((tsr) => {
+          flattened.push({
+            ...header,
+            sub_pkt_type_tsr: packet.sub_pkt_type_tsr,
+            sub_pkt_len_tsr: packet.sub_pkt_len_tsr,
+            tsr_status: packet.tsr_status,
+            tsr_info_cnt: packet.tsr_info_cnt,
+            ...tsr,
+          });
+        });
+      }
+
+    });
+
+    setRows(flattened);
     setPage(1);
     clearFilters();
-    return;
-  }
 
-  if (subPacket === "ma") {
-    setRows(allRows);
-    setPage(1);
-    clearFilters();
-    return;
-  }
-
-  let flattened = [];
-
-  allRows.forEach((packet) => {
-
-    const header = buildCommonHeader(packet);
-
-    if (subPacket === "ssp" && packet.static_speed_profile?.length) {
-      packet.static_speed_profile.forEach((ssp) => {
-        flattened.push({
-          ...header,
-          sub_pkt_type_ssp: packet.sub_pkt_type_ssp,
-          sub_pkt_len_ssp: packet.sub_pkt_len_ssp,
-          lm_speed_info_cnt: packet.lm_speed_info_cnt,
-          ...ssp,
-        });
-      });
-    }
-
-    if (subPacket === "gradient" && packet.gradient_profile?.length) {
-      packet.gradient_profile.forEach((g) => {
-        flattened.push({
-          ...header,
-          sub_pkt_type_grad: packet.sub_pkt_type_grad,
-          sub_pkt_len_grad: packet.sub_pkt_len_grad,
-          lm_grad_info_cnt: packet.lm_grad_info_cnt,
-          ...g,
-        });
-      });
-    }
-
-    if (subPacket === "lc" && packet.lc_gate_profile?.length) {
-      packet.lc_gate_profile.forEach((lc) => {
-        flattened.push({
-          ...header,
-          sub_pkt_type_lc: packet.sub_pkt_type_lc,
-          sub_pkt_len_lc: packet.sub_pkt_len_lc,
-          lm_lc_info_cnt: packet.lm_lc_info_cnt,
-          ...lc,
-        });
-      });
-    }
-
-    if (subPacket === "turnout" && packet.turnout_speed_profile?.length) {
-      packet.turnout_speed_profile.forEach((t) => {
-        flattened.push({
-          ...header,
-          sub_pkt_type_to: packet.sub_pkt_type_to,
-          sub_pkt_len_to: packet.sub_pkt_len_to,
-          to_cnt: packet.to_cnt,
-          ...t,
-        });
-      });
-    }
-
-    if (subPacket === "tag" && packet.rfid_list?.length) {
-      packet.rfid_list.forEach((r) => {
-        flattened.push({
-          ...header,
-          sub_pkt_type_tag: packet.sub_pkt_type_tag,
-          sub_pkt_len_tag: packet.sub_pkt_len_tag,
-          dist_dup_tag_m: packet.dist_dup_tag_m,
-          route_rfid_count: packet.route_rfid_count,
-          ...r,
-        });
-      });
-    }
-
-    if (subPacket === "track" && packet.track_conditions?.length) {
-      packet.track_conditions.forEach((tc) => {
-        flattened.push({
-          ...header,
-          sub_pkt_type_track: packet.sub_pkt_type_track,
-          sub_pkt_len_track: packet.sub_pkt_len_track,
-          track_condition_count: packet.track_condition_count,
-          ...tc,
-        });
-      });
-    }
-
-    if (subPacket === "tsr" && packet.tsr_list?.length) {
-      packet.tsr_list.forEach((tsr) => {
-        flattened.push({
-          ...header,
-          sub_pkt_type_tsr: packet.sub_pkt_type_tsr,
-          sub_pkt_len_tsr: packet.sub_pkt_len_tsr,
-          tsr_status: packet.tsr_status,
-          tsr_info_cnt: packet.tsr_info_cnt,
-          ...tsr,
-        });
-      });
-    }
-
-  });
-
-  setRows(flattened);
-  setPage(1);
-  clearFilters();
-
-}, [subPacket, allRows, tableType]);
+  }, [subPacket, allRows, tableType]);
 
   useEffect(() => {
     setVisibleKeys(columns.map((c) => c.key));
@@ -774,9 +827,9 @@ const buildCommonHeader = (packet) => ({
       }
 
       const mapped = (json.data || []).map((r, idx) => ({
-  id: idx + 1,
-  ...r,
-}));
+        id: idx + 1,
+        ...r,
+      }));
 
 
       setAllRows(mapped);
