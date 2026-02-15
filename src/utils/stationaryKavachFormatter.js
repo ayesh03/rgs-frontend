@@ -59,6 +59,17 @@ export const TRAIN_SECTION_TYPE_MAP = {
   2: "Autoblock",
   3: "Reserved",
 };
+export const formatHexDate = (hex) => {
+  if (!hex || hex.length !== 6) return hex;
+
+  const dd = parseInt(hex.slice(0, 2), 16);
+  const mm = parseInt(hex.slice(2, 4), 16);
+  const yy = parseInt(hex.slice(4, 6), 16);
+
+  const fullYear = 2000 + yy;
+
+  return `${String(dd).padStart(2, "0")}-${String(mm).padStart(2, "0")}-${fullYear}`;
+};
 
 /* ---------------- AUTHORITY TYPE ---------------- */
 

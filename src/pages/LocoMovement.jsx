@@ -14,6 +14,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import MovingIcon from "@mui/icons-material/Moving";
 import ViewColumnIcon from "@mui/icons-material/ViewColumn";
+import { useOutletContext } from "react-router-dom";
 
 import LocoMovementTable from "../components/LocoMovementTable";
 import PaginationControls from "../components/PaginationControls";
@@ -31,6 +32,7 @@ import {
 const LocoMovement = forwardRef(({ tableType }, ref) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+const { selectedFile } = useOutletContext();
 
   /* ================= STATE ================= */
   const [loading, setLoading] = useState(false);
@@ -63,21 +65,18 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
 
   /* ================= RESET ON TABLE SWITCH ================= */
   useEffect(() => {
-    if (!allRows.length) return;
+  if (!allRows.length) return;
 
-    const filtered =
-      tableType === "onboard"
-        ? allRows.filter(r => r.packet_type === 10 || r.packet_type === "10")
-        : allRows.filter(r => r.packet_type === 13 || r.packet_type === "13");
+  const filtered =
+    tableType === "onboard"
+      ? allRows.filter(r => Number(r.packet_type) === 10)
+      : allRows.filter(r => Number(r.packet_type) === 13);
 
-    setRows(filtered);
-    clearFilters();
-    setPage(1);
-  }, [tableType, allRows]);
+  setRows(filtered);
+  clearFilters();
+  setPage(1);
+}, [tableType, allRows]);
 
-  useEffect(() => {
-    setVisibleKeys(columns.map(c => c.key));
-  }, [tableType]);
 
 
 
@@ -106,17 +105,21 @@ const generate = async () => {
 
       const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-      const url =
-        `${API_BASE}/api/loco-movement/by-date` +
-        `?from=${encodedFrom}` +
-        `&to=${encodedTo}` 
-        ;
+      if (!selectedFile) {
+  alert("Please select BIN file");
+  return;
+}
 
-      const res = await fetch(
+const fileBuffer = await selectedFile.arrayBuffer();
+
+const res = await fetch(
   `${API_BASE}/api/loco-movement/by-date?from=${encodedFrom}&to=${encodedTo}`,
   {
     method: "POST",
-    body: new Uint8Array(),
+    body: fileBuffer,
+    headers: {
+      "Content-Type": "application/octet-stream",
+    },
   }
 );
 
@@ -143,7 +146,15 @@ const generate = async () => {
       });
 
       setAllRows(mappedRows);
-      setPage(1);
+
+const filtered =
+  tableType === "onboard"
+    ? mappedRows.filter(r => Number(r.packet_type) === 10)
+    : mappedRows.filter(r => Number(r.packet_type) === 13);
+
+setRows(filtered);
+setPage(1);
+
 
     } catch (err) {
       console.error("Loco Movement fetch error:", err);

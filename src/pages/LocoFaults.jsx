@@ -11,6 +11,7 @@ import { useState, forwardRef, useImperativeHandle, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import EngineeringIcon from "@mui/icons-material/Engineering";
 import { Select, MenuItem } from "@mui/material";
+import { useOutletContext } from "react-router-dom";
 
 import LocoFaultsTable from "../components/LocoFaultsTable";
 import PaginationControls from "../components/PaginationControls";
@@ -37,6 +38,7 @@ const LocoFaults = forwardRef((props, ref) => {
   const [page, setPage] = useState(1);
   const [originFilter, setOriginFilter] = useState("STATION");
 
+const { selectedFile } = useOutletContext();
 
   const rowsPerPage = 10;
 
@@ -55,10 +57,10 @@ const LocoFaults = forwardRef((props, ref) => {
     return;
   }
 
-  if (!logDir) {
-    alert("BIN log directory not selected");
-    return;
-  }
+ if (!selectedFile) {
+  alert("Please select BIN file");
+  return;
+}
 
   setLoading(true);
   setRows([]);
@@ -69,17 +71,25 @@ const LocoFaults = forwardRef((props, ref) => {
 
     const from = encodeURIComponent(normalize(fromDate));
     const to = encodeURIComponent(normalize(toDate));
-    const dir = encodeURIComponent(logDir);
+    
 
     const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-    const url = `${API_BASE}/api/loco-faults/by-date?from=${from}&to=${to}&logDir=${dir}`;
+   
 
-    const res = await fetch(url, {
-        headers: {
-          "ngrok-skip-browser-warning": "true",
-        },
-      });
+const fileBuffer = await selectedFile.arrayBuffer();
+
+const res = await fetch(
+  `${API_BASE}/api/loco-faults/by-date?from=${from}&to=${to}`,
+  {
+    method: "POST",
+    body: fileBuffer,
+    headers: {
+      "Content-Type": "application/octet-stream",
+    },
+  }
+);
+
 
     const json = await res.json();
 

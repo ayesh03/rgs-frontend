@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { forwardRef, useImperativeHandle, useState, useEffect } from "react";
 import { useAppContext } from "../context/AppContext";
 import HubIcon from "@mui/icons-material/Hub";
+import { useOutletContext } from "react-router-dom";
 
 import PaginationControls from "../components/PaginationControls";
 import NoResult from "../components/NoResult";
@@ -38,80 +39,102 @@ const Interlocking = forwardRef((props, ref) => {
   const [hasGenerated, setHasGenerated] = useState(false);
 
   const { fromDate, toDate, logDir, isDateRangeValid } = useAppContext();
+  const { selectedFile } = useOutletContext();
+
 
   const [columnDialogOpen, setColumnDialogOpen] = useState(false);
-  const [visibleKeys, setVisibleKeys] = useState(
-    INTERLOCKING_COLUMNS.map(c => c.key)
-  );
+  const DEFAULT_VISIBLE = [
+  "date",
+  "time",
+  "frameNo",
+  "station",
+  "relay",
+  "serial",
+  "status"
+];
+
+const [visibleKeys, setVisibleKeys] = useState(DEFAULT_VISIBLE);
+
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
   /* ===================== FETCH STATIONS ===================== */
   const fetchStations = async () => {
-    if (!fromDate || !toDate || !logDir) return;
+    if (!fromDate || !toDate || !selectedFile) return;
 
     try {
-      const from = encodeURIComponent(
-        fromDate.length === 16 ? `${fromDate}:00` : fromDate
-      );
-      const to = encodeURIComponent(
-        toDate.length === 16 ? `${toDate}:00` : toDate
-      );
+      const normalize = v => (v.length === 16 ? `${v}:00` : v);
+      const from = encodeURIComponent(normalize(fromDate));
+      const to = encodeURIComponent(normalize(toDate));
 
       const res = await fetch(
-        `${API_BASE}/api/interlocking/stations` +
-        `?from=${from}&to=${to}&logDir=${encodeURIComponent(logDir)}`
+        `${API_BASE}/api/interlocking/stations?from=${from}&to=${to}`,
+        {
+          method: "POST",
+          body: selectedFile
+
+        }
       );
 
       const json = await res.json();
       if (json.success) {
         setStations(json.data || []);
       }
+
     } catch (err) {
       console.error("[INTERLOCKING] Station fetch error:", err);
     }
   };
 
-  useEffect(() => {
-    fetchStations();
-  }, [fromDate, toDate, logDir]);
 
   useEffect(() => {
-    if (!station || !fromDate || !toDate || !logDir) return;
+  fetchStations();
+}, [fromDate, toDate, selectedFile]);
+
+
+
+ useEffect(() => {
+  if (!station || !fromDate || !toDate || !selectedFile) return;
+
+
 
     const fetchRelays = async () => {
-      try {
-        const normalize = v => (v.length === 16 ? `${v}:00` : v);
-        const from = encodeURIComponent(normalize(fromDate));
-        const to = encodeURIComponent(normalize(toDate));
+  try {
+    const normalize = v => (v.length === 16 ? `${v}:00` : v);
+    const from = encodeURIComponent(normalize(fromDate));
+    const to = encodeURIComponent(normalize(toDate));
 
-        const res = await fetch(
-          `${API_BASE}/api/interlocking/report` +
-          `?from=${from}&to=${to}` +
-          `&logDir=${encodeURIComponent(logDir)}` +
-          `&station=${station}` +
-          `&page=1`
-        );
-
-        const json = await res.json();
-        if (!json.success) return;
-
-        const relays = [
-          ...new Set((json.data || []).map(r => r.relay))
-        ];
-
-        setRelayOptions(relays);
-        setRelay("ALL");
-        setRows([]);
-        setHasGenerated(false);
-
-      } catch (e) {
-        console.error("Relay fetch failed", e);
+    const res = await fetch(
+      `${API_BASE}/api/interlocking/report` +
+      `?from=${from}&to=${to}` +
+      `&station=${station}` +
+      `&page=1`,
+      {
+        method: "POST",     
+       body: selectedFile
       }
-    };
+    );
+
+    const json = await res.json();
+    if (!json.success) return;
+
+    const relays = [
+      ...new Set((json.data || []).map(r => r.relay))
+    ];
+
+    setRelayOptions(relays);
+    setRelay("ALL");
+    setRows([]);
+    setHasGenerated(false);
+
+  } catch (e) {
+    console.error("Relay fetch failed", e);
+  }
+};
+
 
     fetchRelays();
-  }, [station]);
+  }, [station, selectedFile, fromDate, toDate]);
 
   /* ===================== GENERATE ===================== */
   const generate = async () => {
@@ -136,10 +159,15 @@ const Interlocking = forwardRef((props, ref) => {
       const res = await fetch(
         `${API_BASE}/api/interlocking/report` +
         `?from=${from}&to=${to}` +
-        `&logDir=${encodeURIComponent(logDir)}` +
         `&station=${station}` +
-        `&page=1`
+        `&page=1`,
+        {
+          method: "POST",
+          body: selectedFile
+
+        }
       );
+
 
       const json = await res.json();
       if (!json.success) throw new Error(json.error);

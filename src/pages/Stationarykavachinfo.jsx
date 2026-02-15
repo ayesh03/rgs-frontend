@@ -17,6 +17,7 @@ import MovingIcon from "@mui/icons-material/Moving";
 import PaginationControls from "../components/PaginationControls";
 import ColumnFilterDialog from "../components/ColumnFilterDialog";
 import StationaryKavachTable from "../components/LocoMovementTable";
+import { formatHexDate } from "../utils/stationaryKavachFormatter";
 
 import useTableFilter from "../hooks/useFilterTable";
 import { useAppContext } from "../context/AppContext";
@@ -66,6 +67,18 @@ import {
   KAVACH_VERSION_MAP,
 } from "../utils/stationaryKavachFormatter";
 
+const COMMON_HEADER_COLUMNS = [
+  // { key: "sof", label: "SOF" },
+  { key: "msg_type", label: "Message Type" },
+  { key: "msg_length", label: "Message Length" },
+  { key: "msg_sequence", label: "Message Sequence" },
+  { key: "stationary_kavach_id", label: "Stationary Kavach ID" },
+  { key: "nms_system_id", label: "NMS System ID" },
+  { key: "system_version", label: "System Version" },
+  { key: "date_hex", label: "Packet Date" },
+  { key: "time", label: "Time" },
+  { key: "station_active_radio_desc", label: "Active Radio" },
+];
 
 const MA_COLUMNS = [
   { key: "sub_pkt_type_ma", label: "Sub Packet Type" },
@@ -275,6 +288,9 @@ export const formatMovementAuthorityRow = (row) => {
     r.pkt_type = decode(PKT_TYPE_MAP, r.pkt_type);
 
   /* ===================== MA ===================== */
+  if (r.date_hex !== undefined)
+    r.date_hex = formatHexDate(r.date_hex);
+
 
   if (r.sub_pkt_type_ma !== undefined)
     r.sub_pkt_type_ma = decode(SUB_PKT_TYPE_MA_MAP, r.sub_pkt_type_ma);
@@ -531,7 +547,7 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
 
   /* ================= CONTEXT ================= */
   const { fromDate, toDate, isDateRangeValid } = useAppContext();
-const { selectedFile } = useOutletContext();
+  const { selectedFile } = useOutletContext();
 
   const { filteredRows, setFilter, clearFilters } = useTableFilter(rows);
 
@@ -540,18 +556,22 @@ const { selectedFile } = useOutletContext();
   /* ================= COLUMN SELECTION ================= */
   const getColumns = () => {
 
-    if (tableType === "station_access") return ACCESS_COLUMNS;
-    if (tableType === "station_emergency") return EMERGENCY_COLUMNS;
+    if (tableType === "station_access")
+      return [...COMMON_HEADER_COLUMNS, ...ACCESS_COLUMNS];
+
+    if (tableType === "station_emergency")
+      return [...COMMON_HEADER_COLUMNS, ...EMERGENCY_COLUMNS];
+
 
     // default → Regular (MA)
-    if (subPacket === "ma") return MA_COLUMNS;
-    if (subPacket === "ssp") return SSP_COLUMNS;
-    if (subPacket === "gradient") return GRADIENT_COLUMNS;
-    if (subPacket === "lc") return LC_COLUMNS;
-    if (subPacket === "turnout") return TURNOUT_COLUMNS;
-    if (subPacket === "tag") return TAG_COLUMNS;
-    if (subPacket === "track") return TRACK_COLUMNS;
-    if (subPacket === "tsr") return TSR_COLUMNS;
+    if (subPacket === "ma") return [...COMMON_HEADER_COLUMNS, ...MA_COLUMNS];
+    if (subPacket === "ssp") return [...COMMON_HEADER_COLUMNS, ...SSP_COLUMNS]
+    if (subPacket === "gradient") return [...COMMON_HEADER_COLUMNS, ...GRADIENT_COLUMNS];
+    if (subPacket === "lc") return [...COMMON_HEADER_COLUMNS, ...LC_COLUMNS];
+    if (subPacket === "turnout") return [...COMMON_HEADER_COLUMNS, ...TURNOUT_COLUMNS];
+    if (subPacket === "tag") return [...COMMON_HEADER_COLUMNS, ...TAG_COLUMNS];
+    if (subPacket === "track") return [...COMMON_HEADER_COLUMNS, ...TRACK_COLUMNS];
+    if (subPacket === "tsr") return [...COMMON_HEADER_COLUMNS, ...TSR_COLUMNS];
 
     return MA_COLUMNS;
   };
@@ -559,241 +579,217 @@ const { selectedFile } = useOutletContext();
 
   const columns = getColumns();
 
+const buildCommonHeader = (packet) => ({
+  msg_type: packet.msg_type,
+  msg_length: packet.msg_length,
+  msg_sequence: packet.msg_sequence,
+  stationary_kavach_id: packet.stationary_kavach_id,
+  nms_system_id: packet.nms_system_id,
+  system_version: packet.system_version,
+  date_hex: packet.date_hex,
+  time: packet.time,
+  station_active_radio_desc: packet.station_active_radio_desc,
+});
 
 
   /* ================= FILTER ON TYPE CHANGE ================= */
   useEffect(() => {
-    if (!allRows.length) {
-      setRows([]);
-      return;
-    }
-    if (tableType !== "station_regular") {
-      setRows(allRows);
-      setPage(1);
-      clearFilters();
-      return;
-    }
+  if (!allRows.length) {
+    setRows([]);
+    return;
+  }
 
-    let flattened = [];
-
-    allRows.forEach((packet) => {
-
-      if (subPacket === "ma") {
-        flattened.push(packet);
-      }
-
-      if (subPacket === "ssp" && packet.static_speed_profile) {
-        packet.static_speed_profile.forEach((ssp) => {
-          flattened.push({
-            frame_number: packet.frame_number,
-
-            // SSP Header fields
-            sub_pkt_type_ssp: packet.sub_pkt_type_ssp,
-            sub_pkt_len_ssp: packet.sub_pkt_len_ssp,
-            lm_speed_info_cnt: packet.lm_speed_info_cnt,
-
-            // Entry fields
-            ...ssp,
-          });
-        });
-      }
-
-
-      if (subPacket === "gradient" && packet.gradient_profile) {
-        packet.gradient_profile.forEach((g) => {
-          flattened.push({
-            frame_number: packet.frame_number,
-
-            sub_pkt_type_grad: packet.sub_pkt_type_grad,
-            sub_pkt_len_grad: packet.sub_pkt_len_grad,
-            lm_grad_info_cnt: packet.lm_grad_info_cnt,
-
-            ...g,
-          });
-        });
-      }
-
-      if (subPacket === "lc" && packet.lc_gate_profile) {
-        packet.lc_gate_profile.forEach((lc) => {
-          flattened.push({
-            frame_number: packet.frame_number,
-
-            sub_pkt_type_lc: packet.sub_pkt_type_lc,
-            sub_pkt_len_lc: packet.sub_pkt_len_lc,
-            lm_lc_info_cnt: packet.lm_lc_info_cnt,
-
-            ...lc,
-          });
-        });
-      }
-      if (subPacket === "turnout" && packet.turnout_speed_profile) {
-        packet.turnout_speed_profile.forEach((t) => {
-          flattened.push({
-            frame_number: packet.frame_number,
-
-            sub_pkt_type_to: packet.sub_pkt_type_to,
-            sub_pkt_len_to: packet.sub_pkt_len_to,
-            to_cnt: packet.to_cnt,
-
-            ...t,
-          });
-        });
-      }
-
-      if (subPacket === "tag" && packet.rfid_list) {
-        packet.rfid_list.forEach((r) => {
-          flattened.push({
-            frame_number: packet.frame_number,
-
-            sub_pkt_type_tag: packet.sub_pkt_type_tag,
-            sub_pkt_len_tag: packet.sub_pkt_len_tag,
-
-            // Main fields
-            dist_dup_tag_m: packet.dist_dup_tag_m,
-            route_rfid_count: packet.route_rfid_count,
-
-            // Per RFID entry
-            dist_next_rfid_m: r.dist_next_rfid_m,
-            rfid_tag_id: r.rfid_tag_id,
-            dup_tag_dir: r.dup_tag_dir,
-
-            // Location reset section
-            abs_loc_reset: packet.abs_loc_reset,
-            loc_reset_start_dist_m: packet.loc_reset_start_dist_m,
-            adj_loco_dir: packet.adj_loco_dir,
-            abs_loc_correction_m: packet.abs_loc_correction_m,
-            adjacent_line_count: packet.adjacent_line_count,
-            adjacent_line_tins: packet.adjacent_line_tins,
-          });
-        });
-      }
-      if (subPacket === "track" && packet.track_conditions) {
-        packet.track_conditions.forEach((tc) => {
-          flattened.push({
-            frame_number: packet.frame_number,
-            track_condition_count: packet.track_condition_count,
-            sub_pkt_type_track: packet.sub_pkt_type_track,
-            sub_pkt_len_track: packet.sub_pkt_len_track,
-
-            track_condition_type: tc.track_condition_type,
-            start_dist_m: tc.start_dist_m,
-            length_m: tc.length_m,
-          });
-        });
-      }
-
-
-      if (subPacket === "tsr" && packet.tsr_list) {
-        packet.tsr_list.forEach((tsr) => {
-          flattened.push({
-            frame_number: packet.frame_number,
-            sub_pkt_type_tsr: packet.sub_pkt_type_tsr,
-            sub_pkt_len_tsr: packet.sub_pkt_len_tsr,
-            tsr_status: packet.tsr_status,
-            tsr_info_cnt: packet.tsr_info_cnt,
-            ...tsr,
-          });
-        });
-      }
-    });
-
-    setRows(flattened);
+  if (tableType !== "station_regular") {
+    setRows(allRows);
     setPage(1);
     clearFilters();
+    return;
+  }
 
-  }, [subPacket, allRows]);
+  if (subPacket === "ma") {
+    setRows(allRows);
+    setPage(1);
+    clearFilters();
+    return;
+  }
 
+  let flattened = [];
 
+  allRows.forEach((packet) => {
+
+    const header = buildCommonHeader(packet);
+
+    if (subPacket === "ssp" && packet.static_speed_profile?.length) {
+      packet.static_speed_profile.forEach((ssp) => {
+        flattened.push({
+          ...header,
+          sub_pkt_type_ssp: packet.sub_pkt_type_ssp,
+          sub_pkt_len_ssp: packet.sub_pkt_len_ssp,
+          lm_speed_info_cnt: packet.lm_speed_info_cnt,
+          ...ssp,
+        });
+      });
+    }
+
+    if (subPacket === "gradient" && packet.gradient_profile?.length) {
+      packet.gradient_profile.forEach((g) => {
+        flattened.push({
+          ...header,
+          sub_pkt_type_grad: packet.sub_pkt_type_grad,
+          sub_pkt_len_grad: packet.sub_pkt_len_grad,
+          lm_grad_info_cnt: packet.lm_grad_info_cnt,
+          ...g,
+        });
+      });
+    }
+
+    if (subPacket === "lc" && packet.lc_gate_profile?.length) {
+      packet.lc_gate_profile.forEach((lc) => {
+        flattened.push({
+          ...header,
+          sub_pkt_type_lc: packet.sub_pkt_type_lc,
+          sub_pkt_len_lc: packet.sub_pkt_len_lc,
+          lm_lc_info_cnt: packet.lm_lc_info_cnt,
+          ...lc,
+        });
+      });
+    }
+
+    if (subPacket === "turnout" && packet.turnout_speed_profile?.length) {
+      packet.turnout_speed_profile.forEach((t) => {
+        flattened.push({
+          ...header,
+          sub_pkt_type_to: packet.sub_pkt_type_to,
+          sub_pkt_len_to: packet.sub_pkt_len_to,
+          to_cnt: packet.to_cnt,
+          ...t,
+        });
+      });
+    }
+
+    if (subPacket === "tag" && packet.rfid_list?.length) {
+      packet.rfid_list.forEach((r) => {
+        flattened.push({
+          ...header,
+          sub_pkt_type_tag: packet.sub_pkt_type_tag,
+          sub_pkt_len_tag: packet.sub_pkt_len_tag,
+          dist_dup_tag_m: packet.dist_dup_tag_m,
+          route_rfid_count: packet.route_rfid_count,
+          ...r,
+        });
+      });
+    }
+
+    if (subPacket === "track" && packet.track_conditions?.length) {
+      packet.track_conditions.forEach((tc) => {
+        flattened.push({
+          ...header,
+          sub_pkt_type_track: packet.sub_pkt_type_track,
+          sub_pkt_len_track: packet.sub_pkt_len_track,
+          track_condition_count: packet.track_condition_count,
+          ...tc,
+        });
+      });
+    }
+
+    if (subPacket === "tsr" && packet.tsr_list?.length) {
+      packet.tsr_list.forEach((tsr) => {
+        flattened.push({
+          ...header,
+          sub_pkt_type_tsr: packet.sub_pkt_type_tsr,
+          sub_pkt_len_tsr: packet.sub_pkt_len_tsr,
+          tsr_status: packet.tsr_status,
+          tsr_info_cnt: packet.tsr_info_cnt,
+          ...tsr,
+        });
+      });
+    }
+
+  });
+
+  setRows(flattened);
+  setPage(1);
+  clearFilters();
+
+}, [subPacket, allRows, tableType]);
 
   useEffect(() => {
-    const hiddenByDefault = columns
-      .filter(
-        (c) =>
-          !c.key.toLowerCase().includes("sub_pkt_type") &&
-          !c.key.toLowerCase().includes("sub_pkt_len") &&
-          c.key !== "pkt_type" &&
-          c.key !== "pkt_length"
-      )
-      .map((c) => c.key);
-
-    setVisibleKeys(hiddenByDefault);
+    setVisibleKeys(columns.map((c) => c.key));
   }, [subPacket, tableType]);
+
 
 
 
 
   /* ================= DATA FETCH (TEMP) ================= */
   const generate = async () => {
-  if (!fromDate || !toDate) {
-    alert("Please select From and To date");
-    return;
-  }
-
-  if (!selectedFile) {
-    alert("Please select BIN file");
-    return;
-  }
-
-  if (!isDateRangeValid) {
-    alert("Invalid date range");
-    return;
-  }
-
-  setLoading(true);
-  setRows([]);
-  clearFilters();
-
-  try {
-    const normalizeDate = (v) =>
-      v && v.length === 16 ? `${v}:00` : v;
-
-    let endpoint = "regular";
-
-    if (tableType === "station_access") endpoint = "access";
-    if (tableType === "station_emergency") endpoint = "emergency";
-
-    const API_BASE = import.meta.env.VITE_API_BASE_URL;
-
-    const fileBuffer = await selectedFile.arrayBuffer();
-
-    const res = await fetch(
-  `${API_BASE}/api/stationary/${endpoint}/by-date?from=${encodeURIComponent(normalizeDate(fromDate))}&to=${encodeURIComponent(normalizeDate(toDate))}`,
-  {
-    method: "POST",
-    body: fileBuffer,
-    headers: {
-      "Content-Type": "application/octet-stream",
-    },
-  }
-);
-
-
-    const json = await res.json();
-
-    if (json.success === false) {
-      throw new Error(json.error || "Backend error");
+    if (!fromDate || !toDate) {
+      alert("Please select From and To date");
+      return;
     }
 
-    const mapped = (json.data || []).map((r, idx) => {
-      const dt = new Date(r.event_time);
-      return {
-        id: idx + 1,
-        date: dt.toISOString().slice(0, 10),
-        time: dt.toTimeString().slice(0, 8),
-        ...r,
-      };
-    });
+    if (!selectedFile) {
+      alert("Please select BIN file");
+      return;
+    }
 
-    setAllRows(mapped);
-    setPage(1);
+    if (!isDateRangeValid) {
+      alert("Invalid date range");
+      return;
+    }
 
-  } catch (err) {
-    console.error("Stationary Kavach Info fetch error:", err);
-    alert(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
+    setLoading(true);
+    setRows([]);
+    clearFilters();
+
+    try {
+      const normalizeDate = (v) =>
+        v && v.length === 16 ? `${v}:00` : v;
+
+      let endpoint = "regular";
+
+      if (tableType === "station_access") endpoint = "access";
+      if (tableType === "station_emergency") endpoint = "emergency";
+
+      const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+      const fileBuffer = await selectedFile.arrayBuffer();
+
+      const res = await fetch(
+        `${API_BASE}/api/stationary/${endpoint}/by-date?from=${encodeURIComponent(normalizeDate(fromDate))}&to=${encodeURIComponent(normalizeDate(toDate))}`,
+        {
+          method: "POST",
+          body: fileBuffer,
+          headers: {
+            "Content-Type": "application/octet-stream",
+          },
+        }
+      );
+
+
+      const json = await res.json();
+
+      if (json.success === false) {
+        throw new Error(json.error || "Backend error");
+      }
+
+      const mapped = (json.data || []).map((r, idx) => ({
+  id: idx + 1,
+  ...r,
+}));
+
+
+      setAllRows(mapped);
+      setRows(mapped);
+      setPage(1);
+
+    } catch (err) {
+      console.error("Stationary Kavach Info fetch error:", err);
+      alert(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   const clear = () => {
