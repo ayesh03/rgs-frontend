@@ -779,9 +779,6 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
   }, [subPacket, tableType]);
 
 
-
-
-
   /* ================= DATA FETCH (TEMP) ================= */
   const generate = async () => {
     if (!fromDate || !toDate) {
@@ -913,42 +910,42 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
         </Typography>
       </Stack>
       {/* TOP CONTROL ROW */}
-<Stack
-  direction="row"
-  alignItems="center"
-  justifyContent="space-between"
-  sx={{ mb: 1 }}
->
-  {/* LEFT SIDE → Only for Regular */}
-  {tableType === "station_regular" ? (
-    <Select
-      size="small"
-      value={subPacket}
-      onChange={(e) => setSubPacket(e.target.value)}
-      sx={{ minWidth: 220 }}
-    >
-      <MenuItem value="ma">Movement Authority</MenuItem>
-      <MenuItem value="ssp">Static Speed Profile</MenuItem>
-      <MenuItem value="gradient">Gradient</MenuItem>
-      <MenuItem value="lc">LC Gate</MenuItem>
-      <MenuItem value="turnout">Turnout</MenuItem>
-      <MenuItem value="tag">Tag Linking</MenuItem>
-      <MenuItem value="track">Track Condition</MenuItem>
-      <MenuItem value="tsr">TSR</MenuItem>
-    </Select>
-  ) : (
-    <Box />  // empty placeholder to keep spacing balanced
-  )}
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent="space-between"
+        sx={{ mb: 1 }}
+      >
+        {/* LEFT SIDE → Only for Regular */}
+        {tableType === "station_regular" ? (
+          <Select
+            size="small"
+            value={subPacket}
+            onChange={(e) => setSubPacket(e.target.value)}
+            sx={{ minWidth: 220 }}
+          >
+            <MenuItem value="ma">Movement Authority</MenuItem>
+            <MenuItem value="ssp">Static Speed Profile</MenuItem>
+            <MenuItem value="gradient">Gradient</MenuItem>
+            <MenuItem value="lc">LC Gate</MenuItem>
+            <MenuItem value="turnout">Turnout</MenuItem>
+            <MenuItem value="tag">Tag Linking</MenuItem>
+            <MenuItem value="track">Track Condition</MenuItem>
+            <MenuItem value="tsr">TSR</MenuItem>
+          </Select>
+        ) : (
+          <Box />  // empty placeholder to keep spacing balanced
+        )}
 
-  {/* RIGHT SIDE → For ALL TYPES */}
-  {filteredRows.length > 0 && (
-    <RowsPerPageControl
-      rowsPerPage={rowsPerPage}
-      setRowsPerPage={setRowsPerPage}
-      setPage={setPage}
-    />
-  )}
-</Stack>
+        {/* RIGHT SIDE → For ALL TYPES */}
+        {filteredRows.length > 0 && (
+          <RowsPerPageControl
+            rowsPerPage={rowsPerPage}
+            setRowsPerPage={setRowsPerPage}
+            setPage={setPage}
+          />
+        )}
+      </Stack>
 
 
       <AnimatePresence>
@@ -956,7 +953,7 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
           <LinearProgress />
         ) : (
           <Card variant="outlined">
-            
+
             <CardContent sx={{ p: 0 }}>
               {filteredRows.length ? (
                 <StationaryKavachTable

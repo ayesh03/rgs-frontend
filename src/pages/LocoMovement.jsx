@@ -207,7 +207,7 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
           <Typography fontWeight={900} fontSize="0.75rem">
             LOCO MOVEMENT
           </Typography>
-          
+
         </Stack>
         {/* <Tooltip title="Select Columns">
           <IconButton size="small" onClick={() => setColumnDialogOpen(true)} disabled={!rows.length}>
@@ -215,12 +215,12 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
           </IconButton>
         </Tooltip> */}
         {filteredRows.length > 0 && (
-              <RowsPerPageControl
-                rowsPerPage={rowsPerPage}
-                setRowsPerPage={setRowsPerPage}
-                setPage={setPage}
-              />
-            )}
+          <RowsPerPageControl
+            rowsPerPage={rowsPerPage}
+            setRowsPerPage={setRowsPerPage}
+            setPage={setPage}
+          />
+        )}
       </Box>
 
       <AnimatePresence>

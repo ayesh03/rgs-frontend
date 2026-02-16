@@ -38,7 +38,6 @@ const Interlocking = forwardRef((props, ref) => {
 
 
   const [hasGenerated, setHasGenerated] = useState(false);
-
   const { fromDate, toDate, logDir, isDateRangeValid } = useAppContext();
   const { selectedFile } = useOutletContext();
 
@@ -55,7 +54,6 @@ const Interlocking = forwardRef((props, ref) => {
   ];
 
   const [visibleKeys, setVisibleKeys] = useState(DEFAULT_VISIBLE);
-
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -170,7 +168,7 @@ const Interlocking = forwardRef((props, ref) => {
         id: idx + 1,
         ...r,
         relayId: r.relay,
-        date: r.date && r.time ? `${r.date} ${r.time}` : r.date,
+        date: r.date  ? `${r.date} ` : r.date,
       }));
 
 
@@ -218,8 +216,6 @@ const Interlocking = forwardRef((props, ref) => {
     setRows(filtered);
     setPage(1);
   }, [relay, statusFilter, allRows]);
-
-
 
   /* ===================== CLEAR ===================== */
   const clear = () => {

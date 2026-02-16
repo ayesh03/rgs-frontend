@@ -11,7 +11,7 @@ export const INTERLOCKING_COLUMNS = [
   { key: "system_version", label: "System Version" },
 
   { key: "date", label: "Date" },
-  { key: "time", label: "Time" },
+  // { key: "time", label: "Time" },
   { key: "frameNo", label: "Frame No" },
   { key: "station", label: "Station" },
   { key: "relay", label: "Relay ID" },
