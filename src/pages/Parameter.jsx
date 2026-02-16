@@ -14,6 +14,8 @@ import {
 } from "@mui/material";
 import { forwardRef, useImperativeHandle, useState } from "react";
 import { useAppContext } from "../context/AppContext";
+import RowsPerPageControl from "../components/RowsPerPageControl";
+import PaginationControls from "../components/PaginationControls";
 
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -31,6 +33,9 @@ const ParametersPage = forwardRef(({ onStageChange }, ref) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showTable, setShowTable] = useState(false);
+  const [page, setPage] = useState(1);
+const [rowsPerPage, setRowsPerPage] = useState(10);
+
 
   const normalizeDate = (d) => d?.split("T")[0];
 
@@ -79,6 +84,7 @@ const ParametersPage = forwardRef(({ onStageChange }, ref) => {
 
       setRows(json.rows || []);
       setShowTable(true);
+      setPage(1);
       onStageChange?.("PREVIEW"); // enable Save / Print
     } catch (err) {
       console.error("[PARAMETERS REPORT]", err);
@@ -94,6 +100,7 @@ const ParametersPage = forwardRef(({ onStageChange }, ref) => {
     setRows([]);
     setShowTable(false);
     setError("");
+    setPage(1);
     onStageChange?.("FILTER"); // disable exports again
   }
 
@@ -190,49 +197,94 @@ const ParametersPage = forwardRef(({ onStageChange }, ref) => {
       )}
 
       {showTable &&
-        Object.keys(groupedByStation).map((station) => (
-          <Card key={station} sx={{ mb: 3, borderRadius: 3 }}>
-            <CardContent>
-              <Typography variant="h6" fontWeight={800} mb={2}>
-                Station : {station}
-              </Typography>
+  Object.keys(groupedByStation).map((station) => {
 
-              <TableContainer
-                sx={{
-                  maxHeight: 360,
-                  border: "1px solid #eee",
-                  borderRadius: 1,
-                }}
-              >
-                <Table stickyHeader size="small">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell sx={{ fontWeight: "bold" }}>
-                        Parameter
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: "bold" }}>
-                        Value
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: "bold" }}>
-                        Status
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
+    const stationRows = groupedByStation[station];
 
-                  <TableBody>
-                    {groupedByStation[station].map((row, idx) => (
-                      <TableRow key={idx}>
-                        <TableCell>{row.parameter}</TableCell>
-                        <TableCell>{row.value}</TableCell>
-                        <TableCell>{row.status}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </CardContent>
-          </Card>
-        ))}
+    const totalPages = Math.ceil(stationRows.length / rowsPerPage);
+
+    const paginatedRows = stationRows.slice(
+      (page - 1) * rowsPerPage,
+      page * rowsPerPage
+    );
+
+    return (
+      <Card key={station} sx={{ mb: 3, borderRadius: 3 }}>
+        <CardContent>
+
+          {/* HEADER + DROPDOWN SAME LINE */}
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            mb={2}
+          >
+            <Typography variant="h6" fontWeight={800}>
+              Station : {station}
+            </Typography>
+
+            <RowsPerPageControl
+              rowsPerPage={rowsPerPage}
+              setRowsPerPage={setRowsPerPage}
+              setPage={setPage}
+            />
+          </Box>
+
+          <TableContainer
+            sx={{
+              maxHeight: 360,
+              border: "1px solid #eee",
+              borderRadius: 1,
+            }}
+          >
+            <Table stickyHeader size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: "bold" }}>
+                    Parameter
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>
+                    Value
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>
+                    Status
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+
+              <TableBody>
+                {paginatedRows.map((row, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell>{row.parameter}</TableCell>
+                    <TableCell>{row.value}</TableCell>
+                    <TableCell>{row.status}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+
+          {/* PAGINATION CONTROLS */}
+          <Box
+            sx={{
+              p: 2,
+              display: "flex",
+              justifyContent: "center",
+              borderTop: "1px solid #eee",
+            }}
+          >
+            <PaginationControls
+              page={page}
+              setPage={setPage}
+              totalPages={totalPages}
+            />
+          </Box>
+
+        </CardContent>
+      </Card>
+    );
+  })}
+
     </Box>
   );
 });

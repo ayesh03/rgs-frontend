@@ -86,10 +86,6 @@ export default function Loco() {
           }
         }}
 
-
-
-
-
         onPrint={() => {
           const rows = activeTabContext.ref.current?.getFilteredRows();
           const cols = activeTabContext.ref.current?.getVisibleColumns?.();

@@ -10,116 +10,98 @@ import {
 import { useState, forwardRef, useImperativeHandle, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import EngineeringIcon from "@mui/icons-material/Engineering";
-import { Select, MenuItem } from "@mui/material";
 import { useOutletContext } from "react-router-dom";
+import RowsPerPageControl from "../components/RowsPerPageControl";
 
 import LocoFaultsTable from "../components/LocoFaultsTable";
 import PaginationControls from "../components/PaginationControls";
 import NoResult from "../components/NoResult";
 import ColumnFilterDialog from "../components/ColumnFilterDialog";
-import {
-  formatDateTime,
-  decodePacketType,
-  decodeSubsystemType,
-  decodeSystemVersion,
-  decodeFaultType,
-} from "../utils/faultFormatter";
-import {
-  FAULT_ALL_COLUMNS,
-} from "../constants/faultColumns";
 
+import { FAULT_ALL_COLUMNS } from "../constants/faultColumns";
 import { useAppContext } from "../context/AppContext";
 
-const LocoFaults = forwardRef((props, ref) => {
-  const { fromDate, toDate, isDateRangeValid, logDir } = useAppContext();
+const LocoFaults = forwardRef(({ originType }, ref) => {
+  const { fromDate, toDate, isDateRangeValid } = useAppContext();
+  const { selectedFile } = useOutletContext();
 
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState([]);
   const [page, setPage] = useState(1);
-  const [originFilter, setOriginFilter] = useState("STATION");
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
-const { selectedFile } = useOutletContext();
-
-  const rowsPerPage = 10;
+  // const rowsPerPage = 10;
 
   const [columnDialogOpen, setColumnDialogOpen] = useState(false);
   const [visibleKeys, setVisibleKeys] = useState(
     FAULT_ALL_COLUMNS.map(c => c.key)
   );
 
-
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
   /* ===================== GENERATE ===================== */
   const generate = async () => {
-  if (!isDateRangeValid) {
-    alert("Invalid date range");
-    return;
-  }
-
- if (!selectedFile) {
-  alert("Please select BIN file");
-  return;
-}
-
-  setLoading(true);
-  setRows([]);
-
-  try {
-    const normalize = (v) =>
-      v && v.length === 16 ? `${v}:00` : v;
-
-    const from = encodeURIComponent(normalize(fromDate));
-    const to = encodeURIComponent(normalize(toDate));
-    
-
-    const API_BASE = import.meta.env.VITE_API_BASE_URL;
-
-   
-
-const fileBuffer = await selectedFile.arrayBuffer();
-
-const res = await fetch(
-  `${API_BASE}/api/loco-faults/by-date?from=${from}&to=${to}`,
-  {
-    method: "POST",
-    body: fileBuffer,
-    headers: {
-      "Content-Type": "application/octet-stream",
-    },
-  }
-);
-
-
-    const json = await res.json();
-
-    // Some Qt APIs may not send success flag
-    if (json.success === false) {
-      throw new Error(json.error || "Backend error");
+    if (!isDateRangeValid) {
+      alert("Invalid date range");
+      return;
     }
 
-    const mappedRows = (json.data || []).map((r, idx) => {
-      const dt = new Date(r.event_time);
+    if (!selectedFile) {
+      alert("Please select BIN file");
+      return;
+    }
 
-      return {
-        id: idx + 1,
-        date: dt.toISOString().slice(0, 10),
-        time: dt.toTimeString().slice(0, 8),
-        ...r,
-      };
-    });
-
-    setRows(mappedRows);
-    setPage(1);
-
-  } catch (err) {
-    console.error("LocoFaults API error:", err);
-    alert(err.message);
+    setLoading(true);
     setRows([]);
-  } finally {
-    setLoading(false);
-  }
-};
+
+    try {
+      const normalize = (v) =>
+        v && v.length === 16 ? `${v}:00` : v;
+
+      const from = encodeURIComponent(normalize(fromDate));
+      const to = encodeURIComponent(normalize(toDate));
+
+      const fileBuffer = await selectedFile.arrayBuffer();
+
+      const res = await fetch(
+        `${API_BASE}/api/loco-faults/by-date?from=${from}&to=${to}`,
+        {
+          method: "POST",
+          body: fileBuffer,
+          headers: {
+            "Content-Type": "application/octet-stream",
+          },
+        }
+      );
+
+      const json = await res.json();
+
+      if (json.success === false) {
+        throw new Error(json.error || "Backend error");
+      }
+
+      const mappedRows = (json.data || []).map((r, idx) => {
+        const dt = new Date(r.event_time);
+
+        return {
+          id: idx + 1,
+          date: dt.toISOString().slice(0, 10),
+          time: dt.toTimeString().slice(0, 8),
+          ...r,
+        };
+      });
+
+      setRows(mappedRows);
+      setPage(1);
+
+    } catch (err) {
+      console.error("LocoFaults API error:", err);
+      alert(err.message);
+      setRows([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   /* ===================== CLEAR ===================== */
   const clear = () => {
@@ -131,18 +113,16 @@ const res = await fetch(
   useImperativeHandle(ref, () => ({
     generate,
     clear,
-    getFilteredRows: () => rows,
+    getFilteredRows: () => filteredRows,
     getAllRows: () => rows,
     getVisibleColumns: () =>
       FAULT_ALL_COLUMNS.filter(c => visibleKeys.includes(c.key)),
     openColumnDialog: () => setColumnDialogOpen(true),
   }));
 
-  /* ===================== PAGINATION ===================== */
+  /* ===================== FILTERING (TAB BASED) ===================== */
   const filteredRows =
-    originFilter === "ALL"
-      ? rows
-      : rows.filter(r => r.fault_origin === originFilter);
+    rows.filter(r => r.fault_origin === originType);
 
   const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
 
@@ -154,44 +134,45 @@ const res = await fetch(
   useEffect(() => {
     setVisibleKeys(FAULT_ALL_COLUMNS.map(c => c.key));
   }, []);
+
   return (
     <Box p={2}>
-      {/* ===== TITLE ===== */}
       <motion.div
         initial={{ opacity: 0, x: -15 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <Stack direction="row" alignItems="center" spacing={1} mb={1.5}>
-          <EngineeringIcon color="primary" sx={{ fontSize: 28 }} />
-          <Typography variant="h5" fontWeight={800}>
-            Faults Report
-          </Typography>
-          <Select
-            size="small"
-            value={originFilter}
-            onChange={(e) => {
-              setOriginFilter(e.target.value);
-              setPage(1);
-            }}
-          >
-            <MenuItem value="STATION">Station</MenuItem>
-            <MenuItem value="LOCO">Loco</MenuItem>
-          </Select>
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          mb={1.5}
+        >
+          {/* LEFT SIDE → Heading */}
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <EngineeringIcon color="primary" sx={{ fontSize: 28 }} />
+            <Typography variant="h5" fontWeight={800}>
+              {originType === "STATION"
+                ? "Station Faults Report"
+                : "Loco Faults Report"}
+            </Typography>
+          </Stack>
+
+          {/* RIGHT SIDE → Rows Dropdown */}
+          {filteredRows.length > 0 && (
+            <RowsPerPageControl
+              rowsPerPage={rowsPerPage}
+              setRowsPerPage={setRowsPerPage}
+              setPage={setPage}
+            />
+          )}
         </Stack>
+
       </motion.div>
-      <Stack direction="row" spacing={2} mb={2}>
-      </Stack>
 
-
-      {/* ===== RESULT AREA ===== */}
       <AnimatePresence mode="wait">
         {loading ? (
-          <motion.div
-            key="loading"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
+          <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <Box sx={{ width: "100%", mb: 2 }}>
               <LinearProgress sx={{ height: 6, borderRadius: 3 }} />
               <Typography
@@ -257,7 +238,6 @@ const res = await fetch(
         )}
       </AnimatePresence>
 
-      {/* ===== COLUMN DIALOG ===== */}
       <ColumnFilterDialog
         open={columnDialogOpen}
         column="Columns"

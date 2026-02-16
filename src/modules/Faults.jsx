@@ -4,32 +4,23 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import ReportHeader from "../components/ReportHeader";
 import LocoFaults from "../pages/LocoFaults";
-import GPRSFaults from "../pages/GPRSFaults";
-import RFCOMFaults from "../pages/RFCOMFaults";
 import FaultSummary from "../pages/FaultSummary";
 
 import useExport from "../hooks/useExport";
-
-
 
 export default function Faults() {
   const [tab, setTab] = useState(0);
   const { exportExcel, exportPDF } = useExport();
 
-  // Refs for Imperative Handle calls (Generate, Clear, etc.)
+  const stationRef = useRef();
   const locoRef = useRef();
-  const gprsRef = useRef();
-  const rfcomRef = useRef();
 
   const [stage, setStage] = useState("FILTER");
-  const isLocoFaults = tab === 0;
 
-
-  // Mapping tabs to their respective refs for cleaner access
+  // Correct tab → ref mapping
   const tabRefs = {
-    0: locoRef,
-    1: gprsRef,
-    2: rfcomRef,
+    0: stationRef,
+    1: locoRef,
   };
 
   const handleAction = useCallback(async (actionType) => {
@@ -48,21 +39,15 @@ export default function Faults() {
     }
   }, [tab]);
 
-
-
   return (
     <Box sx={{ p: { xs: 1, md: 1 } }}>
-      {/* ===== COMMAND CENTER HEADER ===== */}
       <ReportHeader
         stage={stage}
         showTableType={false}
-        showException={!isLocoFaults}
+        showException={false}
         onGenerate={() => handleAction("generate")}
         onClear={() => handleAction("clear")}
-
         onColumns={() => tabRefs[tab]?.current?.openColumnDialog?.()}
-
-
 
         onSave={() => {
           const rows = tabRefs[tab]?.current?.getFilteredRows?.();
@@ -71,9 +56,8 @@ export default function Faults() {
             exportExcel(
               rows,
               cols,
-              tab === 0 ? "fault_loco" : "fault_station"
+              tab === 0 ? "station_faults" : "loco_faults"
             );
-
         }}
 
         onSaveAll={() => {
@@ -83,10 +67,10 @@ export default function Faults() {
             exportExcel(
               rows,
               cols,
-              tab === 0 ? "fault_station":"fault_loco" 
+              tab === 0 ? "station_faults_all" : "loco_faults_all"
             );
-
         }}
+
         onPrint={() => {
           const rows = tabRefs[tab]?.current?.getFilteredRows?.();
           const cols = tabRefs[tab]?.current?.getVisibleColumns?.();
@@ -94,23 +78,19 @@ export default function Faults() {
             exportPDF(
               rows,
               cols,
-              tab === 0 ?  "fault_station" : "fault_loco" 
+              tab === 0 ? "station_faults" : "loco_faults"
             );
-
         }}
-
       />
 
-
-      {/* ===== NAVIGATION TABS ===== */}
       <Paper
         elevation={0}
         sx={{
           borderRadius: 2,
           mb: 1,
-          bgcolor: alpha('#f1f5f9', 0.5),
-          border: '1px solid',
-          borderColor: 'divider'
+          bgcolor: alpha("#f1f5f9", 0.5),
+          border: "1px solid",
+          borderColor: "divider",
         }}
       >
         <Tabs
@@ -119,18 +99,16 @@ export default function Faults() {
           variant="scrollable"
           scrollButtons="auto"
           sx={{
-            '& .MuiTab-root': { fontWeight: 'bold', px: 3 },
-            '& .Mui-selected': { color: 'primary.main' },
+            "& .MuiTab-root": { fontWeight: "bold", px: 3 },
+            "& .Mui-selected": { color: "primary.main" },
           }}
         >
-          <Tab label="Faults" />
-          {/* <Tab label="GPRS Faults" /> */}
-          <Tab label="RFCOM Faults" />
+          <Tab label="Station Faults" />
+          <Tab label="Loco Faults" />
           <Tab label="Fault Summary" />
         </Tabs>
       </Paper>
 
-      {/* ===== TAB CONTENT WITH ANIMATION ===== */}
       <Box sx={{ mt: 1 }}>
         <AnimatePresence mode="wait">
           <motion.div
@@ -140,10 +118,13 @@ export default function Faults() {
             exit={{ opacity: 0, x: -10 }}
             transition={{ duration: 0.2 }}
           >
-            {tab === 0 && <LocoFaults ref={locoRef} />}
-            {tab === 1 && <GPRSFaults ref={gprsRef} />}
-            {tab === 2 && <RFCOMFaults ref={rfcomRef} />}
-            {tab === 3 && <FaultSummary />}
+            {tab === 0 && (
+              <LocoFaults ref={stationRef} originType="STATION" />
+            )}
+            {tab === 1 && (
+              <LocoFaults ref={locoRef} originType="LOCO" />
+            )}
+            {tab === 2 && <FaultSummary />}
           </motion.div>
         </AnimatePresence>
       </Box>

@@ -75,6 +75,7 @@ export default function MainLayout() {
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
+      second: '2-digit',
       hour12: false
     });
   };
@@ -117,14 +118,14 @@ export default function MainLayout() {
     { label: "Graphs", path: "graphs" },
     { label: "Track Profile Graph", path: "track-profile/graph" },
     // { label: "Track Profile", path: "track-profile" },
-    { label: "Parameters", path: "parameters" },
+    // { label: "Parameters", path: "parameters" },
     // { label: "TSR", path: "tsr" },
-    { label: "Radio", path: "radio" }
+    // { label: "Radio", path: "radio" }
   ];
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", width: "100%", minHeight: "100vh", background: "#f4f7fa" }}>
-      
+
       <AppBar position="sticky" elevation={0} sx={{ background: "rgba(255, 255, 255, 0.95)", backdropFilter: "blur(12px)", color: "#1a2027", borderBottom: "1px solid rgba(0, 0, 0, 0.05)" }}>
         <Toolbar sx={{ justifyContent: "space-between", minHeight: "56px !important", px: 2 }}>
           {/* LOGO SECTION */}
@@ -137,13 +138,13 @@ export default function MainLayout() {
 
           {/* FILTER BAR SECTION */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2, p: 0.5, px: 1.5, borderRadius: 2, bgcolor: "rgba(0,0,0,0.04)" }}>
-            
+
             {/* FROM PICKER */}
             <Stack direction="row" alignItems="center" spacing={1}>
               <Typography variant="caption" sx={{ fontWeight: 700 }}>From:</Typography>
               <Button
                 id="from-button"
-                size="small" variant="outlined" 
+                size="small" variant="outlined"
                 onClick={handleFromOpen}
                 startIcon={<CalendarTodayIcon sx={{ fontSize: 14 }} />}
                 sx={{ textTransform: "none", fontSize: "0.75rem", minWidth: 160, color: "#333", borderColor: "#ccc" }}
@@ -160,8 +161,27 @@ export default function MainLayout() {
                 <Box sx={{ p: 2, minWidth: 250 }}>
                   <Typography variant="subtitle2" sx={{ mb: 1.5 }}>Select Start Date/Time</Typography>
                   <Stack spacing={2}>
-                    <TextField label="Date" type="date" size="small" fullWidth value={tempFromDate} onChange={(e) => setTempFromDate(e.target.value)} InputLabelProps={{ shrink: true }} />
-                    <TextField label="Time" type="time" size="small" fullWidth value={tempFromTime} onChange={(e) => setTempFromTime(e.target.value)} InputLabelProps={{ shrink: true }} />
+                    <TextField
+                      label="Date"
+                      type="date"
+                      size="small"
+                      fullWidth
+                      value={tempFromDate}
+                      onChange={(e) => setTempFromDate(e.target.value)}
+                      InputLabelProps={{ shrink: true }}
+                    />
+
+                    <TextField
+                      label="Time"
+                      type="time"
+                      size="small"
+                      fullWidth
+                      value={tempFromTime}
+                      onChange={(e) => setTempFromTime(e.target.value)}
+                      inputProps={{ step: 1 }}
+                      InputLabelProps={{ shrink: true }}
+                    />
+
                     <Stack direction="row" spacing={1} justifyContent="flex-end">
                       <Button size="small" onClick={handleFromClose}>Cancel</Button>
                       <Button size="small" variant="contained" onClick={handleFromApply}>Apply</Button>
@@ -176,7 +196,7 @@ export default function MainLayout() {
               <Typography variant="caption" sx={{ fontWeight: 700 }}>To:</Typography>
               <Button
                 id="to-button"
-                size="small" variant="outlined" 
+                size="small" variant="outlined"
                 onClick={handleToOpen}
                 startIcon={<CalendarTodayIcon sx={{ fontSize: 14 }} />}
                 sx={{ textTransform: "none", fontSize: "0.75rem", minWidth: 160, color: "#333", borderColor: "#ccc" }}
@@ -194,7 +214,17 @@ export default function MainLayout() {
                   <Typography variant="subtitle2" sx={{ mb: 1.5 }}>Select End Date/Time</Typography>
                   <Stack spacing={2}>
                     <TextField label="Date" type="date" size="small" fullWidth value={tempToDate} onChange={(e) => setTempToDate(e.target.value)} InputLabelProps={{ shrink: true }} />
-                    <TextField label="Time" type="time" size="small" fullWidth value={tempToTime} onChange={(e) => setTempToTime(e.target.value)} InputLabelProps={{ shrink: true }} />
+                    <TextField
+                      label="Time"
+                      type="time"
+                      size="small"
+                      fullWidth
+                      value={tempToTime}
+                      onChange={(e) => setTempToTime(e.target.value)}
+                      inputProps={{ step: 1 }}
+                      InputLabelProps={{ shrink: true }}
+                    />
+
                     <Stack direction="row" spacing={1} justifyContent="flex-end">
                       <Button size="small" onClick={handleToClose}>Cancel</Button>
                       <Button size="small" variant="contained" onClick={handleToApply}>Apply</Button>
@@ -205,25 +235,25 @@ export default function MainLayout() {
             </Stack>
 
             {/* FILE UPLOAD */}
-<Stack direction="row" alignItems="center" spacing={1}>
-  <Typography variant="caption" sx={{ fontWeight: 700 }}>BIN:</Typography>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Typography variant="caption" sx={{ fontWeight: 700 }}>BIN:</Typography>
 
-  <Button
-    component="label"
-    size="small"
-    variant="outlined"
-    startIcon={<FolderOpenIcon sx={{ fontSize: 14 }} />}
-    sx={{ textTransform: "none", fontSize: "0.75rem" }}
-  >
-    {selectedFile ? selectedFile.name : "Select File"}
-    <input
-      type="file"
-      hidden
-      accept=".bin"
-      onChange={(e) => setSelectedFile(e.target.files[0])}
-    />
-  </Button>
-</Stack>
+              <Button
+                component="label"
+                size="small"
+                variant="outlined"
+                startIcon={<FolderOpenIcon sx={{ fontSize: 14 }} />}
+                sx={{ textTransform: "none", fontSize: "0.75rem" }}
+              >
+                {selectedFile ? selectedFile.name : "Select File"}
+                <input
+                  type="file"
+                  hidden
+                  accept=".bin"
+                  onChange={(e) => setSelectedFile(e.target.files[0])}
+                />
+              </Button>
+            </Stack>
 
 
             <Divider orientation="vertical" flexItem sx={{ height: 24, my: 'auto' }} />
@@ -241,12 +271,12 @@ export default function MainLayout() {
           {navItems.map((item) => {
             const isActive = location.pathname.endsWith(item.path);
             return (
-              <Button 
-                key={item.path} 
-                component={Link} 
-                to={item.path} 
-                sx={{ 
-                  px: 1.5, py: 0.5, textTransform: "none", fontSize: "0.8rem", 
+              <Button
+                key={item.path}
+                component={Link}
+                to={item.path}
+                sx={{
+                  px: 1.5, py: 0.5, textTransform: "none", fontSize: "0.8rem",
                   fontWeight: isActive ? 700 : 500,
                   color: isActive ? "#fff" : "#555",
                   bgcolor: isActive ? "#0b4dbb" : "transparent",

@@ -11,8 +11,8 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { forwardRef, useImperativeHandle, useState, useEffect } from "react";
 import { useAppContext } from "../context/AppContext";
-import HubIcon from "@mui/icons-material/Hub";
 import { useOutletContext } from "react-router-dom";
+import RowsPerPageControl from "../components/RowsPerPageControl";
 
 import PaginationControls from "../components/PaginationControls";
 import NoResult from "../components/NoResult";
@@ -30,12 +30,13 @@ const Interlocking = forwardRef((props, ref) => {
   const [relayOptions, setRelayOptions] = useState([]);
   const [statusFilter, setStatusFilter] = useState("ALL");
 
-
-
   const [allRows, setAllRows] = useState([]);
   const [rows, setRows] = useState([]);
 
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [page, setPage] = useState(1);
+
+
   const [hasGenerated, setHasGenerated] = useState(false);
 
   const { fromDate, toDate, logDir, isDateRangeValid } = useAppContext();
@@ -44,16 +45,16 @@ const Interlocking = forwardRef((props, ref) => {
 
   const [columnDialogOpen, setColumnDialogOpen] = useState(false);
   const DEFAULT_VISIBLE = [
-  "date",
-  "time",
-  "frameNo",
-  "station",
-  "relay",
-  "serial",
-  "status"
-];
+    "date",
+    "time",
+    "frameNo",
+    "station",
+    "relay",
+    "serial",
+    "status"
+  ];
 
-const [visibleKeys, setVisibleKeys] = useState(DEFAULT_VISIBLE);
+  const [visibleKeys, setVisibleKeys] = useState(DEFAULT_VISIBLE);
 
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
@@ -86,51 +87,45 @@ const [visibleKeys, setVisibleKeys] = useState(DEFAULT_VISIBLE);
     }
   };
 
-
   useEffect(() => {
-  fetchStations();
-}, [fromDate, toDate, selectedFile]);
-
-
-
- useEffect(() => {
-  if (!station || !fromDate || !toDate || !selectedFile) return;
-
-
+    fetchStations();
+  }, [fromDate, toDate, selectedFile]);
+  useEffect(() => {
+    if (!station || !fromDate || !toDate || !selectedFile) return;
 
     const fetchRelays = async () => {
-  try {
-    const normalize = v => (v.length === 16 ? `${v}:00` : v);
-    const from = encodeURIComponent(normalize(fromDate));
-    const to = encodeURIComponent(normalize(toDate));
+      try {
+        const normalize = v => (v.length === 16 ? `${v}:00` : v);
+        const from = encodeURIComponent(normalize(fromDate));
+        const to = encodeURIComponent(normalize(toDate));
 
-    const res = await fetch(
-      `${API_BASE}/api/interlocking/report` +
-      `?from=${from}&to=${to}` +
-      `&station=${station}` +
-      `&page=1`,
-      {
-        method: "POST",     
-       body: selectedFile
+        const res = await fetch(
+          `${API_BASE}/api/interlocking/report` +
+          `?from=${from}&to=${to}` +
+          `&station=${station}` +
+          `&page=1`,
+          {
+            method: "POST",
+            body: selectedFile
+          }
+        );
+
+        const json = await res.json();
+        if (!json.success) return;
+
+        const relays = [
+          ...new Set((json.data || []).map(r => r.relay))
+        ];
+
+        setRelayOptions(relays);
+        setRelay("ALL");
+        setRows([]);
+        setHasGenerated(false);
+
+      } catch (e) {
+        console.error("Relay fetch failed", e);
       }
-    );
-
-    const json = await res.json();
-    if (!json.success) return;
-
-    const relays = [
-      ...new Set((json.data || []).map(r => r.relay))
-    ];
-
-    setRelayOptions(relays);
-    setRelay("ALL");
-    setRows([]);
-    setHasGenerated(false);
-
-  } catch (e) {
-    console.error("Relay fetch failed", e);
-  }
-};
+    };
 
 
     fetchRelays();
@@ -167,7 +162,6 @@ const [visibleKeys, setVisibleKeys] = useState(DEFAULT_VISIBLE);
 
         }
       );
-
 
       const json = await res.json();
       if (!json.success) throw new Error(json.error);
@@ -250,7 +244,6 @@ const [visibleKeys, setVisibleKeys] = useState(DEFAULT_VISIBLE);
   }));
 
   /* ===================== PAGINATION ===================== */
-  const rowsPerPage = 10;
   const totalPages = Math.ceil(rows.length / rowsPerPage);
   const paginatedRows = rows.slice(
     (page - 1) * rowsPerPage,
@@ -266,73 +259,80 @@ const [visibleKeys, setVisibleKeys] = useState(DEFAULT_VISIBLE);
 
   /* ===================== UI ===================== */
   return (
-    <Box p={3} component={motion.div} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <Stack direction="row" alignItems="center" spacing={2} mb={3}>
-        <HubIcon color="primary" sx={{ fontSize: 32 }} />
-        <Typography variant="h4" fontWeight="800">
-          Interlocking Report
-        </Typography>
-      </Stack>
+    <Box p={1} component={motion.div} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
 
       {/* ===== FILTER CARD ===== */}
-      <Card sx={{ mb: 3, borderRadius: 3 }}>
-        <CardContent>
-          <Stack direction="row" spacing={2} alignItems="center">
-            <Select
-              size="small"
-              value={station}
-              onChange={(e) => setStation(e.target.value)}
-              displayEmpty
-              sx={{ width: 240 }}
-            >
-              <MenuItem value="" disabled>
-                Select Station
+      <Box
+        sx={{
+          mb: 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap"
+        }}
+      >
+        {/* LEFT SIDE DROPDOWNS */}
+        <Stack direction="row" spacing={1.5} alignItems="center">
+
+          <Select
+            size="small"
+            value={station}
+            onChange={(e) => setStation(e.target.value)}
+            displayEmpty
+            sx={{ width: 240 }}
+          >
+            <MenuItem value="" disabled>
+              Select Station
+            </MenuItem>
+            {stations.map((s) => (
+              <MenuItem key={s} value={s}>
+                {s}
               </MenuItem>
-              {stations.map((s) => (
-                <MenuItem key={s} value={s}>
-                  {s}
-                </MenuItem>
-              ))}
-            </Select>
+            ))}
+          </Select>
 
-            <Select
-              size="small"
-              value={relay}
-              onChange={(e) => setRelay(e.target.value)}
-              displayEmpty
-              sx={{ width: 240 }}
-              disabled={!station || !relayOptions.length}
-            >
-              <MenuItem value="ALL">
-                All Relays
+          <Select
+            size="small"
+            value={relay}
+            onChange={(e) => setRelay(e.target.value)}
+            displayEmpty
+            sx={{ width: 240 }}
+            disabled={!station || !relayOptions.length}
+          >
+            <MenuItem value="ALL">All Relays</MenuItem>
+            <MenuItem value="" disabled>
+              Select Relay
+            </MenuItem>
+            {relayOptions.map((r) => (
+              <MenuItem key={r} value={r}>
+                {r}
               </MenuItem>
-              <MenuItem value="" disabled>
-                Select Relay
-              </MenuItem>
+            ))}
+          </Select>
 
-              {relayOptions.map(r => (
-                <MenuItem key={r} value={r}>
-                  {r}
-                </MenuItem>
-              ))}
-            </Select>
+          <Select
+            size="small"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            sx={{ width: 200 }}
+            disabled={!allRows.length}
+          >
+            <MenuItem value="ALL">All Status</MenuItem>
+            <MenuItem value="PICKED">Picked Up</MenuItem>
+            <MenuItem value="DROPPED">Drop Down</MenuItem>
+          </Select>
+        </Stack>
 
-            <Select
-              size="small"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              sx={{ width: 200 }}
-              disabled={!allRows.length}
-            >
-              <MenuItem value="ALL">All Status</MenuItem>
-              <MenuItem value="PICKED">Picked Up</MenuItem>
-              <MenuItem value="DROPPED">Drop Down</MenuItem>
-            </Select>
+        {/* RIGHT SIDE ROWS DROPDOWN */}
+        {rows.length > 0 && (
+          <RowsPerPageControl
+            rowsPerPage={rowsPerPage}
+            setRowsPerPage={setRowsPerPage}
+            setPage={setPage}
+          />
+        )}
+      </Box>
 
-
-          </Stack>
-        </CardContent>
-      </Card>
 
       {/* ===== RESULT AREA ===== */}
       <AnimatePresence mode="wait">

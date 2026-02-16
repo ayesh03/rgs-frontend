@@ -10,6 +10,7 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import { useOutletContext } from "react-router-dom";
+import RowsPerPageControl from "../components/RowsPerPageControl";
 
 import { Select, MenuItem } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
@@ -17,8 +18,10 @@ import MovingIcon from "@mui/icons-material/Moving";
 import PaginationControls from "../components/PaginationControls";
 import ColumnFilterDialog from "../components/ColumnFilterDialog";
 import StationaryKavachTable from "../components/LocoMovementTable";
-import { formatHexDate ,formatRefProfile,  
-  PKT_DIR_MAP, } from "../utils/stationaryKavachFormatter";
+import {
+  formatHexDate, formatRefProfile,
+  PKT_DIR_MAP,
+} from "../utils/stationaryKavachFormatter";
 
 import useTableFilter from "../hooks/useFilterTable";
 import { useAppContext } from "../context/AppContext";
@@ -570,7 +573,12 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
 
   const { filteredRows, setFilter, clearFilters } = useTableFilter(rows);
 
-  const rowsPerPage = isMobile ? 6 : 10;
+  const [rowsPerPage, setRowsPerPage] = useState(isMobile ? 6 : 10);
+
+  useEffect(() => {
+    setRowsPerPage(isMobile ? 6 : 10);
+  }, [isMobile]);
+
 
   /* ================= COLUMN SELECTION ================= */
   const getColumns = () => {
@@ -619,29 +627,29 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
   const columns = getColumns();
 
   const buildCommonHeader = (packet) => ({
-  // Annexure-G Header
-  msg_type: packet.msg_type,
-  msg_length: packet.msg_length,
-  msg_sequence: packet.msg_sequence,
-  stationary_kavach_id: packet.stationary_kavach_id,
-  nms_system_id: packet.nms_system_id,
-  system_version: packet.system_version,
-  date_hex: packet.date_hex,
-  time: packet.time,
-  station_active_radio_desc: packet.station_active_radio_desc,
+    // Annexure-G Header
+    msg_type: packet.msg_type,
+    msg_length: packet.msg_length,
+    msg_sequence: packet.msg_sequence,
+    stationary_kavach_id: packet.stationary_kavach_id,
+    nms_system_id: packet.nms_system_id,
+    system_version: packet.system_version,
+    date_hex: packet.date_hex,
+    time: packet.time,
+    station_active_radio_desc: packet.station_active_radio_desc,
 
-  // RADIO HEADER (NEW)
-  pkt_type: packet.pkt_type,
-  pkt_length: packet.pkt_length,
-  frame_number: packet.frame_number,
-  source_stn_id: packet.source_stn_id,
-  source_version: packet.source_version,
-  dest_loco_id: packet.dest_loco_id,
-  ref_profile_id: packet.ref_profile_id,
-  last_ref_rfid: packet.last_ref_rfid,
-  dist_pkt_start_m: packet.dist_pkt_start_m,
-  pkt_direction: packet.pkt_direction,
-});
+    // RADIO HEADER (NEW)
+    pkt_type: packet.pkt_type,
+    pkt_length: packet.pkt_length,
+    frame_number: packet.frame_number,
+    source_stn_id: packet.source_stn_id,
+    source_version: packet.source_version,
+    dest_loco_id: packet.dest_loco_id,
+    ref_profile_id: packet.ref_profile_id,
+    last_ref_rfid: packet.last_ref_rfid,
+    dist_pkt_start_m: packet.dist_pkt_start_m,
+    pkt_direction: packet.pkt_direction,
+  });
 
 
 
@@ -904,30 +912,51 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
           Stationary Kavch Info
         </Typography>
       </Stack>
-      {tableType === "station_regular" && (
-        <Box sx={{ mb: 1 }}>
-          <Select
-            size="small"
-            value={subPacket}
-            onChange={(e) => setSubPacket(e.target.value)}
-          >
-            <MenuItem value="ma">Movement Authority</MenuItem>
-            <MenuItem value="ssp">Static Speed Profile</MenuItem>
-            <MenuItem value="gradient">Gradient</MenuItem>
-            <MenuItem value="lc">LC Gate</MenuItem>
-            <MenuItem value="turnout">Turnout</MenuItem>
-            <MenuItem value="tag">Tag Linking</MenuItem>
-            <MenuItem value="track">Track Condition</MenuItem>
-            <MenuItem value="tsr">TSR</MenuItem>
-          </Select>
-        </Box>
-      )}
+      {/* TOP CONTROL ROW */}
+<Stack
+  direction="row"
+  alignItems="center"
+  justifyContent="space-between"
+  sx={{ mb: 1 }}
+>
+  {/* LEFT SIDE → Only for Regular */}
+  {tableType === "station_regular" ? (
+    <Select
+      size="small"
+      value={subPacket}
+      onChange={(e) => setSubPacket(e.target.value)}
+      sx={{ minWidth: 220 }}
+    >
+      <MenuItem value="ma">Movement Authority</MenuItem>
+      <MenuItem value="ssp">Static Speed Profile</MenuItem>
+      <MenuItem value="gradient">Gradient</MenuItem>
+      <MenuItem value="lc">LC Gate</MenuItem>
+      <MenuItem value="turnout">Turnout</MenuItem>
+      <MenuItem value="tag">Tag Linking</MenuItem>
+      <MenuItem value="track">Track Condition</MenuItem>
+      <MenuItem value="tsr">TSR</MenuItem>
+    </Select>
+  ) : (
+    <Box />  // empty placeholder to keep spacing balanced
+  )}
+
+  {/* RIGHT SIDE → For ALL TYPES */}
+  {filteredRows.length > 0 && (
+    <RowsPerPageControl
+      rowsPerPage={rowsPerPage}
+      setRowsPerPage={setRowsPerPage}
+      setPage={setPage}
+    />
+  )}
+</Stack>
+
 
       <AnimatePresence>
         {loading ? (
           <LinearProgress />
         ) : (
           <Card variant="outlined">
+            
             <CardContent sx={{ p: 0 }}>
               {filteredRows.length ? (
                 <StationaryKavachTable

@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import MovingIcon from "@mui/icons-material/Moving";
 import ViewColumnIcon from "@mui/icons-material/ViewColumn";
 import { useOutletContext } from "react-router-dom";
+import RowsPerPageControl from "../components/RowsPerPageControl";
 
 import LocoMovementTable from "../components/LocoMovementTable";
 import PaginationControls from "../components/PaginationControls";
@@ -32,7 +33,7 @@ import {
 const LocoMovement = forwardRef(({ tableType }, ref) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-const { selectedFile } = useOutletContext();
+  const { selectedFile } = useOutletContext();
 
   /* ================= STATE ================= */
   const [loading, setLoading] = useState(false);
@@ -50,7 +51,13 @@ const { selectedFile } = useOutletContext();
 
   const { filteredRows, setFilter, clearFilters } = useTableFilter(rows);
 
-  const rowsPerPage = isMobile ? 6 : 10;
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  useEffect(() => {
+    setRowsPerPage(isMobile ? 6 : 10);
+  }, [isMobile]);
+
+
   const columns =
     tableType === "access"
       ? ACCESS_COLUMNS
@@ -65,23 +72,23 @@ const { selectedFile } = useOutletContext();
 
   /* ================= RESET ON TABLE SWITCH ================= */
   useEffect(() => {
-  if (!allRows.length) return;
+    if (!allRows.length) return;
 
-  const filtered =
-    tableType === "onboard"
-      ? allRows.filter(r => Number(r.packet_type) === 10)
-      : allRows.filter(r => Number(r.packet_type) === 13);
+    const filtered =
+      tableType === "onboard"
+        ? allRows.filter(r => Number(r.packet_type) === 10)
+        : allRows.filter(r => Number(r.packet_type) === 13);
 
-  setRows(filtered);
-  clearFilters();
-  setPage(1);
-}, [tableType, allRows]);
+    setRows(filtered);
+    clearFilters();
+    setPage(1);
+  }, [tableType, allRows]);
 
 
 
 
   /* ================= DATA FETCH ================= */
-const generate = async () => {
+  const generate = async () => {
     if (!fromDate || !toDate) {
       alert("Please select From and To date");
       return;
@@ -106,22 +113,22 @@ const generate = async () => {
       const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
       if (!selectedFile) {
-  alert("Please select BIN file");
-  return;
-}
+        alert("Please select BIN file");
+        return;
+      }
 
-const fileBuffer = await selectedFile.arrayBuffer();
+      const fileBuffer = await selectedFile.arrayBuffer();
 
-const res = await fetch(
-  `${API_BASE}/api/loco-movement/by-date?from=${encodedFrom}&to=${encodedTo}`,
-  {
-    method: "POST",
-    body: fileBuffer,
-    headers: {
-      "Content-Type": "application/octet-stream",
-    },
-  }
-);
+      const res = await fetch(
+        `${API_BASE}/api/loco-movement/by-date?from=${encodedFrom}&to=${encodedTo}`,
+        {
+          method: "POST",
+          body: fileBuffer,
+          headers: {
+            "Content-Type": "application/octet-stream",
+          },
+        }
+      );
 
 
 
@@ -147,13 +154,13 @@ const res = await fetch(
 
       setAllRows(mappedRows);
 
-const filtered =
-  tableType === "onboard"
-    ? mappedRows.filter(r => Number(r.packet_type) === 10)
-    : mappedRows.filter(r => Number(r.packet_type) === 13);
+      const filtered =
+        tableType === "onboard"
+          ? mappedRows.filter(r => Number(r.packet_type) === 10)
+          : mappedRows.filter(r => Number(r.packet_type) === 13);
 
-setRows(filtered);
-setPage(1);
+      setRows(filtered);
+      setPage(1);
 
 
     } catch (err) {
@@ -200,19 +207,29 @@ setPage(1);
           <Typography fontWeight={900} fontSize="0.75rem">
             LOCO MOVEMENT
           </Typography>
+          
         </Stack>
         {/* <Tooltip title="Select Columns">
           <IconButton size="small" onClick={() => setColumnDialogOpen(true)} disabled={!rows.length}>
             <ViewColumnIcon fontSize="small" />
           </IconButton>
         </Tooltip> */}
+        {filteredRows.length > 0 && (
+              <RowsPerPageControl
+                rowsPerPage={rowsPerPage}
+                setRowsPerPage={setRowsPerPage}
+                setPage={setPage}
+              />
+            )}
       </Box>
 
       <AnimatePresence>
         {loading ? (
           <LinearProgress />
         ) : (
+
           <Card variant="outlined">
+
             <CardContent sx={{ p: 0 }}>
               {filteredRows.length ? (
                 <LocoMovementTable
