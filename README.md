@@ -11,15 +11,13 @@ This project is the web frontend conversion of the TCAS NMS Qt/QML desktop appli
 - Graphs using Recharts
 - Layout aligned with original desktop application
 
+## The main purpose of the app to create a web app which can generate report and user can see the report in table structure and the app is to use and user do not have to waste time in installing anything,just open the link logg in and generate reports.
+
 ## Tech Stack
 - React + Vite
 - Material UI
 - React Router
 - Framer Motion
-
-## Status
-Frontend complete.
-Backend (Qt REST APIs) integration pending.
 
 ## Run Locally
 ```bash
