@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from "react";
 import { Box, Tabs, Tab, Paper, alpha } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import ReportHeader from "../components/ReportHeader";
-import StationaryHealth from "../pages/StationaryHealth";
+import StationaryHealth from "../pages/Stationaryhealth";
 import useExport from "../hooks/useExport";
 
 export default function Health() {
