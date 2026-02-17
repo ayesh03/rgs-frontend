@@ -59,6 +59,14 @@ export default function useExport() {
     if (reportType === "fault_station") return "FLT_STN";
     if (reportType === "fault_loco") return "FLT_LOCO";
 
+    // ---------------- INTERLOCKING ----------------
+    if (reportType === "interlocking") return "INT_LCK";
+
+    // ---------------- HEALTH ----------------
+    if (reportType === "health_stationary") return "HLTH_STN";
+    if (reportType === "health_onboard") return "HLTH_OB";
+
+
 
     return "REPORT";
   };

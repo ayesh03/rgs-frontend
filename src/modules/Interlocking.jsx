@@ -34,18 +34,19 @@ export default function Interlocking() {
         }}
         onSave={() => {
           const rows = interlockingRef.current?.getFilteredRows?.();
-          exportExcel(rows, INTERLOCKING_COLUMNS, "Interlocking_Report");
+          exportExcel(rows, INTERLOCKING_COLUMNS, "interlocking");
         }}
+
         onSaveAll={() => {
           const rows = interlockingRef.current?.getAllRows?.();
-          exportExcel(rows, INTERLOCKING_COLUMNS, "Interlocking_Report_All");
+          exportExcel(rows, INTERLOCKING_COLUMNS, "interlocking");
         }}
+
         onPrint={() => {
           const rows = interlockingRef.current?.getFilteredRows?.();
-          exportPDF(rows, INTERLOCKING_COLUMNS, "Interlocking Report", {
-            dateRange: `${fromDate || "All"} → ${toDate || "All"}`
-          });
+          exportPDF(rows, INTERLOCKING_COLUMNS, "interlocking");
         }}
+
         onColumns={() => interlockingRef.current?.openColumnDialog()}
       />
 

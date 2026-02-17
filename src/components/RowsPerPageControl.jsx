@@ -6,7 +6,7 @@ export default function RowsPerPageControl({
   setRowsPerPage,
   setPage
 }) {
-  const presetOptions = [10, 20, 50, 100, 200, 300, 500];
+  const presetOptions = [10, 20, 50, 100, 200, 300, 500 ,1000 ,5000];
   const [customValue, setCustomValue] = useState("");
   const [isCustom, setIsCustom] = useState(false);
 
@@ -32,7 +32,7 @@ export default function RowsPerPageControl({
     }
   };
 
-  // 👇 Ensure dropdown shows custom value if not preset
+  //  Ensure dropdown shows custom value if not preset
   const dropdownOptions = presetOptions.includes(rowsPerPage)
     ? presetOptions
     : [...presetOptions, rowsPerPage];
@@ -46,7 +46,7 @@ export default function RowsPerPageControl({
       sx={{ mb: 1 }}
     >
       <Typography variant="caption" fontWeight={600}>
-        Rows per page:
+        Rows:
       </Typography>
 
       {!isCustom ? (
@@ -65,7 +65,7 @@ export default function RowsPerPageControl({
               </MenuItem>
             ))}
 
-          <MenuItem value="custom">Custom...</MenuItem>
+          <MenuItem value="custom">Custom..</MenuItem>
         </TextField>
       ) : (
         <TextField

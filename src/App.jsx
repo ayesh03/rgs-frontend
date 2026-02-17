@@ -15,6 +15,7 @@ import Station from "./modules/Station";
 import Graph from "./pages/Graph";
 import Radio from "./modules/Radio";
 import StationaryKavachInfo from "./modules/StationaryKavachInfo";
+import Health from "./modules/StationaryHealth";
 
 
 import { AuthProvider } from "./auth/AuthContext";
@@ -64,6 +65,8 @@ function App() {
             <Route path="graphs" element={<Graph />} />
             <Route path="track-profile/graph" element={<TrackProfile defaultTab="graph" />} />
             <Route path="radio" element={<Radio />} />
+            <Route path="health" element={<Health />} />
+
             <Route path="StationaryKavachInfo" element={<StationaryKavachInfo />} />
 
 

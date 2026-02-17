@@ -56,16 +56,13 @@ export default function MainLayout() {
     setLogDir,
     resetFilters,
   } = useAppContext();
-
   const handleLogoutClick = () => setLogoutConfirmOpen(true);
-
   const handleConfirmLogout = () => {
     resetFilters();
     logout();
     setLogoutConfirmOpen(false);
     navigate("/login", { replace: true });
   };
-
   const formatDateTimeForDisplay = (datetimeLocal) => {
     if (!datetimeLocal) return "Select Date & Time";
     const date = new Date(datetimeLocal);
@@ -79,7 +76,6 @@ export default function MainLayout() {
       hour12: false
     });
   };
-
   // HANDLERS FOR "FROM" POPOVER
   const handleFromOpen = (event) => {
     const [d, t] = (fromDate || "").split("T");
@@ -94,7 +90,6 @@ export default function MainLayout() {
       handleFromClose();
     }
   };
-
   // HANDLERS FOR "TO" POPOVER
   const handleToOpen = (event) => {
     const [d, t] = (toDate || "").split("T");
@@ -109,12 +104,12 @@ export default function MainLayout() {
       handleToClose();
     }
   };
-
   const navItems = [
     { label: "Loco Movement", path: "loco" },
     { label: "Station Kavach Info", path: "StationaryKavachInfo" },
     { label: "Faults", path: "faults" },
     { label: "Interlocking", path: "interlocking" },
+    { label: "Health", path: "health" },
     { label: "Graphs", path: "graphs" },
     { label: "Track Profile Graph", path: "track-profile/graph" },
     // { label: "Track Profile", path: "track-profile" },

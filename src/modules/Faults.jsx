@@ -56,8 +56,9 @@ export default function Faults() {
             exportExcel(
               rows,
               cols,
-              tab === 0 ? "station_faults" : "loco_faults"
+              tab === 0 ? "fault_station" : "fault_loco"
             );
+
         }}
 
         onSaveAll={() => {
@@ -67,7 +68,7 @@ export default function Faults() {
             exportExcel(
               rows,
               cols,
-              tab === 0 ? "station_faults_all" : "loco_faults_all"
+              tab === 0 ? "fault_station" : "fault_loco"
             );
         }}
 
@@ -78,8 +79,9 @@ export default function Faults() {
             exportPDF(
               rows,
               cols,
-              tab === 0 ? "station_faults" : "loco_faults"
+              tab === 0 ? "fault_station" : "fault_loco"
             );
+
         }}
       />
 
