@@ -1,26 +1,12 @@
 import { useState, useEffect, useRef } from "react";
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  Stack,
-  Select,
-  MenuItem,
-  Grid,
-  LinearProgress,
-  Divider,
-  Chip,
+import {Box,Card,CardContent,Typography,Stack,Select,MenuItem,Grid,LinearProgress,Divider,Chip,
 } from "@mui/material";
 import { motion } from "framer-motion";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-} from "recharts";
+import { useOutletContext } from "react-router-dom";
+
+import { AreaChart, LineChart, BarChart, ComposedChart, ScatterChart, Scatter, Area, Line, Bar, XAxis, YAxis, Tooltip, CartesianGrid, } from "recharts";
+
+
 import ShowChartIcon from "@mui/icons-material/ShowChart";
 import TuneIcon from "@mui/icons-material/Tune";
 
@@ -50,19 +36,19 @@ function frameToTime(frame) {
    MODE LEGEND (DESKTOP PARITY)
 ===================================================== */
 const MODE_LEGEND = {
-  1: "Stand By",
-  2: "Staff Responsible Mode",
-  3: "Limited Supervision",
-  4: "Full Supervision",
-  5: "Override",
-  6: "On Sight",
-  7: "Trip",
-  8: "Post Trip",
-  9: "Reverse",
-  10: "Shunting",
-  11: "Non Leading",
-  12: "System Failure",
-  13: "Isolation",
+  0: "Stand By",
+  1: "Staff Responsible Mode",
+  2: "Limited Supervision",
+  3: "Full Supervision",
+  4: "Override",
+  5: "On Sight",
+  6: "Trip",
+  7: "Post Trip",
+  8: "Reverse",
+  9: "Shunting",
+  10: "Non Leading",
+  11: "System Failure",
+  12: "Isolation",
 };
 
 /* =====================================================
@@ -104,7 +90,9 @@ function GraphTooltip({ active, payload, graphType }) {
    MAIN COMPONENT
 ===================================================== */
 export default function Graph() {
-  const { fromDate, toDate, logDir, isDateRangeValid } = useAppContext();
+  const { fromDate, toDate, isDateRangeValid } = useAppContext();
+  const { selectedFile } = useOutletContext();
+
   const graphRef = useRef(null);
 
   /* ================= STATE ================= */
@@ -119,6 +107,22 @@ export default function Graph() {
 
   const [graphData, setGraphData] = useState([]);
 
+  // ===== REQUIREMENT STATES =====
+  const [zoom, setZoom] = useState(1);
+  const [showGrid, setShowGrid] = useState(true);
+  const [lineWidth, setLineWidth] = useState(2);
+
+  const [nominalColor, setNominalColor] = useState("#1976d2");
+  const [reverseColor, setReverseColor] = useState("#e91e63");
+
+  const [bgColor, setBgColor] = useState("#ffffff");
+  const [fgColor, setFgColor] = useState("#000000");
+
+  const [timeStart, setTimeStart] = useState("");
+  const [timeEnd, setTimeEnd] = useState("");
+
+
+
   const [meta, setMeta] = useState({
     locos: [],
     directions: [],
@@ -130,7 +134,8 @@ export default function Graph() {
 
   /* ================= META LOAD ================= */
   useEffect(() => {
-    if (!logDir || !fromDate || !toDate || !isDateRangeValid) return;
+    if (!fromDate || !toDate || !isDateRangeValid || !selectedFile) return;
+
 
     const loadMeta = async () => {
       try {
@@ -142,12 +147,21 @@ export default function Graph() {
         const to =
           toDate.length === 16 ? `${toDate}:00` : toDate;
 
+        if (!selectedFile) return;
+
+        const fileBuffer = await selectedFile.arrayBuffer();
+
         const res = await fetch(
-          `${API_BASE}/api/graph/meta` +
-          `?from=${encodeURIComponent(from)}` +
-          `&to=${encodeURIComponent(to)}` +
-          `&logDir=${encodeURIComponent(logDir)}`
+          `${API_BASE}/api/graph/meta?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+          {
+            method: "POST",
+            body: fileBuffer,
+            headers: {
+              "Content-Type": "application/octet-stream",
+            },
+          }
         );
+
 
         const json = await res.json();
         if (!json.success) throw new Error("Meta API failed");
@@ -168,7 +182,8 @@ export default function Graph() {
     };
 
     loadMeta();
-  }, [fromDate, toDate, logDir, isDateRangeValid]);
+  }, [fromDate, toDate, selectedFile, isDateRangeValid]);
+
 
   /* ================= RESET ON FILTER CHANGE ================= */
   useEffect(() => {
@@ -195,15 +210,29 @@ export default function Graph() {
       const to =
         toDate.length === 16 ? `${toDate}:00` : toDate;
 
+      if (!selectedFile) {
+        setError("Please upload BIN file");
+        return;
+      }
+
+      const fileBuffer = await selectedFile.arrayBuffer();
+
       const res = await fetch(
         `${API_BASE}/api/graph/data` +
         `?locoId=${locoId}` +
         `&from=${encodeURIComponent(from)}` +
         `&to=${encodeURIComponent(to)}` +
         `&direction=${direction}` +
-        `&graphType=${encodeURIComponent(graphType)}` +
-        `&logDir=${encodeURIComponent(logDir)}`
+        `&graphType=${encodeURIComponent(graphType)}`,
+        {
+          method: "POST",
+          body: fileBuffer,
+          headers: {
+            "Content-Type": "application/octet-stream",
+          },
+        }
       );
+
 
       const json = await res.json();
       if (!json.success) throw new Error("Graph API failed");
@@ -273,6 +302,14 @@ export default function Graph() {
     setNoData(false);
     setError("");
   };
+  const getFilteredByTime = () => {
+    if (!graphType.includes("Time")) return graphData;
+    if (!timeStart || !timeEnd) return graphData;
+
+    return graphData.filter((d) => {
+      return d.time >= timeStart && d.time <= timeEnd;
+    });
+  };
 
   /* ================= UI ================= */
   const isModeGraph = graphType.includes("Mode");
@@ -315,6 +352,21 @@ export default function Graph() {
 
           <Grid container spacing={2}>
             <Grid item xs={12} sm={4}>
+              <Select
+                fullWidth
+                size="small"
+                value={lineWidth}
+                onChange={e => setLineWidth(e.target.value)}
+              >
+                {[1, 2, 3, 4, 5].map(w => (
+                  <MenuItem key={w} value={w}>
+                    {`Line Width ${w}`}
+                  </MenuItem>
+                ))}
+              </Select>
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
               <Select fullWidth size="small" value={locoId} onChange={e => setLocoId(e.target.value)} displayEmpty>
                 <MenuItem value="">Loco ID</MenuItem>
                 {meta.locos.map(l => (
@@ -325,7 +377,7 @@ export default function Graph() {
 
             <Grid item xs={12} sm={4}>
               <Select fullWidth size="small" value={direction} onChange={e => setDirection(e.target.value)} displayEmpty>
-                <MenuItem value="">Direction</MenuItem>
+                {/* <MenuItem value="">Direction</MenuItem> */}
                 {meta.directions.map(d => (
                   <MenuItem key={d} value={d}>{d}</MenuItem>
                 ))}
@@ -339,12 +391,41 @@ export default function Graph() {
                 ))}
               </Select>
             </Grid>
+            <Grid item xs={12} sm={4}>
+              <input
+                type="time"
+                value={timeStart}
+                onChange={(e) => setTimeStart(e.target.value)}
+                style={{ width: "100%", padding: "8px" }}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
+              <input
+                type="time"
+                value={timeEnd}
+                onChange={(e) => setTimeEnd(e.target.value)}
+                style={{ width: "100%", padding: "8px" }}
+              />
+            </Grid>
           </Grid>
+
+
 
           {error && <Typography color="error" mt={2}>{error}</Typography>}
           {noData && <Typography color="warning.main" mt={2}>No graph data available.</Typography>}
         </CardContent>
       </Card>
+      <Stack direction="row" spacing={2} mb={2}>
+        <Chip label="Zoom +" onClick={() => setZoom(z => z + 0.2)} />
+        <Chip label="Zoom -" onClick={() => setZoom(z => Math.max(1, z - 0.2))} />
+        <Chip
+          label="Grid"
+          color={showGrid ? "primary" : "default"}
+          onClick={() => setShowGrid(v => !v)}
+        />
+      </Stack>
+
 
       {(loading || metaLoading) && (
         <Box py={6} textAlign="center">
@@ -354,7 +435,15 @@ export default function Graph() {
 
       {/* GRAPH */}
       {!loading && graphData.length > 0 && (
-        <Card ref={graphRef} sx={{ borderRadius: 4 }}>
+        <Card
+          ref={graphRef}
+          sx={{
+            borderRadius: 4,
+            backgroundColor: bgColor,
+            color: fgColor,
+          }}
+        >
+
           <CardContent>
             <Stack direction="row" spacing={1} mb={2}>
               <Chip label={`Loco: ${locoId}`} />
@@ -364,45 +453,253 @@ export default function Graph() {
             <Typography fontWeight={700} mb={2}>{graphType}</Typography>
 
             <Box sx={{ overflowX: "auto" }}>
-              <Box sx={{ minWidth: Math.max(graphData.length * 12, 1400) }}>
-                <AreaChart
-                  width={Math.max(graphData.length * 12, 1400)}
-                  height={420}
-                  data={graphData}
-                >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis
-                    dataKey="x"
-                    label={{
-                      value: graphType.includes("Time")
-                        ? "Time (HH:MM:SS)"
-                        : "Absolute Location",
-                      position: "insideBottom",
-                      offset: -5,
-                    }}
-                  />
+              <Box sx={{ minWidth: Math.max(graphData.length * 12 * zoom, 1400) }}>
+                {graphType === "Location Vs Speed" && (
+                  <AreaChart
+                    width={Math.max(graphData.length * 12 * zoom, 1400)}
+                    height={420}
+                    data={getFilteredByTime()}
+                    margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                  >
+                    <defs>
+                      <linearGradient id="speedGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3949ab" stopOpacity={0.4} />
+                        <stop offset="95%" stopColor="#3949ab" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
 
-                  <YAxis
-                    domain={isModeGraph ? [0, 13] : ["auto", "auto"]}
-                    allowDecimals={!isModeGraph}
-                    label={{
-                      value: graphType.includes("Speed") ? "Speed" : "Mode",
-                      angle: -90,
-                      position: "insideLeft",
-                    }}
-                  />
+                    {showGrid && (
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        vertical={false}
+                        stroke="#e0e0e0"
+                      />
+                    )}
 
-                  <Tooltip content={<GraphTooltip graphType={graphType} />} />
-                  <Area
-                    type={isModeGraph ? "stepAfter" : "monotone"}
-                    dataKey="y"
-                    stroke="#1976d2"
-                    fillOpacity={0.3}
-                    fill="#1976d2"
-                  />
+                    <XAxis
+                      dataKey="x"
+                      tickLine={false}
+                      axisLine={{ stroke: '#ccd1d9' }}
+                      tick={{ fontSize: 12, fill: '#666' }}
+                      minTickGap={30}
+                    />
+
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{ fontSize: 12, fill: '#666' }}
+                      domain={[
+                        0,
+                        Math.ceil(Math.max(...graphData.map((d) => d.y)) / 10) * 10 + 10, // Added +10 for some "headroom"
+                      ]}
+                    />
+
+                    <Tooltip
+                      content={<GraphTooltip graphType={graphType} />}
+                      cursor={{ stroke: '#3949ab', strokeWidth: 2 }}
+                    />
+
+                    {/* The Area provides the color fill */}
+                    <Area
+                      type="monotone"
+                      dataKey="y"
+                      stroke="none"
+                      fillOpacity={1}
+                      fill="url(#speedGradient)"
+                      animationDuration={1500}
+                    />
+
+                    {/* The Line provides the sharp top edge */}
+                    <Area
+                      type="monotone"
+                      dataKey="y"
+                      stroke="#3949ab"
+                      strokeWidth={lineWidth}
+                      fill="transparent"
+                      dot={false}
+                      activeDot={{ r: 6, strokeWidth: 0, fill: '#1a237e' }}
+                    />
+                  </AreaChart>
+                )}
+                {graphType === "Time Vs Speed" && (
+                  <AreaChart
+                    width={Math.max(graphData.length * 12 * zoom, 1400)}
+                    height={420}
+                    data={getFilteredByTime()}
+                  >
+                    {showGrid && <CartesianGrid strokeDasharray="3 3" />}
+                    <XAxis dataKey="x" />
+                    <YAxis
+                      domain={[
+                        0,
+                        Math.ceil(
+                          Math.max(...graphData.map(d => d.y)) / 10
+                        ) * 10,
+                      ]}
+                    />
+                    <Tooltip content={<GraphTooltip graphType={graphType} />} />
+                    <Area
+                      type="monotone"
+                      dataKey="y"
+                      stroke="#00897b"
+                      fill="#2e7d32"
+                      fillOpacity={0.3}
+                    // stroke={direction === "Nominal" ? nominalColor : reverseColor}
+                    // fill={direction === "Nominal" ? nominalColor : reverseColor}
+                    />
+
+                  </AreaChart>
+                )}
+
+                {graphType === "Location Vs Mode" && (
+                  <ComposedChart
+                    width={Math.max(graphData.length * 12 * zoom, 1400)}
+                    height={420}
+                    data={getFilteredByTime()}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                  >
+                    {showGrid && <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />}
+
+                    <defs>
+                      <linearGradient id="colorY" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#8e24aa" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#8e24aa" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+
+                    <XAxis
+                      dataKey="x"
+                      tick={{ fill: '#666', fontSize: 12 }}
+                      tickLine={false}
+                      axisLine={{ stroke: '#ccc' }}
+                    />
+                    <YAxis
+                      domain={[0, 12]}
+                      ticks={[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]} // Cleaned up ticks for less clutter
+                      tick={{ fill: '#666', fontSize: 12 }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+
+                    <Tooltip
+                      content={<GraphTooltip graphType={graphType} />}
+                      cursor={{ stroke: '#8e24aa', strokeWidth: 1 }}
+                    />
 
 
-                </AreaChart>
+                    <Area
+                      type="monotone"
+                      dataKey="y"
+                      stroke="none"
+                      fillOpacity={1}
+                      fill="url(#colorY)"
+                    />
+
+                    {/* The Line provides the sharp definition */}
+                    <Line
+                      type="monotone"
+                      dataKey="y"
+                      stroke="#6a1b9a"
+                      strokeWidth={4}
+                      dot={false}
+                      activeDot={{ r: 8, strokeWidth: 0 }}
+                    />
+                  </ComposedChart>
+                )}
+                {graphType === "Time Vs Mode" && (
+                  <ComposedChart
+                    width={Math.max(graphData.length * 12 * zoom, 1400)}
+                    height={420}
+                    data={getFilteredByTime()}
+                    margin={{ top: 40, right: 30, left: 20, bottom: 40 }}
+                  >
+                    <defs>
+                      {/* A soft, premium indigo-to-transparent wash */}
+                      <linearGradient id="premiumWash" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#6366f1" stopOpacity={0.15} />
+                        <stop offset="100%" stopColor="#6366f1" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+
+                    {/* Remove standard grid for a 'Blank Canvas' feel */}
+                    {showGrid && (
+                      <CartesianGrid
+                        vertical={false}
+                        stroke="#f1f5f9"
+                        strokeDasharray="0"
+                      />
+                    )}
+
+                    <XAxis
+                      dataKey="x"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 600 }}
+                      dy={15}
+                    />
+
+                    <YAxis
+                      domain={[0, 12]}
+                      ticks={[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]}
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: '#94a3b8', fontSize: 11 }}
+                      dx={-10}
+                    />
+
+                    <Tooltip
+                      cursor={{ stroke: '#e2e8f0', strokeWidth: 2 }}
+                      content={<GraphTooltip graphType={graphType} />}
+                    />
+
+                    {/* The 'Volume': A stepped area with a high-end muted indigo wash */}
+                    <Area
+                      type="stepAfter"
+                      dataKey="y"
+                      stroke="none"
+                      fill="url(#premiumWash)"
+                      animationDuration={1500}
+                    />
+
+                    {/* The 'Timeline': A ultra-thin, almost invisible guide line */}
+                    <Line
+                      type="stepAfter"
+                      dataKey="y"
+                      stroke="#cbd5e1"
+                      strokeWidth={1}
+                      dot={false}
+                      activeDot={false}
+                    />
+
+                    {/* The 'Beads': High-contrast, floating data markers */}
+                    <Scatter
+                      dataKey="y"
+                      shape={(props) => {
+                        const { cx, cy, payload } = props;
+                        // We only render a bead every few frames or on change to keep it 'Classy'
+                        return (
+                          <g>
+                            {/* The outer ring for depth */}
+                            <circle cx={cx} cy={cy} r={5} fill="#fff" stroke="#6366f1" strokeWidth={1} />
+                            {/* The inner solid core */}
+                            <circle cx={cx} cy={cy} r={2.5} fill="#4f46e5" />
+                          </g>
+                        );
+                      }}
+                    />
+
+                    {/* The 'Cap': A subtle highlight line at the very top of the mode height */}
+                    <Line
+                      type="stepAfter"
+                      dataKey="y"
+                      stroke="#4f46e5"
+                      strokeWidth={3}
+                      strokeLinecap="round"
+                      dot={false}
+                      activeDot={{ r: 6, fill: '#4f46e5', stroke: '#fff', strokeWidth: 2 }}
+                    />
+                  </ComposedChart>
+                )}
               </Box>
             </Box>
           </CardContent>
