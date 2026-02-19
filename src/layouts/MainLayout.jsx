@@ -111,12 +111,13 @@ export default function MainLayout() {
     { label: "Interlocking", path: "interlocking" },
     { label: "Health", path: "health" },
     { label: "Graphs", path: "graphs" },
-    { label: "Track Profile Graph", path: "track-profile/graph" },
+    // { label: "Track Profile Graph", path: "track-profile/graph" },
     // { label: "Track Profile", path: "track-profile" },
     // { label: "Parameters", path: "parameters" },
     // { label: "TSR", path: "tsr" },
     // { label: "Radio", path: "radio" }
   ];
+  
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", width: "100%", minHeight: "100vh", background: "#f4f7fa" }}>

@@ -1,23 +1,18 @@
 import { useState, useEffect, useRef } from "react";
-import {Box,Card,CardContent,Typography,Stack,Select,MenuItem,Grid,LinearProgress,Divider,Chip,
+import {
+  Box, Card, CardContent, Typography, Stack, Select, MenuItem, Grid, LinearProgress, Divider, Chip,
 } from "@mui/material";
 import { motion } from "framer-motion";
 import { useOutletContext } from "react-router-dom";
-
+import { Label } from "recharts";
 import { AreaChart, LineChart, BarChart, ComposedChart, ScatterChart, Scatter, Area, Line, Bar, XAxis, YAxis, Tooltip, CartesianGrid, } from "recharts";
-
-
 import ShowChartIcon from "@mui/icons-material/ShowChart";
 import TuneIcon from "@mui/icons-material/Tune";
-
 import ReportHeader from "../components/ReportHeader";
 import { useAppContext } from "../context/AppContext";
-
 import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
-
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
-
 /* =====================================================
    Frame → Time (DESKTOP PARITY)
 ===================================================== */
@@ -50,7 +45,6 @@ const MODE_LEGEND = {
   11: "System Failure",
   12: "Isolation",
 };
-
 /* =====================================================
    Custom Tooltip (desktop-style)
 ===================================================== */
@@ -85,7 +79,6 @@ function GraphTooltip({ active, payload, graphType }) {
     </Box>
   );
 }
-
 /* =====================================================
    MAIN COMPONENT
 ===================================================== */
@@ -100,7 +93,6 @@ export default function Graph() {
   const [metaLoading, setMetaLoading] = useState(false);
   const [error, setError] = useState("");
   const [noData, setNoData] = useState(false);
-
   const [locoId, setLocoId] = useState("");
   const [direction, setDirection] = useState("");
   const [graphType, setGraphType] = useState("");
@@ -111,18 +103,12 @@ export default function Graph() {
   const [zoom, setZoom] = useState(1);
   const [showGrid, setShowGrid] = useState(true);
   const [lineWidth, setLineWidth] = useState(2);
-
   const [nominalColor, setNominalColor] = useState("#1976d2");
   const [reverseColor, setReverseColor] = useState("#e91e63");
-
   const [bgColor, setBgColor] = useState("#ffffff");
   const [fgColor, setFgColor] = useState("#000000");
-
   const [timeStart, setTimeStart] = useState("");
   const [timeEnd, setTimeEnd] = useState("");
-
-
-
   const [meta, setMeta] = useState({
     locos: [],
     directions: [],
@@ -135,8 +121,6 @@ export default function Graph() {
   /* ================= META LOAD ================= */
   useEffect(() => {
     if (!fromDate || !toDate || !isDateRangeValid || !selectedFile) return;
-
-
     const loadMeta = async () => {
       try {
         setMetaLoading(true);
@@ -146,9 +130,7 @@ export default function Graph() {
           fromDate.length === 16 ? `${fromDate}:00` : fromDate;
         const to =
           toDate.length === 16 ? `${toDate}:00` : toDate;
-
         if (!selectedFile) return;
-
         const fileBuffer = await selectedFile.arrayBuffer();
 
         const res = await fetch(
@@ -161,17 +143,13 @@ export default function Graph() {
             },
           }
         );
-
-
         const json = await res.json();
         if (!json.success) throw new Error("Meta API failed");
-
         setMeta({
           locos: json.locos || [],
           directions: json.directions || [],
           graphTypes: json.graphTypes || [],
         });
-
         setGraphType(json.graphTypes?.[0] || "");
       } catch (e) {
         console.error("[GRAPH META]", e);
@@ -180,11 +158,8 @@ export default function Graph() {
         setMetaLoading(false);
       }
     };
-
     loadMeta();
   }, [fromDate, toDate, selectedFile, isDateRangeValid]);
-
-
   /* ================= RESET ON FILTER CHANGE ================= */
   useEffect(() => {
     setGraphData([]);
@@ -214,9 +189,7 @@ export default function Graph() {
         setError("Please upload BIN file");
         return;
       }
-
       const fileBuffer = await selectedFile.arrayBuffer();
-
       const res = await fetch(
         `${API_BASE}/api/graph/data` +
         `?locoId=${locoId}` +
@@ -232,20 +205,15 @@ export default function Graph() {
           },
         }
       );
-
-
       const json = await res.json();
       if (!json.success) throw new Error("Graph API failed");
-
       const x = json.data?.x || [];
       const y = json.data?.y || [];
-
       if (!x.length) {
         setNoData(true);
         setGraphData([]);
         return;
       }
-
       const mapped = x.map((val, i) => {
         if (graphType.includes("Time")) {
           return {
@@ -257,7 +225,6 @@ export default function Graph() {
         }
         return { x: val, y: y[i] };
       });
-
       setGraphData(mapped);
     } catch (e) {
       console.error("[GRAPH]", e);
@@ -267,7 +234,6 @@ export default function Graph() {
       setLoading(false);
     }
   };
-
   /* ================= EXPORT ================= */
   const handleSavePNG = async () => {
     if (!graphRef.current) return;
@@ -277,12 +243,10 @@ export default function Graph() {
     link.download = `Graph_${locoId}_${graphType.replace(/\s+/g, "_")}.png`;
     link.click();
   };
-
   const handlePrintPDF = async () => {
     if (!graphRef.current) return;
     const img = await htmlToImage.toPng(graphRef.current);
     const pdf = new jsPDF("l", "pt", "a4");
-
     pdf.setFontSize(14);
     pdf.text("INDIAN RAILWAYS - TCAS RGS", 40, 40);
     pdf.setFontSize(10);
@@ -291,12 +255,10 @@ export default function Graph() {
       40,
       60
     );
-
     const w = pdf.internal.pageSize.getWidth() - 80;
     pdf.addImage(img, "PNG", 40, 80, w, 320);
     pdf.save(`Graph_${locoId}_${graphType.replace(/\s+/g, "_")}.pdf`);
   };
-
   const handleClear = () => {
     setGraphData([]);
     setNoData(false);
@@ -310,10 +272,8 @@ export default function Graph() {
       return d.time >= timeStart && d.time <= timeEnd;
     });
   };
-
   /* ================= UI ================= */
   const isModeGraph = graphType.includes("Mode");
-
   return (
     <Box p={2} component={motion.div} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       {/* HEADER */}
@@ -325,7 +285,6 @@ export default function Graph() {
           Graph Analysis
         </Typography>
       </Stack>
-
       <ReportHeader
         stage={stage}
         showTableType={false}
@@ -337,7 +296,6 @@ export default function Graph() {
         showSaveAll={false}
         showColumns={false}
       />
-
       {/* CONFIG */}
       <Card sx={{ mb: 1, borderRadius: 3 }}>
         <CardContent>
@@ -347,9 +305,7 @@ export default function Graph() {
               CONFIGURATION
             </Typography>
           </Stack>
-
           <Divider sx={{ mb: 2 }} />
-
           <Grid container spacing={2}>
             <Grid item xs={12} sm={4}>
               <Select
@@ -365,7 +321,6 @@ export default function Graph() {
                 ))}
               </Select>
             </Grid>
-
             <Grid item xs={12} sm={4}>
               <Select fullWidth size="small" value={locoId} onChange={e => setLocoId(e.target.value)} displayEmpty>
                 <MenuItem value="">Loco ID</MenuItem>
@@ -374,7 +329,6 @@ export default function Graph() {
                 ))}
               </Select>
             </Grid>
-
             <Grid item xs={12} sm={4}>
               <Select fullWidth size="small" value={direction} onChange={e => setDirection(e.target.value)} displayEmpty>
                 {/* <MenuItem value="">Direction</MenuItem> */}
@@ -383,7 +337,6 @@ export default function Graph() {
                 ))}
               </Select>
             </Grid>
-
             <Grid item xs={12} sm={4}>
               <Select fullWidth size="small" value={graphType} onChange={e => setGraphType(e.target.value)}>
                 {meta.graphTypes.map(g => (
@@ -459,7 +412,7 @@ export default function Graph() {
                     width={Math.max(graphData.length * 12 * zoom, 1400)}
                     height={420}
                     data={getFilteredByTime()}
-                    margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                    margin={{ top: 10, right: 30, left: 0, bottom: 50 }}
                   >
                     <defs>
                       <linearGradient id="speedGradient" x1="0" y1="0" x2="0" y2="1">
@@ -482,7 +435,11 @@ export default function Graph() {
                       axisLine={{ stroke: '#ccd1d9' }}
                       tick={{ fontSize: 12, fill: '#666' }}
                       minTickGap={30}
-                    />
+                    >
+                      <Label value="Location" position="bottom" offset={20} />
+                    </XAxis>
+
+
 
                     <YAxis
                       tickLine={false}
@@ -490,9 +447,12 @@ export default function Graph() {
                       tick={{ fontSize: 12, fill: '#666' }}
                       domain={[
                         0,
-                        Math.ceil(Math.max(...graphData.map((d) => d.y)) / 10) * 10 + 10, // Added +10 for some "headroom"
+                        Math.ceil(Math.max(...graphData.map((d) => d.y)) / 10) * 10 + 10,
                       ]}
-                    />
+                    >
+                      <Label value="Speed (km/h)" angle={-90} position="insideLeft" />
+                    </YAxis>
+
 
                     <Tooltip
                       content={<GraphTooltip graphType={graphType} />}
@@ -526,17 +486,23 @@ export default function Graph() {
                     width={Math.max(graphData.length * 12 * zoom, 1400)}
                     height={420}
                     data={getFilteredByTime()}
+                    margin={{ top: 10, right: 30, left: 0, bottom: 50 }}
                   >
                     {showGrid && <CartesianGrid strokeDasharray="3 3" />}
-                    <XAxis dataKey="x" />
+                    <XAxis dataKey="x">
+                      <Label value="Time" position="bottom" offset={20} />
+                    </XAxis>
+
+
                     <YAxis
                       domain={[
                         0,
-                        Math.ceil(
-                          Math.max(...graphData.map(d => d.y)) / 10
-                        ) * 10,
+                        Math.ceil(Math.max(...graphData.map(d => d.y)) / 10) * 10,
                       ]}
-                    />
+                    >
+                      <Label value="Speed (km/h)" angle={-90} position="insideLeft" />
+                    </YAxis>
+
                     <Tooltip content={<GraphTooltip graphType={graphType} />} />
                     <Area
                       type="monotone"
@@ -556,7 +522,7 @@ export default function Graph() {
                     width={Math.max(graphData.length * 12 * zoom, 1400)}
                     height={420}
                     data={getFilteredByTime()}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
                   >
                     {showGrid && <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />}
 
@@ -572,14 +538,23 @@ export default function Graph() {
                       tick={{ fill: '#666', fontSize: 12 }}
                       tickLine={false}
                       axisLine={{ stroke: '#ccc' }}
-                    />
+                    >
+                      <Label value="Location" position="bottom" offset={20} />
+                    </XAxis>
+
+
+
                     <YAxis
                       domain={[0, 12]}
-                      ticks={[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]} // Cleaned up ticks for less clutter
-                      tick={{ fill: '#666', fontSize: 12 }}
+                      ticks={Object.keys(MODE_LEGEND).map(Number)}
+                      tickFormatter={(value) => MODE_LEGEND[value] || value}
+                      tick={{ fill: '#666', fontSize: 11 }}
                       tickLine={false}
                       axisLine={false}
-                    />
+                    >
+                      <Label value="Mode" angle={-90} position="insideLeft" />
+                    </YAxis>
+
 
                     <Tooltip
                       content={<GraphTooltip graphType={graphType} />}
@@ -611,7 +586,7 @@ export default function Graph() {
                     width={Math.max(graphData.length * 12 * zoom, 1400)}
                     height={420}
                     data={getFilteredByTime()}
-                    margin={{ top: 40, right: 30, left: 20, bottom: 40 }}
+                    margin={{ top: 40, right: 30, left: 20, bottom: 60 }}
                   >
                     <defs>
                       {/* A soft, premium indigo-to-transparent wash */}
@@ -636,16 +611,23 @@ export default function Graph() {
                       tickLine={false}
                       tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 600 }}
                       dy={15}
-                    />
+                    >
+                      <Label value="Time" position="bottom" offset={20} />
+                    </XAxis>
+
 
                     <YAxis
                       domain={[0, 12]}
-                      ticks={[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]}
+                      ticks={Object.keys(MODE_LEGEND).map(Number)}
+                      tickFormatter={(value) => MODE_LEGEND[value] || value}
                       axisLine={false}
                       tickLine={false}
                       tick={{ fill: '#94a3b8', fontSize: 11 }}
                       dx={-10}
-                    />
+                    >
+                      <Label value="Mode" angle={-90} position="insideLeft" />
+                    </YAxis>
+
 
                     <Tooltip
                       cursor={{ stroke: '#e2e8f0', strokeWidth: 2 }}

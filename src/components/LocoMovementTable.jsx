@@ -13,6 +13,8 @@ import {
   decodeDirection,
   decodeLocoMode,
   formatCellValue,
+  decodeTIN,
+  decodeLocoHealth
 } from "../utils/locoFormatters";
 
 
@@ -31,18 +33,14 @@ export default function LocoMovementTable({
 
   const renderDirection = (dir) => {
     const d = decodeDirection(dir);
-    const isUp = d === "UP";
+
     return (
-      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-        {isUp ? (
-          <NorthIcon sx={{ fontSize: 13, color: "info.main" }} />
-        ) : (
-          <SouthIcon sx={{ fontSize: 13, color: "secondary.main" }} />
-        )}
-        <Typography sx={{ fontSize: "0.68rem", fontWeight: 700 }}>{d}</Typography>
-      </Box>
+      <Typography sx={{ fontSize: "0.68rem", fontWeight: 700 }}>
+        {d}
+      </Typography>
     );
   };
+
 
   const getModeChip = (mode) => (
     <Chip
@@ -125,24 +123,35 @@ export default function LocoMovementTable({
                         whiteSpace: "nowrap"
                       }}
                     >
-                      {col.key === "movement_direction" ? (
-                        renderDirection(row[col.key])
-                      ) : col.key === "loco_mode" ? (
-                        getModeChip(row[col.key])
-                      ) : col.key === "date" ? (
-                        <Box>
-                          <Typography sx={{ fontSize: "0.68rem", fontWeight: 600 }}>
-                            {row.date}
-                          </Typography>
-                          <Typography sx={{ fontSize: "0.6rem", color: "text.secondary" }}>
-                            {row.time}
-                          </Typography>
-                        </Box>
-                      ) : (
-                        <Typography sx={{ fontSize: "0.68rem" }}>
-                          {formatCellValue(row, col.key)}
+                      {col.key === "loco_health_status" ? (
+                        <Typography>
+                          {decodeLocoHealth(row[col.key], row.frame_number)}
                         </Typography>
-                      )}
+                      ) :
+
+                        col.key === "tin" ? (
+                          <Typography sx={{ fontSize: "0.68rem", fontWeight: 600 }}>
+                            {decodeTIN(row[col.key])}
+                          </Typography>
+                        ) : col.key === "movement_direction" ? (
+                          renderDirection(row[col.key])
+                        ) : col.key === "loco_mode" ? (
+                          getModeChip(row[col.key])
+                        ) : col.key === "date" ? (
+                          <Box>
+                            <Typography sx={{ fontSize: "0.68rem", fontWeight: 600 }}>
+                              {row.date}
+                            </Typography>
+                            <Typography sx={{ fontSize: "0.6rem", color: "text.secondary" }}>
+                              {row.time}
+                            </Typography>
+                          </Box>
+                        ) : (
+                          <Typography sx={{ fontSize: "0.68rem" }}>
+                            {formatCellValue(row, col.key)}
+                          </Typography>
+                        )
+                      }
 
 
                     </TableCell>

@@ -1,13 +1,84 @@
 export const decodeDirection = (dir) => {
     if (dir === null || dir === undefined) return "-";
     switch (Number(dir)) {
-        case 0: return "UP";
-        case 1: return "DOWN";
-        case 2: return "UNKNOWN";
+        case 0: return "unidentified";
+        case 1: return "Nominal";
+        case 2: return "Reverse";
+        case 3: return "Future Use";
         default: return "-";
     }
 };
+export const decodeLocoHealth = (value, frameNumber) => {
+  if (value === null || value === undefined) return "-";
 
+  const faults = [
+    "System Internal Fault",
+    "Speed Sensor1 Fault",
+    "EB Drive Fault",
+    "EB Application (Feedback) Fault",
+    "RFID Reader1 Link Fail",
+    "RFID Reader2 Link Fail",
+    "Radio1 Link Fail",
+    "Radio2 Link Fail",
+    "LP-OCIP (DMI)1 Link Fail",
+    "LP-OCIP (DMI)2 Link Fail",
+    "GPS1/PPS1 Fail",
+    "GPS2/PPS2 Fail",
+    "GPS1 view not available since 2 hrs",
+    "GPS2 view not available since 2 hrs",
+    "Tag linking incorrect",
+    "GSM1 Fault",
+    "GSM2 Fault",
+    "Radio 1 RSSI Weak",
+    "Radio 2 RSSI Weak",
+    "Session Key Mismatch",
+    "Remaining keys < 5",
+    "BIU connectivity fault",
+    "Speed Sensor 2 fault",
+    "Cab Input fault"
+  ];
+
+  const num = Number(value);
+  if (isNaN(num) || num === 0) return "No Active fault";
+
+  const mod = Number(frameNumber) % 10;
+
+  let blockIndex = 3; // default fallback
+
+  if (mod === 1 || mod === 5) blockIndex = 0;
+  else if (mod === 2 || mod === 6) blockIndex = 1;
+  else if (mod === 3 || mod === 7) blockIndex = 2;
+  else if (mod === 4 || mod === 8) blockIndex = 3;
+
+  const offset = blockIndex * 6;
+
+  const active = [];
+
+  for (let i = 0; i < 6; i++) {
+    if (num & (1 << i)) {
+      active.push(faults[offset + i]);
+    }
+  }
+
+  return active.length ? active.join(" - ") : "Healthy";
+};
+
+
+
+
+export const decodeTIN = (tin) => {
+  if (tin === null || tin === undefined) return "-";
+
+  const value = Number(tin);
+  if (isNaN(value)) return "-";
+
+  if (value === 0) return "Ignore";
+  if (value >= 1 && value <= 250) return `Track ID ${value}`;
+  if (value === 251) return "Onboard Shed TIN";
+  if (value >= 252 && value <= 511) return "Reserved for Future Use";
+
+  return "-";
+};
 export const decodeLocoMode = (mode) => {
     if (mode === null || mode === undefined) return "-";
     const modes = {
@@ -94,7 +165,6 @@ export const decodeNewMAReply = (v) => {
     }
 };
 
-
 /* ================= SIGNAL OVERRIDE ================= */
 export const decodeSignalOverride = (v) =>
     Number(v) === 1 ? "ACTIVE" : "INACTIVE";
@@ -172,6 +242,9 @@ export const formatCellValue = (row, key) => {
         case "date":
             return formatDateTime(row);
 
+        case "tin":
+            return decodeTIN(row[key]);
+
         case "tag_link_information":
             return decodeTagLinkInfo(row[key]);
 
@@ -184,12 +257,11 @@ export const formatCellValue = (row, key) => {
         case "info_ack_status":
             return decodeInfoAck(row[key]);
 
-        case "onboard_health_byte_1":
-            return decodeHealthByte(row[key]);
-
         case "tag_duplicate_status":
             return decodeRfidDuplicate(row[key]);
-
+            
+        case "loco_health_status":
+            return decodeLocoHealth(row[key], row.frame_number);
 
         default:
             return row[key] ?? "-";

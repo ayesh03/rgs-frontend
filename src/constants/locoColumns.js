@@ -34,7 +34,7 @@ export const ONBOARD_COLUMNS = [
   { key: "info_ack_status", label: "Info Ack" },
   
 
-  { key: "onboard_health_byte_1", label: "Health Byte 1" },
+  { key: "loco_health_status", label: "Health Byte" },
 ];
 
 /* ===================== ACCESS ===================== */

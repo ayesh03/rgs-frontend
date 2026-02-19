@@ -49,7 +49,10 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
   /* ================= CONTEXT ================= */
   const { fromDate, toDate, isDateRangeValid } = useAppContext();
 
-  const { filteredRows, setFilter, clearFilters } = useTableFilter(rows);
+  const filteredRows = rows;
+const setFilter = () => {};
+const clearFilters = () => {};
+
 
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -70,19 +73,20 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
 
 
 
-  /* ================= RESET ON TABLE SWITCH ================= */
-  useEffect(() => {
-    if (!allRows.length) return;
+  // /* ================= RESET ON TABLE SWITCH ================= */
+  // useEffect(() => {
+  //   if (!allRows.length) return;
 
-    const filtered =
-      tableType === "onboard"
-        ? allRows.filter(r => Number(r.packet_type) === 10)
-        : allRows.filter(r => Number(r.packet_type) === 13);
+  //   const filtered =
+  //     tableType === "access"
+  //       ? allRows.filter(r => Number(r.packet_type) === 13)
+  //       : allRows.filter(r => Number(r.packet_type) === 10);
 
-    setRows(filtered);
-    clearFilters();
-    setPage(1);
-  }, [tableType, allRows]);
+
+  //   setRows(filtered);
+  //   clearFilters();
+  //   setPage(1);
+  // }, [tableType, allRows]);
 
 
 
@@ -154,12 +158,7 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
 
       setAllRows(mappedRows);
 
-      const filtered =
-        tableType === "onboard"
-          ? mappedRows.filter(r => Number(r.packet_type) === 10)
-          : mappedRows.filter(r => Number(r.packet_type) === 13);
-
-      setRows(filtered);
+      setRows(mappedRows);
       setPage(1);
 
 
