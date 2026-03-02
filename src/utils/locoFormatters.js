@@ -12,30 +12,30 @@ export const decodeLocoHealth = (value, frameNumber) => {
   if (value === null || value === undefined) return "-";
 
   const faults = [
-    "System Internal Fault",
-    "Speed Sensor1 Fault",
-    "EB Drive Fault",
-    "EB Application (Feedback) Fault",
-    "RFID Reader1 Link Fail",
-    "RFID Reader2 Link Fail",
-    "Radio1 Link Fail",
-    "Radio2 Link Fail",
-    "LP-OCIP (DMI)1 Link Fail",
-    "LP-OCIP (DMI)2 Link Fail",
-    "GPS1/PPS1 Fail",
-    "GPS2/PPS2 Fail",
-    "GPS1 view not available since 2 hrs",
-    "GPS2 view not available since 2 hrs",
-    "Tag linking incorrect",
-    "GSM1 Fault",
-    "GSM2 Fault",
-    "Radio 1 RSSI Weak",
-    "Radio 2 RSSI Weak",
-    "Session Key Mismatch",
-    "Remaining keys < 5",
-    "BIU connectivity fault",
-    "Speed Sensor 2 fault",
-    "Cab Input fault"
+    "System Internal Fault",                    // B0
+    "Speed Sensor1 Fault",                      // B1
+    "EB Drive Fault",                           // B2
+    "EB Application (Feedback) Fault",          // B3
+    "RFID Reader1 Link Fail",                   // B4
+    "RFID Reader2 Link Fail",                   // B5
+    "Radio1 Link Fail",                         // B6
+    "Radio2 Link Fail",                         // B7
+    "LP-OCIP (DMI)1 Link Fail",                 // B8
+    "LP-OCIP (DMI)2 Link Fail",                 // B9
+    "GPS1/PPS1 Fail",                           // B10
+    "GPS2/PPS2 Fail",                           // B11
+    "GPS1 view not available since 2 hrs",      // B12
+    "GPS2 view not available since 2 hrs",      // B13
+    "Tag linking incorrect",                    // B14
+    "GSM1 Fault",                               // B15
+    "GSM2 Fault",                               // B16
+    "Radio 1 RSSI Weak",                        // B17
+    "Radio 2 RSSI Weak",                        // B18
+    "Session Key Mismatch",                     // B19
+    "Remaining keys < 5",                       // B20
+    "BIU connectivity fault",                   // B21
+    "Speed Sensor 2 fault",                     // B22
+    "Cab Input fault"                           // B23
   ];
 
   const num = Number(value);
@@ -43,28 +43,31 @@ export const decodeLocoHealth = (value, frameNumber) => {
 
   const mod = Number(frameNumber) % 10;
 
-  let blockIndex = 3; // default fallback
+
+  let blockIndex = -1;
 
   if (mod === 1 || mod === 5) blockIndex = 0;
   else if (mod === 2 || mod === 6) blockIndex = 1;
   else if (mod === 3 || mod === 7) blockIndex = 2;
   else if (mod === 4 || mod === 8) blockIndex = 3;
+  else return "Healthy";
 
   const offset = blockIndex * 6;
 
   const active = [];
+//   console.log("Frame:", frameNumber);
+// console.log("Mod:", Number(frameNumber) % 10);
+// console.log("Health Value:", num);
 
   for (let i = 0; i < 6; i++) {
     if (num & (1 << i)) {
       active.push(faults[offset + i]);
     }
   }
+  if (active.length === 0) return "No Active Fault";
+  return active.join(", ");
 
-  return active.length ? active.join(" - ") : "Healthy";
-};
-
-
-
+}
 
 export const decodeTIN = (tin) => {
   if (tin === null || tin === undefined) return "-";
@@ -114,11 +117,13 @@ export const decodeLocoVersion = (v) => {
 export const decodeEmergency = (v) => {
     switch (Number(v)) {
         case 0: return "NO EMERGENCY";
-        case 1: return "SOS";
-        case 2: return "HEAD-ON COLLISION";
-        case 3: return "REAR-END COLLISION";
-        case 4: return "SIDE COLLISION";
-        case 5: return "PARTING SOS";
+        case 1: return "UNUSUAL STOPPAGE";
+        case 2: return "SOS";
+        case 3: return "ROLL BACK";
+        case 4: return "HEAD-ON COLLISION";
+        case 5: return "REAR-END COLLISION";
+        case 6: return "PARTING SOS";
+        case 7: return "SPARE";
         default: return "-";
     }
 };

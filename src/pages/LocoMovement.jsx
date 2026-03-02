@@ -73,20 +73,20 @@ const clearFilters = () => {};
 
 
 
-  // /* ================= RESET ON TABLE SWITCH ================= */
-  // useEffect(() => {
-  //   if (!allRows.length) return;
+  /* ================= RESET ON TABLE SWITCH ================= */
+  useEffect(() => {
+    if (!allRows.length) return;
 
-  //   const filtered =
-  //     tableType === "access"
-  //       ? allRows.filter(r => Number(r.packet_type) === 13)
-  //       : allRows.filter(r => Number(r.packet_type) === 10);
+    const filtered =
+      tableType === "access"
+        ? allRows.filter(r => Number(r.packet_type) === 13)
+        : allRows.filter(r => Number(r.packet_type) === 10);
 
 
-  //   setRows(filtered);
-  //   clearFilters();
-  //   setPage(1);
-  // }, [tableType, allRows]);
+    setRows(filtered);
+    clearFilters();
+    setPage(1);
+  }, [tableType, allRows]);
 
 
 

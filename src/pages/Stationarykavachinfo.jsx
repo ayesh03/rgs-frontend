@@ -295,7 +295,7 @@ const EMERGENCY_COLUMNS = [
   { key: "source_version", label: "Version" },
   { key: "stn_location_m", label: "Station Location " },
   { key: "gen_sos_call", label: "General SOS Call" },
-  { key: "pkt_crc", label: "Packet CRC" },
+  // { key: "pkt_crc", label: "Packet CRC" },
 ];
 
 export const formatMovementAuthorityRow = (row) => {
