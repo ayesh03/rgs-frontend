@@ -4,7 +4,7 @@
 This project is the web frontend conversion of the TCAS NMS Qt/QML desktop application.
 
 ## Completed Features
-- Desktop-style 7 main modules (TSR, Loco, Interlocking, Faults, Graphs, Track Profile, Parameters)
+- 5 pages (Loco Movement,Station Kavch info,faults,interlocking,Health,Graphs)
 - Modern React + MUI UI
 - Temporary authentication (backend-ready)
 - Pagination, filters, print dialogs
