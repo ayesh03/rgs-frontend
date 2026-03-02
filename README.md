@@ -1,4 +1,4 @@
-# TCAS NMS – Web Frontend
+# RGS – Web Frontend
 
 ## Overview
 This project is the web frontend conversion of the TCAS NMS Qt/QML desktop application.
