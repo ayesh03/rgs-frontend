@@ -1,19 +1,18 @@
 import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
+import { useLocation } from "react-router-dom";
 import {
   Box,
   Card,
   CardContent,
   Typography,
   LinearProgress,
-  IconButton,
   Stack,
   useTheme,
   useMediaQuery,
-  Tooltip,
+  alpha,
 } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import MovingIcon from "@mui/icons-material/Moving";
-import ViewColumnIcon from "@mui/icons-material/ViewColumn";
 import { useOutletContext } from "react-router-dom";
 import RowsPerPageControl from "../components/RowsPerPageControl";
 
@@ -29,49 +28,39 @@ import {
   ACCESS_COLUMNS,
 } from "../constants/locoColumns";
 
-
 const LocoMovement = forwardRef(({ tableType }, ref) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { selectedFile } = useOutletContext();
+  const location = useLocation();
+  const [dashboardFilter, setDashboardFilter] = useState(location.state?.dashboardFilter || null);
 
   /* ================= STATE ================= */
   const [loading, setLoading] = useState(false);
   const [allRows, setAllRows] = useState([]);
   const [rows, setRows] = useState([]);
-
   const [page, setPage] = useState(1);
   const [columnDialogOpen, setColumnDialogOpen] = useState(false);
-
-
-
+  const [fileBuffer, setFileBuffer] = useState(null);
 
   /* ================= CONTEXT ================= */
   const { fromDate, toDate, isDateRangeValid } = useAppContext();
-
-  const filteredRows = rows;
-const setFilter = () => {};
-const clearFilters = () => {};
-
-
+  const { filteredRows, setFilter, clearFilters } = useTableFilter(rows);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
     setRowsPerPage(isMobile ? 6 : 10);
   }, [isMobile]);
 
+  const columns = tableType === "access" ? ACCESS_COLUMNS : ONBOARD_COLUMNS;
+  const [visibleKeys, setVisibleKeys] = useState(columns.map(c => c.key));
 
-  const columns =
-    tableType === "access"
-      ? ACCESS_COLUMNS
-      : ONBOARD_COLUMNS;
-
-  const [visibleKeys, setVisibleKeys] = useState(
-    columns.map(c => c.key)
-  );
-
-
-
+  useEffect(() => {
+    if (!selectedFile) return;
+    selectedFile.arrayBuffer().then(buf => {
+      setFileBuffer(buf);
+    });
+  }, [selectedFile]);
 
   /* ================= RESET ON TABLE SWITCH ================= */
   useEffect(() => {
@@ -82,14 +71,12 @@ const clearFilters = () => {};
         ? allRows.filter(r => Number(r.packet_type) === 13)
         : allRows.filter(r => Number(r.packet_type) === 10);
 
-
     setRows(filtered);
-    clearFilters();
+    if (!location.state?.dashboardFilter) {
+      clearFilters();
+    }
     setPage(1);
   }, [tableType, allRows]);
-
-
-
 
   /* ================= DATA FETCH ================= */
   const generate = async () => {
@@ -106,48 +93,36 @@ const clearFilters = () => {};
     setLoading(true);
     setRows([]);
     clearFilters();
+    setDashboardFilter(null);
 
     try {
-      const normalizeDate = (v) =>
-        v && v.length === 16 ? `${v}:00` : v;
-
+      const normalizeDate = (v) => v && v.length === 16 ? `${v}:00` : v;
       const encodedFrom = encodeURIComponent(normalizeDate(fromDate));
       const encodedTo = encodeURIComponent(normalizeDate(toDate));
-
       const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-      if (!selectedFile) {
-        alert("Please select BIN file");
-        return;
+      let buffer = fileBuffer;
+      if (!buffer) {
+        buffer = await selectedFile.arrayBuffer();
+        setFileBuffer(buffer);
       }
-
-      const fileBuffer = await selectedFile.arrayBuffer();
 
       const res = await fetch(
         `${API_BASE}/api/loco-movement/by-date?from=${encodedFrom}&to=${encodedTo}`,
         {
           method: "POST",
-          body: fileBuffer,
-          headers: {
-            "Content-Type": "application/octet-stream",
-          },
+          body: buffer,
+          headers: { "Content-Type": "application/octet-stream" },
         }
       );
 
-
-
-
       const json = await res.json();
-
-      // Your Qt backend might not always send a "success" boolean, 
-      // but if it does, this logic remains:
       if (json.success === false) {
         throw new Error(json.error || "Backend error");
       }
 
       const mappedRows = json.data.map((r, idx) => {
         const dt = new Date(r.event_time);
-
         return {
           id: idx + 1,
           date: dt.toISOString().slice(0, 10),
@@ -155,13 +130,10 @@ const clearFilters = () => {};
           ...r,
         };
       });
-
       setAllRows(mappedRows);
-
       setRows(mappedRows);
       setPage(1);
-
-
+      return mappedRows;
     } catch (err) {
       console.error("Loco Movement fetch error:", err);
       alert(err.message);
@@ -170,49 +142,51 @@ const clearFilters = () => {};
     }
   };
 
-
   const clear = () => {
     setRows([]);
     setPage(1);
     clearFilters();
   };
 
-  /* ================= EXPOSE API ================= */
   useImperativeHandle(ref, () => ({
     generate,
     clear,
+    setFilter,
+    clearFilters,
     getFilteredRows: () => filteredRows,
     getAllRows: () => allRows,
-    getVisibleColumns: () =>
-      columns.filter(c => visibleKeys.includes(c.key)),
-
-
+    getVisibleColumns: () => columns.filter(c => visibleKeys.includes(c.key)),
     openColumnDialog: () => setColumnDialogOpen(true),
-    searchByLoco: (value) => setFilter("source_loco_id", value),
+    searchByLoco: (field, value) => setFilter(field, value),
   }));
-  //very nothing to say just organized very simpler way than
+
   const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
   const paginatedRows = filteredRows.slice(
     (page - 1) * rowsPerPage,
     page * rowsPerPage
   );
 
-  /* ================= UI ================= */
+  useEffect(() => {
+    if (!dashboardFilter || !rows.length) return;
+    const { field, value } = dashboardFilter;
+    setFilter(field, value);
+  }, [rows.length, dashboardFilter, setFilter]);
+
   return (
-    <Box component={motion.div} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <Box display="flex" justifyContent="space-between" sx={{ mb: 0.5 }}>
-        <Stack direction="row" spacing={0.5}>
-          <MovingIcon color="primary" fontSize="small" />
-          <Typography fontWeight={900} fontSize="0.75rem">
+    <Box 
+      component={motion.div} 
+      initial={{ opacity: 0, y: 10 }} 
+      animate={{ opacity: 1, y: 0 }}
+      sx={{ color: "#fff" }}
+    >
+      <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 0.5 }}>
+        <Stack direction="row" spacing={1} alignItems="center">
+          <MovingIcon sx={{ color: "#4dabf7", fontSize: "1rem" }} />
+          <Typography fontWeight={800} fontSize="0.85rem" sx={{ letterSpacing: 1, color: "#eee" }}>
             LOCO MOVEMENT
           </Typography>
-
         </Stack>
-        {/* <Tooltip title="Select Columns">
-          <IconButton size="small" onClick={() => setColumnDialogOpen(true)} disabled={!rows.length}>
-            <ViewColumnIcon fontSize="small" />
-          </IconButton>
-        </Tooltip> */}
+        
         {filteredRows.length > 0 && (
           <RowsPerPageControl
             rowsPerPage={rowsPerPage}
@@ -222,46 +196,69 @@ const clearFilters = () => {};
         )}
       </Box>
 
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {loading ? (
-          <LinearProgress />
+          <Box key="loader" sx={{ width: '100%', mb: 1 }}>
+            <LinearProgress 
+              sx={{ 
+                height: 3, 
+                borderRadius: 5, 
+                bgcolor: alpha("#4dabf7", 0.1),
+                "& .MuiLinearProgress-bar": {
+                  background: `linear-gradient(90deg, #0b4dbb, #4dabf7)`
+                }
+              }} 
+            />
+          </Box>
         ) : (
-
-          <Card variant="outlined">
-
-            <CardContent sx={{ p: 0 }}>
-              {filteredRows.length ? (
-                <LocoMovementTable
-                  rows={paginatedRows}
-                  columns={columns}
-                  visibleKeys={visibleKeys}
-                />
-
-
-              ) : (
-                <Box
-                  sx={{
-                    minHeight: 280,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Typography
-                    variant="caption"
+          <motion.div
+            key="table-content"
+            initial={{ opacity: 0, scale: 0.99 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <Card 
+              variant="outlined" 
+              sx={{ 
+                bgcolor: "rgba(255, 255, 255, 0.02)", 
+                borderColor: "rgba(255, 255, 255, 0.08)",
+                borderRadius: 3,
+                backdropFilter: "blur(10px)"
+              }}
+            >
+              <CardContent sx={{ p: 0 }}>
+                {filteredRows.length ? (
+                  <LocoMovementTable
+                    rows={paginatedRows}
+                    columns={columns}
+                    visibleKeys={visibleKeys}
+                  />
+                ) : (
+                  <Box
                     sx={{
-                      fontWeight: 700,
-                      letterSpacing: 1,
-                      color: "text.secondary",
+                      minHeight: 300,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 1
                     }}
                   >
-                    NO MOVEMENT DATA FOUND
-                  </Typography>
-                </Box>
-              )}
-            </CardContent>
-
-          </Card>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontWeight: 700,
+                        letterSpacing: 1,
+                        color: "rgba(255,255,255,0.3)",
+                      }}
+                    >
+                      NO MOVEMENT DATA FOUND
+                    </Typography>
+                  </Box>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
         )}
       </AnimatePresence>
 
@@ -272,7 +269,9 @@ const clearFilters = () => {};
             justifyContent: "center",
             alignItems: "center",
             mt: 1,
-            mb: 0.5,
+            p: 1,
+            bgcolor: "rgba(255,255,255,0.02)",
+            borderRadius: 2
           }}
         >
           <PaginationControls
@@ -283,6 +282,7 @@ const clearFilters = () => {};
           />
         </Box>
       )}
+
       <ColumnFilterDialog
         open={columnDialogOpen}
         column="Columns"
@@ -300,8 +300,6 @@ const clearFilters = () => {};
           setColumnDialogOpen(false);
         }}
       />
-
-
     </Box>
   );
 });

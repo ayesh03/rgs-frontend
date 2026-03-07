@@ -7,6 +7,8 @@ import {
   Select,
   MenuItem,
   LinearProgress,
+  alpha,
+  useTheme
 } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import { forwardRef, useImperativeHandle, useState, useEffect } from "react";
@@ -21,6 +23,7 @@ import ColumnFilterDialog from "../components/ColumnFilterDialog";
 import { INTERLOCKING_COLUMNS } from "../constants/interlockingColumns";
 
 const Interlocking = forwardRef((props, ref) => {
+  const theme = useTheme();
   const [loading, setLoading] = useState(false);
 
   const [stations, setStations] = useState([]);
@@ -36,11 +39,9 @@ const Interlocking = forwardRef((props, ref) => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [page, setPage] = useState(1);
 
-
   const [hasGenerated, setHasGenerated] = useState(false);
-  const { fromDate, toDate, logDir, isDateRangeValid } = useAppContext();
+  const { fromDate, toDate, isDateRangeValid } = useAppContext();
   const { selectedFile } = useOutletContext();
-
 
   const [columnDialogOpen, setColumnDialogOpen] = useState(false);
   const DEFAULT_VISIBLE = [
@@ -54,9 +55,51 @@ const Interlocking = forwardRef((props, ref) => {
   ];
 
   const [visibleKeys, setVisibleKeys] = useState(DEFAULT_VISIBLE);
-
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
+  /* ===================== STYLING ===================== */
+  const selectStyle = {
+    height: 38,
+    bgcolor: "rgba(255, 255, 255, 0.05)",
+    backdropFilter: "blur(10px)",
+    color: "#fff",
+    borderRadius: "8px",
+    fontSize: "0.85rem",
+    "& .MuiOutlinedInput-notchedOutline": {
+      borderColor: "rgba(255, 255, 255, 0.1)",
+    },
+    "&:hover .MuiOutlinedInput-notchedOutline": {
+      borderColor: theme.palette.primary.main,
+    },
+    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+      borderColor: theme.palette.primary.main,
+    },
+    "& .MuiSvgIcon-root": { color: "rgba(255, 255, 255, 0.7)" },
+  };
+
+  // This ensures the actual dropdown list matches the dark glass theme
+  const menuProps = {
+    PaperProps: {
+      sx: {
+        bgcolor: "#1a1a1a", // Deep dark background
+        backgroundImage: "none",
+        border: "1px solid rgba(255,255,255,0.1)",
+        color: "#fff",
+        "& .MuiMenuItem-root": {
+          fontSize: "0.85rem",
+          "&:hover": {
+            bgcolor: "rgba(255,255,255,0.08)",
+          },
+          "&.Mui-selected": {
+            bgcolor: alpha(theme.palette.primary.main, 0.2),
+            "&:hover": {
+              bgcolor: alpha(theme.palette.primary.main, 0.3),
+            },
+          },
+        },
+      },
+    },
+  };
   /* ===================== FETCH STATIONS ===================== */
   const fetchStations = async () => {
     if (!fromDate || !toDate || !selectedFile) return;
@@ -68,18 +111,13 @@ const Interlocking = forwardRef((props, ref) => {
 
       const res = await fetch(
         `${API_BASE}/api/interlocking/stations?from=${from}&to=${to}`,
-        {
-          method: "POST",
-          body: selectedFile
-
-        }
+        { method: "POST", body: selectedFile }
       );
 
       const json = await res.json();
       if (json.success) {
         setStations(json.data || []);
       }
-
     } catch (err) {
       console.error("[INTERLOCKING] Station fetch error:", err);
     }
@@ -88,6 +126,8 @@ const Interlocking = forwardRef((props, ref) => {
   useEffect(() => {
     fetchStations();
   }, [fromDate, toDate, selectedFile]);
+
+  /* ===================== FETCH RELAYS ===================== */
   useEffect(() => {
     if (!station || !fromDate || !toDate || !selectedFile) return;
 
@@ -98,51 +138,32 @@ const Interlocking = forwardRef((props, ref) => {
         const to = encodeURIComponent(normalize(toDate));
 
         const res = await fetch(
-          `${API_BASE}/api/interlocking/report` +
-          `?from=${from}&to=${to}` +
-          `&station=${station}` +
-          `&page=1`,
-          {
-            method: "POST",
-            body: selectedFile
-          }
+          `${API_BASE}/api/interlocking/report?from=${from}&to=${to}&station=${station}&page=1`,
+          { method: "POST", body: selectedFile }
         );
 
         const json = await res.json();
         if (!json.success) return;
 
-        const relays = [
-          ...new Set((json.data || []).map(r => r.relay))
-        ];
-
+        const relays = [...new Set((json.data || []).map(r => r.relay))];
         setRelayOptions(relays);
         setRelay("ALL");
         setRows([]);
         setHasGenerated(false);
-
       } catch (e) {
         console.error("Relay fetch failed", e);
       }
     };
-
 
     fetchRelays();
   }, [station, selectedFile, fromDate, toDate]);
 
   /* ===================== GENERATE ===================== */
   const generate = async () => {
-    if (!station || !relay) return;
-
-
-    if (!isDateRangeValid) {
-      alert("Invalid date range");
-      return;
-    }
+    if (!station || !relay || !isDateRangeValid) return;
 
     setHasGenerated(true);
     setLoading(true);
-    setRows([]);
-    setAllRows([]);
 
     try {
       const normalize = v => (v.length === 16 ? `${v}:00` : v);
@@ -150,15 +171,8 @@ const Interlocking = forwardRef((props, ref) => {
       const to = encodeURIComponent(normalize(toDate));
 
       const res = await fetch(
-        `${API_BASE}/api/interlocking/report` +
-        `?from=${from}&to=${to}` +
-        `&station=${station}` +
-        `&page=1`,
-        {
-          method: "POST",
-          body: selectedFile
-
-        }
+        `${API_BASE}/api/interlocking/report?from=${from}&to=${to}&station=${station}&page=1`,
+        { method: "POST", body: selectedFile }
       );
 
       const json = await res.json();
@@ -168,25 +182,9 @@ const Interlocking = forwardRef((props, ref) => {
         id: idx + 1,
         ...r,
         relayId: r.relay,
-        date: r.date  ? `${r.date} ` : r.date,
       }));
 
-
       setAllRows(mappedRows);
-
-      if (relay === "ALL") {
-        setRows(mappedRows);
-      } else {
-        setRows(mappedRows.filter(r => r.relayId === relay));
-      }
-
-      setPage(1);
-      setAllRows(mappedRows);
-      setRows(mappedRows);
-
-      const uniqueRelays = [...new Set(mappedRows.map(r => r.relayId))];
-      setRelayOptions(uniqueRelays);
-
       setPage(1);
     } catch (err) {
       console.error("[INTERLOCKING] API error:", err);
@@ -197,6 +195,7 @@ const Interlocking = forwardRef((props, ref) => {
     }
   };
 
+  /* ===================== FILTER LOGIC ===================== */
   useEffect(() => {
     let filtered = [...allRows];
 
@@ -206,10 +205,8 @@ const Interlocking = forwardRef((props, ref) => {
 
     if (statusFilter !== "ALL") {
       filtered = filtered.filter(r => {
-        const s = r.status?.toUpperCase();
-        return statusFilter === "PICKED"
-          ? s.includes("PICKED")
-          : s.includes("DROP");
+        const s = r.status?.toUpperCase() || "";
+        return statusFilter === "PICKED" ? s.includes("PICKED") : s.includes("DROP");
       });
     }
 
@@ -217,73 +214,62 @@ const Interlocking = forwardRef((props, ref) => {
     setPage(1);
   }, [relay, statusFilter, allRows]);
 
-  /* ===================== CLEAR ===================== */
   const clear = () => {
     setRows([]);
     setAllRows([]);
     setRelay("");
     setStatusFilter("ALL");
-    setRelayOptions([]);
-    setPage(1);
     setHasGenerated(false);
   };
 
-  /* ===================== REF API ===================== */
   useImperativeHandle(ref, () => ({
     generate,
     clear,
     getFilteredRows: () => rows,
     getAllRows: () => allRows,
-    getVisibleColumns: () =>
-      INTERLOCKING_COLUMNS.filter(c => visibleKeys.includes(c.key)),
+    getVisibleColumns: () => INTERLOCKING_COLUMNS.filter(c => visibleKeys.includes(c.key)),
     openColumnDialog: () => setColumnDialogOpen(true),
   }));
 
-  /* ===================== PAGINATION ===================== */
   const totalPages = Math.ceil(rows.length / rowsPerPage);
-  const paginatedRows = rows.slice(
-    (page - 1) * rowsPerPage,
-    page * rowsPerPage
-  );
+  const paginatedRows = rows.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+  const showNoResult = hasGenerated && !loading && rows.length === 0;
 
-  const showNoResult =
-    hasGenerated &&
-    !loading &&
-    rows.length === 0 &&
-    allRows.length > 0;
-
-
-  /* ===================== UI ===================== */
   return (
-    <Box p={1} component={motion.div} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-
-      {/* ===== FILTER CARD ===== */}
+    <Box
+      p={1}
+      component={motion.div}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+    >
+      {/* ===== GLASS FILTER BAR ===== */}
       <Box
         sx={{
-          mb: 1,
+          mb: 0.5,
+          p: 1,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          flexWrap: "wrap"
+          flexWrap: "wrap",
+          bgcolor: "rgba(255, 255, 255, 0.03)",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+          borderRadius: "10px",
+          gap: 1
         }}
       >
-        {/* LEFT SIDE DROPDOWNS */}
         <Stack direction="row" spacing={1.5} alignItems="center">
-
           <Select
             size="small"
             value={station}
             onChange={(e) => setStation(e.target.value)}
             displayEmpty
-            sx={{ width: 240 }}
+            sx={{ ...selectStyle, width: 220 }}
+            MenuProps={menuProps}
           >
-            <MenuItem value="" disabled>
-              Select Station
-            </MenuItem>
+            <MenuItem value="" disabled sx={{ color: "rgba(255,255,255,0.3)" }}>Select Station</MenuItem>
             {stations.map((s) => (
-              <MenuItem key={s} value={s}>
-                {s}
-              </MenuItem>
+              <MenuItem key={s} value={s}>{s}</MenuItem>
             ))}
           </Select>
 
@@ -292,17 +278,13 @@ const Interlocking = forwardRef((props, ref) => {
             value={relay}
             onChange={(e) => setRelay(e.target.value)}
             displayEmpty
-            sx={{ width: 240 }}
+            sx={{ ...selectStyle, width: 220 }}
             disabled={!station || !relayOptions.length}
+            MenuProps={menuProps}
           >
             <MenuItem value="ALL">All Relays</MenuItem>
-            <MenuItem value="" disabled>
-              Select Relay
-            </MenuItem>
             {relayOptions.map((r) => (
-              <MenuItem key={r} value={r}>
-                {r}
-              </MenuItem>
+              <MenuItem key={r} value={r}>{r}</MenuItem>
             ))}
           </Select>
 
@@ -310,16 +292,16 @@ const Interlocking = forwardRef((props, ref) => {
             size="small"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            sx={{ width: 200 }}
+            sx={{ ...selectStyle, width: 180 }}
             disabled={!allRows.length}
+            MenuProps={menuProps} 
           >
             <MenuItem value="ALL">All Status</MenuItem>
             <MenuItem value="PICKED">Picked Up</MenuItem>
-            <MenuItem value="DROPPED">Drop Down</MenuItem>
+            <MenuItem value="DROPPED">Dropped Down</MenuItem>
           </Select>
         </Stack>
 
-        {/* RIGHT SIDE ROWS DROPDOWN */}
         {rows.length > 0 && (
           <RowsPerPageControl
             rowsPerPage={rowsPerPage}
@@ -329,69 +311,70 @@ const Interlocking = forwardRef((props, ref) => {
         )}
       </Box>
 
-
       {/* ===== RESULT AREA ===== */}
       <AnimatePresence mode="wait">
         {loading ? (
-          <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <LinearProgress sx={{ height: 6, borderRadius: 3 }} />
+          <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <Box sx={{ py: 4, textAlign: 'center' }}>
+              <LinearProgress sx={{ height: 4, borderRadius: 2, bgcolor: alpha(theme.palette.primary.main, 0.1) }} />
+              <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.4)", mt: 1, display: 'block', letterSpacing: 1 }}>
+                PROCESSING INTERLOCKING TELEMETRY...
+              </Typography>
+            </Box>
           </motion.div>
         ) : rows.length > 0 ? (
-          <motion.div key="table" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
-            <Card sx={{ borderRadius: 4 }}>
+          <motion.div
+            key="table"
+            initial={{ opacity: 0, scale: 0.99 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.99 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Card
+              sx={{
+                borderRadius: "16px",
+                bgcolor: "rgba(18, 18, 18, 0.4)",
+                backdropFilter: "blur(12px)",
+                border: "1px solid rgba(255, 255, 255, 0.08)",
+                overflow: "hidden"
+              }}
+            >
               <CardContent sx={{ p: 0 }}>
-                <InterlockingTable
-                  rows={paginatedRows}
-                  visibleKeys={visibleKeys}
-                />
+                <InterlockingTable rows={paginatedRows} visibleKeys={visibleKeys} />
                 <Box
                   sx={{
-                    p: 3,
+                    p: 2,
                     display: "flex",
                     justifyContent: "center",
-                    borderTop: "1px solid #f9f9f9"
+                    borderTop: "1px solid rgba(255, 255, 255, 0.05)"
                   }}
                 >
-                  <PaginationControls
-                    page={page}
-                    setPage={setPage}
-                    totalPages={totalPages}
-                  />
+                  <PaginationControls page={page} setPage={setPage} totalPages={totalPages} />
                 </Box>
               </CardContent>
             </Card>
           </motion.div>
         ) : showNoResult ? (
-          <motion.div
-            key="no-result"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-          >
+          <motion.div key="no-result" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <NoResult />
           </motion.div>
         ) : null}
       </AnimatePresence>
 
-      {/* MUST be OUTSIDE AnimatePresence */}
       <ColumnFilterDialog
         open={columnDialogOpen}
-        column="Columns"
+        column="Table Columns"
         values={INTERLOCKING_COLUMNS.map(c => c.label)}
-        selectedValues={visibleKeys.map(
-          key => INTERLOCKING_COLUMNS.find(c => c.key === key)?.label
-        )}
+        selectedValues={visibleKeys.map(key => INTERLOCKING_COLUMNS.find(c => c.key === key)?.label)}
         onClose={() => setColumnDialogOpen(false)}
         onApply={(labels) => {
           const keys = INTERLOCKING_COLUMNS
             .filter(c => labels.includes(c.label))
             .map(c => c.key);
-
           setVisibleKeys(keys);
           setColumnDialogOpen(false);
         }}
       />
-
     </Box>
   );
 });

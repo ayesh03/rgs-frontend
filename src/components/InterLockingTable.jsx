@@ -5,87 +5,137 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
   Typography,
   Box,
   alpha,
   Chip,
+  useTheme,
 } from "@mui/material";
+import { motion } from "framer-motion";
 import HubIcon from '@mui/icons-material/Hub';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { INTERLOCKING_COLUMNS } from "../constants/interlockingColumns";
 
 export default function InterlockingTable({ rows = [], visibleKeys = [] }) {
+  const theme = useTheme();
 
-
-  // Logic to color-code Relay Status (Pick/Drop or Active/Inactive)
+  /* ===================== STATUS COLOR LOGIC ===================== */
   const getStatusStyle = (status) => {
-    const s = status?.toString().toUpperCase();
-
-    if (s === "PICKED UP" || s === "PICKED" || s === "ON" || s === "1") {
-      return {
-        label: "PICKED",
-        color: "success",
-        bgcolor: alpha("#2e7d32", 0.1),
-      };
-    }
+    const s = status?.toString().toUpperCase() || "";
+    const isPicked = ["PICKED UP", "PICKED", "ON", "1", "TRUE"].includes(s);
 
     return {
-      label: "DROPPED",
-      color: "error",
-      bgcolor: alpha("#d32f2f", 0.1),
+      label: isPicked ? "PICKED UP" : "DROPPED",
+      color: isPicked ? "#00e676" : "#ff5252", // Neon Green : Neon Red
+      glow: isPicked ? alpha("#00e676", 0.15) : alpha("#ff5252", 0.15),
+      border: isPicked ? alpha("#00e676", 0.3) : alpha("#ff5252", 0.3),
     };
   };
 
-const hexFields = [
-  "message_length",
-  "message_sequence",
-  "stationary_kavach_id"
-];
+  /* ===================== UI HELPERS ===================== */
+  const hexFields = ["message_length", "message_sequence", "stationary_kavach_id"];
 
   return (
     <TableContainer
-      component={Paper}
       sx={{
-        borderRadius: 3,
-        boxShadow: "0 4px 24px rgba(0,0,0,0.06)",
-        border: "1px solid #e0e0e0"
+        bgcolor: "transparent",
+        backgroundImage: "none",
+        "&::-webkit-scrollbar": { height: "6px" },
+        "&::-webkit-scrollbar-thumb": { 
+          bgcolor: "rgba(255,255,255,0.1)", 
+          borderRadius: "10px" 
+        }
       }}
     >
-      <Table size="small" stickyHeader>
+      <Table size="small" stickyHeader sx={{ borderCollapse: 'separate', borderSpacing: '0 4px' }}>
+        {/* ================= HEADER ================= */}
         <TableHead>
           <TableRow>
             {visibleKeys.map((key) => (
-              <TableCell key={key} sx={{ fontWeight: 700 }}>
+              <TableCell 
+                key={key} 
+                sx={{ 
+                  bgcolor: "#0a0a0a", // Solid dark for sticky compatibility
+                  fontWeight: 800,
+                  fontSize: "0.68rem",
+                  color: "rgba(255,255,255,0.5)",
+                  borderBottom: "1px solid rgba(255,255,255,0.1)",
+                  letterSpacing: "0.8px",
+                  py: 1.5,
+                  textTransform: "uppercase"
+                }}
+              >
                 {INTERLOCKING_COLUMNS.find(c => c.key === key)?.label || key}
               </TableCell>
             ))}
           </TableRow>
         </TableHead>
 
+        {/* ================= BODY ================= */}
         <TableBody>
           {rows.map((row, index) => (
-            <TableRow key={index}>
+            <TableRow 
+              key={index}
+              component={motion.tr}
+              initial={{ opacity: 0, x: -15 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.02, duration: 0.3 }}
+              sx={{
+                transition: 'background 0.2s',
+                "&:hover": {
+                  bgcolor: "rgba(255, 255, 255, 0.04)",
+                },
+                "& td": { 
+                  borderBottom: "1px solid rgba(255,255,255,0.03)",
+                  color: "rgba(255,255,255,0.85)"
+                },
+              }}
+            >
               {visibleKeys.map((key) => (
-                <TableCell key={key}>
+                <TableCell key={key} sx={{ py: 1.2 }}>
                   {key === "status" ? (
                     <Chip
                       label={getStatusStyle(row.status).label}
                       size="small"
-                      color={getStatusStyle(row.status).color}
+                      sx={{
+                        fontSize: "0.6rem",
+                        fontWeight: 900,
+                        height: 20,
+                        bgcolor: getStatusStyle(row.status).glow,
+                        color: getStatusStyle(row.status).color,
+                        border: `1px solid ${getStatusStyle(row.status).border}`,
+                        "& .MuiChip-label": { px: 1 }
+                      }}
                     />
+                  ) : key === "time" ? (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <AccessTimeIcon sx={{ fontSize: 13, color: "rgba(255,255,255,0.3)" }} />
+                      <Typography sx={{ fontSize: "0.72rem", fontWeight: 600 }}>
+                        {row[key]}
+                      </Typography>
+                    </Box>
+                  ) : key === "relay" ? (
+                    <Typography sx={{ fontSize: "0.72rem", fontWeight: 700, color: theme.palette.primary.light }}>
+                      {row[key]}
+                    </Typography>
+                  ) : hexFields.includes(key) ? (
+                    <Typography sx={{ 
+                      fontSize: "0.7rem", 
+                      fontFamily: "'Roboto Mono', monospace", 
+                      color: "rgba(255,255,255,0.5)" 
+                    }}>
+                      0x{row[key]?.toString(16).toUpperCase().padStart(2, '0') || "00"}
+                    </Typography>
                   ) : (
-                    row[key]
-
+                    <Typography sx={{ fontSize: "0.72rem" }}>
+                      {row[key]}
+                    </Typography>
                   )}
                 </TableCell>
               ))}
             </TableRow>
           ))}
         </TableBody>
-
-
-
       </Table>
     </TableContainer>
   );

@@ -1,20 +1,21 @@
 import { Box, Typography, Stack, alpha, Button } from "@mui/material";
-import SearchOffIcon from '@mui/icons-material/SearchOff';
-import FilterListOffIcon from '@mui/icons-material/FilterListOff';
+import SearchOffIcon from "@mui/icons-material/SearchOff";
+import FilterListOffIcon from "@mui/icons-material/FilterListOff";
 import { motion } from "framer-motion";
 
-export default function NoResult({ 
-  text = "No records found", 
+export default function NoResult({
+  text = "No records found",
   subtext = "Try adjusting your filters or selecting a different date range.",
-  onClearFilters 
+  onClearFilters,
 }) {
   return (
     <Box
       component={motion.div}
-      initial={{ opacity: 0, scale: 0.95 }}
+      initial={{ opacity: 0, scale: 0.94 }}
       animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4 }}
       sx={{
-        height: 400,
+        height: 420,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -23,55 +24,75 @@ export default function NoResult({
         px: 3,
       }}
     >
-      {/* Decorative Icon Container */}
+      {/* Icon */}
       <Box
+        component={motion.div}
+        animate={{ y: [0, -6, 0] }}
+        transition={{ duration: 3, repeat: Infinity }}
         sx={{
           mb: 3,
           p: 3,
           borderRadius: "50%",
-          bgcolor: alpha("#9e9e9e", 0.05),
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          border: "2px dashed",
-          borderColor: alpha("#9e9e9e", 0.2),
+          bgcolor: "rgba(255,255,255,0.03)",
+          border: "1px dashed rgba(255,255,255,0.15)",
+          backdropFilter: "blur(10px)",
         }}
       >
-        <SearchOffIcon sx={{ fontSize: 60, color: "text.disabled", opacity: 0.5 }} />
+        <SearchOffIcon
+          sx={{
+            fontSize: 60,
+            color: "rgba(255,255,255,0.35)",
+          }}
+        />
       </Box>
 
       <Stack spacing={1} alignItems="center">
-        <Typography 
-          variant="h6" 
-          fontWeight="700" 
-          color="text.primary"
-          sx={{ letterSpacing: -0.5 }}
+        <Typography
+          sx={{
+            fontWeight: 700,
+            fontSize: "18px",
+            color: "#ffffff",
+            letterSpacing: "0.3px",
+          }}
         >
           {text}
         </Typography>
-        
-        <Typography 
-          variant="body2" 
-          color="text.secondary" 
-          sx={{ maxWidth: 300, mb: 2 }}
+
+        <Typography
+          sx={{
+            fontSize: "13px",
+            color: "rgba(255,255,255,0.55)",
+            maxWidth: 320,
+            mb: 2,
+          }}
         >
           {subtext}
         </Typography>
 
         {onClearFilters && (
           <Button
+            component={motion.button}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             variant="outlined"
             size="small"
             startIcon={<FilterListOffIcon />}
             onClick={onClearFilters}
-            sx={{ 
-              borderRadius: 2, 
-              textTransform: "none", 
-              fontWeight: "bold",
-              mt: 1 
+            sx={{
+              borderRadius: "10px",
+              textTransform: "none",
+              fontWeight: 600,
+              color: "#e0e0e0",
+              borderColor: "rgba(255,255,255,0.2)",
+              px: 2,
+              py: 0.5,
+              "&:hover": {
+                borderColor: "#4dabf7",
+                bgcolor: alpha("#4dabf7", 0.08),
+              },
             }}
           >
-            Clear All Filters
+            Clear Filters
           </Button>
         )}
       </Stack>

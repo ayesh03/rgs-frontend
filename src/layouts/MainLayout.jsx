@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import areaLogo from "../assets/arecaLogo.png";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
+
 import {
   AppBar,
   Toolbar,
@@ -10,7 +11,6 @@ import {
   TextField,
   Paper,
   IconButton,
-  Tooltip,
   Divider,
   Dialog,
   DialogTitle,
@@ -37,7 +37,6 @@ export default function MainLayout() {
   const [aboutOpen, setAboutOpen] = useState(false);
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
 
-  // Separate anchors for from/to pickers
   const [fromAnchorEl, setFromAnchorEl] = useState(null);
   const [toAnchorEl, setToAnchorEl] = useState(null);
 
@@ -50,12 +49,11 @@ export default function MainLayout() {
   const {
     fromDate,
     toDate,
-    logDir,
     setFromDate,
     setToDate,
-    setLogDir,
     resetFilters,
   } = useAppContext();
+
   const handleLogoutClick = () => setLogoutConfirmOpen(true);
   const handleConfirmLogout = () => {
     resetFilters();
@@ -63,6 +61,7 @@ export default function MainLayout() {
     setLogoutConfirmOpen(false);
     navigate("/login", { replace: true });
   };
+
   const formatDateTimeForDisplay = (datetimeLocal) => {
     if (!datetimeLocal) return "Select Date & Time";
     const date = new Date(datetimeLocal);
@@ -76,7 +75,7 @@ export default function MainLayout() {
       hour12: false
     });
   };
-  // HANDLERS FOR "FROM" POPOVER
+
   const handleFromOpen = (event) => {
     const [d, t] = (fromDate || "").split("T");
     setTempFromDate(d || "");
@@ -90,7 +89,7 @@ export default function MainLayout() {
       handleFromClose();
     }
   };
-  // HANDLERS FOR "TO" POPOVER
+
   const handleToOpen = (event) => {
     const [d, t] = (toDate || "").split("T");
     setTempToDate(d || "");
@@ -104,46 +103,108 @@ export default function MainLayout() {
       handleToClose();
     }
   };
+
   const navItems = [
+    { label: "Dashboard", path: "dashboard" },
     { label: "Loco Movement", path: "loco" },
     { label: "Station Kavach Info", path: "StationaryKavachInfo" },
     { label: "Faults", path: "faults" },
     { label: "Interlocking", path: "interlocking" },
     { label: "Health", path: "health" },
     { label: "Graphs", path: "graphs" },
-    // { label: "Track Profile Graph", path: "track-profile/graph" },
-    // { label: "Track Profile", path: "track-profile" },
-    // { label: "Parameters", path: "parameters" },
-    // { label: "TSR", path: "tsr" },
-    // { label: "Radio", path: "radio" }
   ];
-  
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", width: "100%", minHeight: "100vh", background: "#f4f7fa" }}>
+    <Box sx={{
+      display: "flex",
+      flexDirection: "column",
+      width: "100%",
+      minHeight: "100vh",
+      background: "#0a0c10", // Deep dark background
+      color: "#e0e0e0"
+    }}>
 
-      <AppBar position="sticky" elevation={0} sx={{ background: "rgba(255, 255, 255, 0.95)", backdropFilter: "blur(12px)", color: "#1a2027", borderBottom: "1px solid rgba(0, 0, 0, 0.05)" }}>
+      <AppBar
+        position="sticky"
+        elevation={0}
+        sx={{
+          background: "rgba(18, 22, 28, 0.9)",
+          backdropFilter: "blur(20px)",
+          color: "#fff",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.08)"
+        }}
+      >
         <Toolbar sx={{ justifyContent: "space-between", minHeight: "56px !important", px: 2 }}>
           {/* LOGO SECTION */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Box component="img" src={areaLogo} alt="Logo" sx={{ height: 24 }} />
-            <Typography variant="caption" sx={{ mt: 0.7, fontWeight: 700, color: "#0b4dbb", fontSize: "20px" }}>
-              KAVACH <Box component="span" sx={{ fontWeight: 200, color: "#444" }}>CIKMS</Box>
+            <a href="https://www.areca.in/" target="_blank" rel="noopener noreferrer">
+              <Box component="img" src={areaLogo} alt="Logo" sx={{ height: 24, cursor: "pointer", filter: "brightness(0) invert(1)" }} />
+            </a>
+
+            <Typography
+              component={motion.div}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              sx={{
+                mt: 0.7,
+                fontWeight: 800,
+                fontSize: "20px",
+                letterSpacing: "1px",
+                background: "linear-gradient(90deg,#4dabf7,#74c0fc,#4dabf7)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                textShadow: "0 0 10px rgba(77,171,247,0.4)",
+              }}
+            >
+              <motion.span
+                animate={{ letterSpacing: ["1px", "2px", "1px"] }}
+                transition={{ duration: 4, repeat: Infinity }}
+              >
+                KAVACH
+              </motion.span>
+
+              <Box
+                component="span"
+                sx={{
+                  ml: 1,
+                  fontWeight: 300,
+                  color: "rgba(255,255,255,0.6)",
+                  WebkitTextFillColor: "rgba(255,255,255,0.6)",
+                  background: "none",
+                  textShadow: "none",
+                  fontSize: "16px"
+                }}
+              >
+                Report Generating System
+              </Box>
             </Typography>
           </Box>
 
           {/* FILTER BAR SECTION */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2, p: 0.5, px: 1.5, borderRadius: 2, bgcolor: "rgba(0,0,0,0.04)" }}>
+          <Box sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            p: 0.5,
+            px: 0.5,
+            borderRadius: 2,
+            bgcolor: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.1)"
+          }}>
 
             {/* FROM PICKER */}
             <Stack direction="row" alignItems="center" spacing={1}>
-              <Typography variant="caption" sx={{ fontWeight: 700 }}>From:</Typography>
+              <Typography variant="caption" sx={{ fontWeight: 700, color: "#888" }}>From:</Typography>
               <Button
-                id="from-button"
                 size="small" variant="outlined"
                 onClick={handleFromOpen}
                 startIcon={<CalendarTodayIcon sx={{ fontSize: 14 }} />}
-                sx={{ textTransform: "none", fontSize: "0.75rem", minWidth: 160, color: "#333", borderColor: "#ccc" }}
+                sx={{
+                  textTransform: "none", fontSize: "0.75rem", minWidth: 160,
+                  color: "#eee", borderColor: "rgba(255,255,255,0.2)",
+                  "&:hover": { borderColor: "rgba(255,255,255,0.4)", bgcolor: "rgba(255,255,255,0.05)" }
+                }}
               >
                 {formatDateTimeForDisplay(fromDate)}
               </Button>
@@ -152,35 +213,29 @@ export default function MainLayout() {
                 anchorEl={fromAnchorEl}
                 onClose={handleFromClose}
                 anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-                transformOrigin={{ vertical: "top", horizontal: "left" }}
+                PaperProps={{ sx: { bgcolor: "#1e2227", color: "#fff", border: "1px solid #333" } }}
               >
                 <Box sx={{ p: 2, minWidth: 250 }}>
                   <Typography variant="subtitle2" sx={{ mb: 1.5 }}>Select Start Date/Time</Typography>
                   <Stack spacing={2}>
                     <TextField
-                      label="Date"
-                      type="date"
-                      size="small"
-                      fullWidth
+                      label="Date" type="date" size="small" fullWidth
                       value={tempFromDate}
                       onChange={(e) => setTempFromDate(e.target.value)}
                       InputLabelProps={{ shrink: true }}
+                      sx={{ input: { color: "#fff" }, label: { color: "#888" }, "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "#444" } } }}
                     />
-
                     <TextField
-                      label="Time"
-                      type="time"
-                      size="small"
-                      fullWidth
+                      label="Time" type="time" size="small" fullWidth
                       value={tempFromTime}
                       onChange={(e) => setTempFromTime(e.target.value)}
                       inputProps={{ step: 1 }}
                       InputLabelProps={{ shrink: true }}
+                      sx={{ input: { color: "#fff" }, label: { color: "#888" }, "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "#444" } } }}
                     />
-
                     <Stack direction="row" spacing={1} justifyContent="flex-end">
-                      <Button size="small" onClick={handleFromClose}>Cancel</Button>
-                      <Button size="small" variant="contained" onClick={handleFromApply}>Apply</Button>
+                      <Button size="small" onClick={handleFromClose} sx={{ color: "#aaa" }}>Cancel</Button>
+                      <Button size="small" variant="contained" onClick={handleFromApply} sx={{ bgcolor: "#0b4dbb" }}>Apply</Button>
                     </Stack>
                   </Stack>
                 </Box>
@@ -189,13 +244,16 @@ export default function MainLayout() {
 
             {/* TO PICKER */}
             <Stack direction="row" alignItems="center" spacing={1}>
-              <Typography variant="caption" sx={{ fontWeight: 700 }}>To:</Typography>
+              <Typography variant="caption" sx={{ fontWeight: 700, color: "#888" }}>To:</Typography>
               <Button
-                id="to-button"
                 size="small" variant="outlined"
                 onClick={handleToOpen}
                 startIcon={<CalendarTodayIcon sx={{ fontSize: 14 }} />}
-                sx={{ textTransform: "none", fontSize: "0.75rem", minWidth: 160, color: "#333", borderColor: "#ccc" }}
+                sx={{
+                  textTransform: "none", fontSize: "0.75rem", minWidth: 160,
+                  color: "#eee", borderColor: "rgba(255,255,255,0.2)",
+                  "&:hover": { borderColor: "rgba(255,255,255,0.4)", bgcolor: "rgba(255,255,255,0.05)" }
+                }}
               >
                 {formatDateTimeForDisplay(toDate)}
               </Button>
@@ -204,26 +262,23 @@ export default function MainLayout() {
                 anchorEl={toAnchorEl}
                 onClose={handleToClose}
                 anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-                transformOrigin={{ vertical: "top", horizontal: "left" }}
+                PaperProps={{ sx: { bgcolor: "#1e2227", color: "#fff", border: "1px solid #333" } }}
               >
                 <Box sx={{ p: 2, minWidth: 250 }}>
                   <Typography variant="subtitle2" sx={{ mb: 1.5 }}>Select End Date/Time</Typography>
                   <Stack spacing={2}>
-                    <TextField label="Date" type="date" size="small" fullWidth value={tempToDate} onChange={(e) => setTempToDate(e.target.value)} InputLabelProps={{ shrink: true }} />
+                    <TextField label="Date" type="date" size="small" fullWidth value={tempToDate} onChange={(e) => setTempToDate(e.target.value)} InputLabelProps={{ shrink: true }} sx={{ input: { color: "#fff" }, label: { color: "#888" }, "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "#444" } } }} />
                     <TextField
-                      label="Time"
-                      type="time"
-                      size="small"
-                      fullWidth
+                      label="Time" type="time" size="small" fullWidth
                       value={tempToTime}
                       onChange={(e) => setTempToTime(e.target.value)}
                       inputProps={{ step: 1 }}
                       InputLabelProps={{ shrink: true }}
+                      sx={{ input: { color: "#fff" }, label: { color: "#888" }, "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "#444" } } }}
                     />
-
                     <Stack direction="row" spacing={1} justifyContent="flex-end">
-                      <Button size="small" onClick={handleToClose}>Cancel</Button>
-                      <Button size="small" variant="contained" onClick={handleToApply}>Apply</Button>
+                      <Button size="small" onClick={handleToClose} sx={{ color: "#aaa" }}>Cancel</Button>
+                      <Button size="small" variant="contained" onClick={handleToApply} sx={{ bgcolor: "#0b4dbb" }}>Apply</Button>
                     </Stack>
                   </Stack>
                 </Box>
@@ -232,32 +287,28 @@ export default function MainLayout() {
 
             {/* FILE UPLOAD */}
             <Stack direction="row" alignItems="center" spacing={1}>
-              <Typography variant="caption" sx={{ fontWeight: 700 }}>BIN:</Typography>
-
+              <Typography variant="caption" sx={{ fontWeight: 700, color: "#888" }}>BIN:</Typography>
               <Button
                 component="label"
                 size="small"
                 variant="outlined"
                 startIcon={<FolderOpenIcon sx={{ fontSize: 14 }} />}
-                sx={{ textTransform: "none", fontSize: "0.75rem" }}
+                sx={{
+                  textTransform: "none", fontSize: "0.75rem",
+                  color: "#eee", borderColor: "rgba(255,255,255,0.2)"
+                }}
               >
                 {selectedFile ? selectedFile.name : "Select File"}
-                <input
-                  type="file"
-                  hidden
-                  accept=".bin"
-                  onChange={(e) => setSelectedFile(e.target.files[0])}
-                />
+                <input type="file" hidden accept=".bin" onChange={(e) => setSelectedFile(e.target.files[0])} />
               </Button>
             </Stack>
 
-
-            <Divider orientation="vertical" flexItem sx={{ height: 24, my: 'auto' }} />
+            <Divider orientation="vertical" flexItem sx={{ height: 24, my: 'auto', borderColor: "rgba(255,255,255,0.1)" }} />
 
             {/* ACTIONS */}
             <Stack direction="row" spacing={0.5}>
-              <IconButton size="small" onClick={() => setAboutOpen(true)}><SettingsIcon fontSize="small" /></IconButton>
-              <IconButton size="small" onClick={handleLogoutClick} sx={{ color: "#d32f2f" }}><LogoutIcon fontSize="small" /></IconButton>
+              <IconButton size="small" onClick={() => setAboutOpen(true)} sx={{ color: "#aaa" }}><SettingsIcon fontSize="small" /></IconButton>
+              <IconButton size="small" onClick={handleLogoutClick} sx={{ color: "#ff5252" }}><LogoutIcon fontSize="small" /></IconButton>
             </Stack>
           </Box>
         </Toolbar>
@@ -265,7 +316,7 @@ export default function MainLayout() {
         {/* NAVIGATION LINKS */}
         <Box sx={{ px: 2, pb: 1, display: 'flex', gap: 1, overflowX: "auto" }}>
           {navItems.map((item) => {
-            const isActive = location.pathname.endsWith(item.path);
+            const isActive = location.pathname.includes(item.path);
             return (
               <Button
                 key={item.path}
@@ -274,9 +325,9 @@ export default function MainLayout() {
                 sx={{
                   px: 1.5, py: 0.5, textTransform: "none", fontSize: "0.8rem",
                   fontWeight: isActive ? 700 : 500,
-                  color: isActive ? "#fff" : "#555",
+                  color: isActive ? "#fff" : "#888",
                   bgcolor: isActive ? "#0b4dbb" : "transparent",
-                  "&:hover": { bgcolor: isActive ? "#083a8d" : "rgba(0,0,0,0.05)" }
+                  "&:hover": { bgcolor: isActive ? "#083a8d" : "rgba(255,255,255,0.05)" }
                 }}
               >
                 {item.label}
@@ -287,10 +338,17 @@ export default function MainLayout() {
       </AppBar>
 
       {/* PAGE CONTENT */}
-      <Box sx={{ flexGrow: 1, p: 2 }}>
+      <Box sx={{ flexGrow: 1, p: 0.5 }}>
         <AnimatePresence mode="wait">
           <motion.div key={location.pathname} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-            <Paper elevation={0} sx={{ p: 2, borderRadius: 2, minHeight: "75vh", border: "1px solid #e0e4e8" }}>
+            <Paper elevation={0} sx={{
+              p: 0.1,
+              borderRadius: 2,
+              minHeight: "75vh",
+              bgcolor: "#12161c", // Dark paper background
+              border: "1px solid rgba(255,255,255,0.05)",
+              color: "#fff"
+            }}>
               <Outlet context={{ selectedFile }} />
             </Paper>
           </motion.div>
@@ -300,11 +358,15 @@ export default function MainLayout() {
       <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
 
       {/* LOGOUT DIALOG */}
-      <Dialog open={logoutConfirmOpen} onClose={() => setLogoutConfirmOpen(false)}>
+      <Dialog
+        open={logoutConfirmOpen}
+        onClose={() => setLogoutConfirmOpen(false)}
+        PaperProps={{ sx: { bgcolor: "#1e2227", color: "#fff" } }}
+      >
         <DialogTitle sx={{ fontWeight: 700 }}>Logout</DialogTitle>
-        <DialogContent><DialogContentText>Are you sure you want to log out?</DialogContentText></DialogContent>
+        <DialogContent><DialogContentText sx={{ color: "#bbb" }}>Are you sure you want to log out?</DialogContentText></DialogContent>
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setLogoutConfirmOpen(false)}>Cancel</Button>
+          <Button onClick={() => setLogoutConfirmOpen(false)} sx={{ color: "#aaa" }}>Cancel</Button>
           <Button onClick={handleConfirmLogout} variant="contained" color="error">Logout</Button>
         </DialogActions>
       </Dialog>

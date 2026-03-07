@@ -1,25 +1,21 @@
 import {
   Box,
-  Typography,
   Button,
   Stack,
   TextField,
-  Divider,
   alpha,
   Paper,
   InputAdornment,
+  Select,
+  MenuItem,
 } from "@mui/material";
+import { motion } from "framer-motion";
 import SearchIcon from "@mui/icons-material/Search";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import SaveIcon from "@mui/icons-material/Save";
 import PrintIcon from "@mui/icons-material/Print";
 import FilterListOffIcon from "@mui/icons-material/FilterListOff";
-import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 import ViewColumnIcon from "@mui/icons-material/ViewColumn";
-import {
-  Select,
-  MenuItem,
-} from "@mui/material";
 
 export default function ReportHeader({
   tableType,
@@ -27,7 +23,6 @@ export default function ReportHeader({
   stage = "FILTER", // FILTER | ENGINE | PREVIEW
   onGenerate,
   showAdvancedSearch = true,
-  showException = false,
   onClear,
   onPrint,
   onSave,
@@ -38,79 +33,126 @@ export default function ReportHeader({
   showColumns = true,
   showTableType = true,
 }) {
-  const isFilter = stage === "FILTER";
   const isEngine = stage === "ENGINE";
   const isPreview = stage === "PREVIEW";
   const canExport = isPreview || isEngine;
 
-
   return (
     <Paper
+      component={motion.div}
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
       elevation={0}
       sx={{
         p: 1,
         mb: 0.5,
-        borderRadius: 3,
-        border: "1px solid",
-        borderColor: "divider",
-        bgcolor: alpha("#f8f9fa", 0.5),
+        borderRadius: "16px",
+        border: "1px solid rgba(255, 255, 255, 0.08)",
+        background: "rgba(255, 255, 255, 0.03)",
+        backdropFilter: "blur(12px)",
       }}
     >
-
-
-      {/* ===== CONTROLS BAR ===== */}
-      <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap">
+      <Stack direction="row" spacing={0.5} alignItems="center" flexWrap="wrap">
         {showAdvancedSearch && (
           <TextField
             size="small"
-            placeholder=""
-            sx={{ width: 220, bgcolor: "background.paper" }}
+            placeholder="Search Loco ID..."
+            variant="outlined"
             onChange={(e) => onSearch?.(e.target.value)}
+            sx={{ 
+                width: 220, 
+                "& .MuiOutlinedInput-root": {
+                    bgcolor: "rgba(255, 255, 255, 0.05)",
+                    color: "#fff",
+                    fontSize: "0.85rem",
+                    borderRadius: "10px",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.1)" },
+                    "&:hover fieldset": { borderColor: "#4dabf7" },
+                }
+            }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchIcon fontSize="small" color="disabled" />
+                  <SearchIcon fontSize="small" sx={{ color: "rgba(255,255,255,0.5)" }} />
                 </InputAdornment>
               ),
             }}
           />
         )}
-        {showTableType && (
-  <Select
-    size="small"
-    value={tableType}
-    onChange={(e) => onTableTypeChange?.(e.target.value)}
-    sx={{
-      width: 140,
-      bgcolor: "background.paper",
-      borderRadius: 2,
-    }}
-  >
-    <MenuItem value="onboard">Onboard</MenuItem>
-    <MenuItem value="access">Access</MenuItem>
-  </Select>
-)}
 
+        {showTableType && (
+          <Select
+            size="small"
+            value={tableType}
+            onChange={(e) => onTableTypeChange?.(e.target.value)}
+            sx={{
+              width: 140,
+              bgcolor: "rgba(255, 255, 255, 0.05)",
+              color: "#fff",
+              borderRadius: "6px",
+              fontSize: "0.85rem",
+              "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.1)" },
+              "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#4dabf7" },
+              "& .MuiSvgIcon-root": { color: "rgba(15, 14, 14, 0.5)" }
+            }}
+          >
+            <MenuItem value="onboard">Onboard</MenuItem>
+            <MenuItem value="access">Access</MenuItem>
+          </Select>
+        )}
 
         <Button
           variant="contained"
           startIcon={<PlayArrowIcon />}
           onClick={onGenerate}
           disabled={isEngine}
-          sx={{ borderRadius: 2, px: 3, fontWeight: "bold" }}
+          sx={{ 
+            borderRadius: "6px", 
+            px: 3, 
+            fontWeight: 800,
+            textTransform: "none",
+            background: "linear-gradient(45deg, #0b4dbb, #4dabf7)",
+            boxShadow: "0 4px 14px 0 rgba(11, 77, 187, 0.39)",
+            "&:hover": {
+                background: "linear-gradient(45deg, #093d96, #3a96e0)",
+            }
+          }}
         >
-          Generate
+          {isEngine ? "Generating..." : "Generate"}
         </Button>
 
         <Box sx={{ flexGrow: 1 }} />
 
         <Stack direction="row" spacing={1}>
-          <Button variant="outlined" startIcon={<SaveIcon />} onClick={onSave} disabled={!canExport}>
+          <Button 
+            variant="outlined" 
+            startIcon={<SaveIcon />} 
+            onClick={onSave} 
+            disabled={!canExport}
+            sx={{ 
+                borderColor: "rgba(255,255,255,0.1)", 
+                color: "#eee", 
+                borderRadius: "10px",
+                textTransform: "none",
+                "&:hover": { borderColor: "#fff", bgcolor: "rgba(255,255,255,0.05)" }
+            }}
+          >
             Save
           </Button>
 
           {showSaveAll && (
-            <Button variant="outlined" onClick={onSaveAll} disabled={!canExport}>
+            <Button 
+              variant="outlined" 
+              onClick={onSaveAll} 
+              disabled={!canExport}
+              sx={{ 
+                borderColor: "rgba(255,255,255,0.1)", 
+                color: "#eee", 
+                borderRadius: "10px",
+                textTransform: "none",
+                "&:hover": { borderColor: "#fff", bgcolor: "rgba(255,255,255,0.05)" }
+              }}
+            >
               Save All
             </Button>
           )}
@@ -120,15 +162,30 @@ export default function ReportHeader({
               variant="outlined"
               startIcon={<ViewColumnIcon />}
               onClick={onColumns}
+              sx={{ 
+                borderColor: "rgba(255,255,255,0.1)", 
+                color: "#eee", 
+                borderRadius: "10px",
+                textTransform: "none",
+                "&:hover": { borderColor: "#fff", bgcolor: "rgba(255,255,255,0.05)" }
+              }}
             >
-              Column
+              Columns
             </Button>
           )}
+
           <Button
             variant="outlined"
             color="inherit"
             startIcon={<FilterListOffIcon />}
             onClick={onClear}
+            sx={{ 
+                borderColor: "rgba(255,255,255,0.1)", 
+                color: "rgba(255,255,255,0.6)", 
+                borderRadius: "10px",
+                textTransform: "none",
+                "&:hover": { borderColor: "#ff5252", color: "#ff5252" }
+            }}
           >
             Clear
           </Button>
@@ -138,6 +195,13 @@ export default function ReportHeader({
             startIcon={<PrintIcon />}
             onClick={onPrint}
             disabled={!canExport}
+            sx={{ 
+                borderColor: "rgba(255,255,255,0.1)", 
+                color: "#eee", 
+                borderRadius: "10px",
+                textTransform: "none",
+                "&:hover": { borderColor: "#fff", bgcolor: "rgba(255,255,255,0.05)" }
+            }}
           >
             Print
           </Button>

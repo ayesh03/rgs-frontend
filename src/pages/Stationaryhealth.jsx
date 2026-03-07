@@ -6,6 +6,7 @@ import {
     LinearProgress,
     Stack,
     alpha,
+    useTheme
 } from "@mui/material";
 import { useState, forwardRef, useImperativeHandle, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -19,15 +20,14 @@ import NoResult from "../components/NoResult";
 import ColumnFilterDialog from "../components/ColumnFilterDialog";
 
 import { HEALTH_ALL_COLUMNS } from "../constants/healthColumns";
-
 import { useAppContext } from "../context/AppContext";
-
 import {
     formatStationaryHealth,
     formatOnboardHealth,
 } from "../utils/healthFormatter";
 
 const StationaryHealth = forwardRef(({ healthType }, ref) => {
+    const theme = useTheme();
     const { fromDate, toDate, isDateRangeValid } = useAppContext();
     const { selectedFile } = useOutletContext();
 
@@ -94,7 +94,6 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
                     ? new Date(r.event_time)
                     : null;
 
-                // Expand events into readable rows
                 const expandedEvents = (r.events || []).map((ev, i) => {
                     const formatter =
                         healthType === "STATIONARY"
@@ -105,20 +104,15 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
 
                     return {
                         ...r,
-
                         id: `${idx + 1}-${i}`,
                         date: dt ? dt.toISOString().slice(0, 10) : "",
                         time: dt ? dt.toTimeString().slice(0, 8) : "",
-
                         event_id: ev.event_id,
                         event_name: formatted.name,
                         event_description: formatted.desc,
-
                         stationary_kavach_id:
                             r.stationary_kavach_id || r.onboard_kavach_id || "",
                     };
-
-
                 });
 
                 return expandedEvents;
@@ -150,12 +144,10 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
         getAllRows: () => rows,
         getVisibleColumns: () =>
             dynamicColumns.filter((c) => visibleKeys.includes(c.key)),
-
         openColumnDialog: () => setColumnDialogOpen(true),
     }));
 
     const totalPages = Math.ceil(rows.length / rowsPerPage);
-
     const paginatedRows = rows.slice(
         (page - 1) * rowsPerPage,
         page * rowsPerPage
@@ -164,6 +156,7 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
     useEffect(() => {
         setVisibleKeys(HEALTH_ALL_COLUMNS.map((c) => c.key));
     }, []);
+
     const dynamicColumns = HEALTH_ALL_COLUMNS.map((col) => {
         if (col.key === "stationary_kavach_id") {
             return {
@@ -177,27 +170,44 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
         return col;
     });
 
-
     return (
-        <Box p={2}>
+        <Box p={1}>
+            {/* ===== HEADER BAR ===== */}
             <motion.div
-                initial={{ opacity: 0, x: -15 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6 }}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
             >
                 <Stack
                     direction="row"
                     alignItems="center"
                     justifyContent="space-between"
-                    mb={1.5}
+                    mb={0.5}
+                    sx={{
+                        p: 1,
+                        borderRadius: "12px",
+                        bgcolor: "rgba(255, 255, 255, 0.03)",
+                        border: "1px solid rgba(255, 255, 255, 0.08)",
+                        backdropFilter: "blur(10px)"
+                    }}
                 >
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                        <HealthAndSafetyIcon color="primary" sx={{ fontSize: 28 }} />
-                        <Typography variant="h5" fontWeight={800}>
-                            {healthType === "STATIONARY"
-                                ? "Stationary Health Report"
-                                : "Onboard Health Report"}
-                        </Typography>
+                    <Stack direction="row" alignItems="center" spacing={2}>
+                        <Box
+                            sx={{
+                                p: 0.5,
+                                borderRadius: "10px",
+                                bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                                display: 'flex'
+                            }}
+                        >
+                            <HealthAndSafetyIcon sx={{ color: theme.palette.primary.light, fontSize: 24 }} />
+                        </Box>
+                        <Box>
+                            <Typography variant="subtitle1" fontWeight={500} sx={{ color: "#fff", lineHeight: 0.8, letterSpacing: 0.5 }}>
+                                {healthType === "STATIONARY" ? "STATIONARY HEALTH" : "ONBOARD HEALTH"}
+                            </Typography>
+                        </Box>
                     </Stack>
 
                     {rows.length > 0 && (
@@ -210,18 +220,35 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
                 </Stack>
             </motion.div>
 
+            {/* ===== CONTENT AREA ===== */}
             <AnimatePresence mode="wait">
                 {loading ? (
-                    <Box sx={{ width: "100%", mb: 2 }}>
-                        <LinearProgress sx={{ height: 6, borderRadius: 3 }} />
+                    <Box 
+                        key="loading"
+                        component={motion.div}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        sx={{ width: "100%", py: 8, textAlign: 'center' }}
+                    >
+                        <LinearProgress 
+                            sx={{ 
+                                height: 4, 
+                                borderRadius: 2, 
+                                bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                "& .MuiLinearProgress-bar": {
+                                    boxShadow: `0 0 10px ${theme.palette.primary.main}`
+                                }
+                            }} 
+                        />
                         <Typography
                             variant="caption"
                             sx={{
-                                mt: 1,
+                                mt: 2,
                                 display: "block",
-                                textAlign: "center",
-                                color: "primary.main",
-                                fontWeight: 600,
+                                color: "rgba(255,255,255,0.5)",
+                                fontWeight: 700,
+                                letterSpacing: 2
                             }}
                         >
                             ANALYZING HEALTH PACKETS…
@@ -229,10 +256,18 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
                     </Box>
                 ) : rows.length > 0 ? (
                     <Card
+                        key="data"
+                        component={motion.div}
+                        initial={{ opacity: 0, scale: 0.99 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.4 }}
                         sx={{
-                            borderRadius: 4,
-                            boxShadow: "0 10px 40px rgba(0,0,0,0.06)",
-                            border: "1px solid #f0f0f0",
+                            borderRadius: "16px",
+                            bgcolor: "rgba(18, 18, 18, 0.4)",
+                            backdropFilter: "blur(12px)",
+                            border: "1px solid rgba(255, 255, 255, 0.08)",
+                            backgroundImage: "none",
+                            overflow: "hidden"
                         }}
                     >
                         <CardContent sx={{ p: 0 }}>
@@ -247,7 +282,7 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
                                     p: 2,
                                     display: "flex",
                                     justifyContent: "center",
-                                    borderTop: `1px solid ${alpha("#000", 0.05)}`,
+                                    borderTop: "1px solid rgba(255, 255, 255, 0.05)",
                                 }}
                             >
                                 <PaginationControls
@@ -259,27 +294,24 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
                         </CardContent>
                     </Card>
                 ) : (
-                    <NoResult />
+                    <motion.div key="none" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                        <NoResult />
+                    </motion.div>
                 )}
             </AnimatePresence>
 
             <ColumnFilterDialog
                 open={columnDialogOpen}
-                column="Columns"
+                column="Table Columns"
                 values={dynamicColumns.map((c) => c.label)}
-
-
                 selectedValues={visibleKeys.map(
                     (key) => dynamicColumns.find((c) => c.key === key)?.label
                 )}
-
-
+                onClose={() => setColumnDialogOpen(false)}
                 onApply={(labels) => {
                     const keys = dynamicColumns
-
                         .filter((c) => labels.includes(c.label))
                         .map((c) => c.key);
-
                     setVisibleKeys(keys);
                     setColumnDialogOpen(false);
                 }}

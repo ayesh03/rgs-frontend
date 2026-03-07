@@ -9,7 +9,8 @@ import {
   ONBOARD_COLUMNS,
   ACCESS_COLUMNS,
 } from "../constants/locoColumns";
-
+import { useLocation } from "react-router-dom";
+import { useEffect } from "react";
 export default function Loco() {
   const [tab, setTab] = useState(0);
   const [stage, setStage] = useState("FILTER");
@@ -17,6 +18,7 @@ export default function Loco() {
   const locoRef = useRef();
   const exceptionRef = useRef();
   const [tableType, setTableType] = useState("onboard");
+  const location = useLocation();
 
 
   const activeTabContext = useMemo(() => {
@@ -33,21 +35,48 @@ export default function Loco() {
 
   const { exportExcel, exportPDF } = useExport();
 
+  useEffect(() => {
+  const state = location.state;
+  if (!state?.autoGenerate) return;
+
+  const run = async () => {
+    const ref = locoRef.current;
+    if (!ref) return;
+
+    setStage("ENGINE");
+
+    await ref.generate();
+
+    if (state.dashboardFilter) {
+      ref.setFilter?.(
+        state.dashboardFilter.field,
+        state.dashboardFilter.value
+      );
+    }
+
+    setStage("PREVIEW");
+  };
+
+  run();
+}, []);
+
   const handleGenerate = async () => {
     const ref = activeTabContext.ref.current;
     if (!ref) return;
 
     setStage("ENGINE");
 
-    const hasException = await ref.generate();
+    // remove dashboard filter only once
+    // if (ref.dashboardFiltered) {
+    //   ref.clearFilters?.();
+    //   ref.dashboardFiltered = false;
+    // }
 
-    if (tab === 1 && hasException) {
-      setStage("ENGINE");
-    } else {
-      setStage("PREVIEW");
-    }
+    ref.clearFilters?.();
+await ref.generate();
+
+    setStage("PREVIEW");
   };
-
   const handleClear = () => {
     activeTabContext.ref.current?.clear();
     setStage("FILTER");
@@ -97,19 +126,19 @@ export default function Loco() {
       />
 
       {/* ===== TAB NAVIGATION ===== */}
-      <Paper elevation={0} sx={{ borderBottom: 1, borderColor: "divider" }}>
-        <Tabs
-          value={tab}
-          onChange={(e, v) => {
-            setTab(v);
-            setStage("FILTER");
-          }}
-        >
+      {/* <Paper elevation={0} sx={{ borderBottom: 1, borderColor: "divider" }}> */}
+        {/* <Tabs */}
+          {/* value={tab} */}
+          {/* onChange={(e, v) => { */}
+            {/* setTab(v); */}
+            {/* setStage("FILTER"); */}
+          {/* }} */}
+        {/* > */}
 
-          <Tab label="Loco Movement" />
-          <Tab label="Exception Report" />
-        </Tabs>
-      </Paper>
+          {/* <Tab label="Loco Movement" /> */}
+          {/* <Tab label="Exception Report" /> */}
+        {/* </Tabs> */}
+      {/* </Paper> */}
 
       {/* ===== CONTENT ===== */}
       <Box sx={{ mt: 0.5 }}>

@@ -64,7 +64,7 @@ const handleLogin = async () => {
       role: data.role
     });
 
-    navigate("/app/loco", { replace: true });
+    navigate("/app", { replace: true });
 
   } catch (err) {
     setError("Backend not reachable");
@@ -165,6 +165,7 @@ const handleLogin = async () => {
                 <TrainIcon sx={{ fontSize: 40, color: "#fff" }} />
               </Box>
             </motion.div>
+            
 
             <Typography variant="h3" fontWeight="900" sx={{
               color: "#fff",
@@ -268,7 +269,7 @@ const handleLogin = async () => {
 
           <Box mt={6} textAlign="center">
             <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.3)", letterSpacing: 1 }}>
-              SECURE ENTERPRISE GATEWAY v2.0.26
+              Areca  Embedded Systems Pvt.Ltd
             </Typography>
           </Box>
         </Card>

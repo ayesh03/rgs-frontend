@@ -901,43 +901,125 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
   );
 
   /* ================= UI ================= */
+  // Animation Variants for staggered entrance
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        when: "beforeChildren",
+        staggerChildren: 0.1
+      }
+    },
+    exit: { opacity: 0, y: -20, transition: { duration: 0.3 } }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, x: -10 },
+    visible: { opacity: 1, x: 0 }
+  };
+
   return (
-    <Box component={motion.div} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <Stack direction="row" spacing={0.5} sx={{ mb: 0.5 }}>
-        <MovingIcon color="primary" fontSize="small" />
-        <Typography fontWeight={900} fontSize="0.75rem">
-          Stationary Kavch Info
-        </Typography>
+    <Box
+      component={motion.div}
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      sx={{ width: '100%' }}
+    >
+      {/* HEADER SECTION WITH ICON */}
+      <Stack
+        direction="row"
+        spacing={1}
+        alignItems="center"
+        sx={{ mb: 0.5, px: 1 }}
+        component={motion.div}
+        variants={itemVariants}
+      >
+        {/* <MovingIcon sx={{ color: theme.palette.primary.main, fontSize: "1.2rem" }} />
+        <Typography
+          sx={{
+            fontWeight: 900,
+            fontSize: "0.85rem",
+            letterSpacing: 1,
+            textTransform: 'uppercase',
+            color: 'rgba(255,255,255,0.9)'
+          }}
+        >
+          Stationary Kavach Intelligence
+        </Typography> */}
       </Stack>
-      {/* TOP CONTROL ROW */}
+
+      {/* CONTROL BAR: Matches Dashboard standard spacing */}
       <Stack
         direction="row"
         alignItems="center"
         justifyContent="space-between"
-        sx={{ mb: 1 }}
+        component={motion.div}
+        variants={itemVariants}
+        sx={{
+          mb: 0.5,
+          gap: 2,
+          flexWrap: 'wrap'
+        }}
       >
-        {/* LEFT SIDE → Only for Regular */}
         {tableType === "station_regular" ? (
           <Select
             size="small"
             value={subPacket}
             onChange={(e) => setSubPacket(e.target.value)}
-            sx={{ minWidth: 220 }}
+            // This ensures the dropdown menu itself is visible and styled
+            MenuProps={{
+              PaperProps: {
+                sx: {
+                  bgcolor: "rgba(30, 30, 30, 0.95)", // Solid enough to read
+                  backdropFilter: "blur(10px)",
+                  border: "1px solid rgba(255, 255, 255, 0.1)",
+                  "& .MuiMenuItem-root": {
+                    fontSize: "0.8rem",
+                    color: "rgba(255, 255, 255, 0.8)",
+                    "&:hover": {
+                      bgcolor: "rgba(0, 163, 255, 0.2)", // Neon glow on hover
+                      color: "#fff",
+                    },
+                    "&.Mui-selected": {
+                      bgcolor: "rgba(0, 163, 255, 0.3)",
+                      color: "#00e5ff", // Bright neon for active selection
+                      "&:hover": {
+                        bgcolor: "rgba(0, 163, 255, 0.4)",
+                      },
+                    },
+                  },
+                },
+              },
+            }}
+            sx={{
+              minWidth: 240,
+              bgcolor: "rgba(255,255,255,0.05)",
+              backdropFilter: "blur(4px)",
+              borderRadius: "8px",
+              fontSize: "0.8rem",
+              fontWeight: 600,
+              color: theme.palette.primary.light, // This ensures the SELECTED text is visible
+              "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.1)" },
+              "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: theme.palette.primary.main },
+              "& .MuiSvgIcon-root": { color: "rgba(255,255,255,0.7)" } // Makes the dropdown arrow visible
+            }}
           >
-            <MenuItem value="ma">Movement Authority</MenuItem>
-            <MenuItem value="ssp">Static Speed Profile</MenuItem>
-            <MenuItem value="gradient">Gradient</MenuItem>
-            <MenuItem value="lc">LC Gate</MenuItem>
-            <MenuItem value="turnout">Turnout</MenuItem>
-            <MenuItem value="tag">Tag Linking</MenuItem>
+            <MenuItem value="ma">Movement Authority (MA)</MenuItem>
+            <MenuItem value="ssp">Static Speed Profile (SSP)</MenuItem>
+            <MenuItem value="gradient">Gradient Profile</MenuItem>
+            <MenuItem value="lc">LC Gate Profile</MenuItem>
+            <MenuItem value="turnout">Turnout Speed</MenuItem>
+            <MenuItem value="tag">Tag Linking Data</MenuItem>
             <MenuItem value="track">Track Condition</MenuItem>
-            <MenuItem value="tsr">TSR</MenuItem>
+            <MenuItem value="tsr">TSR Profile</MenuItem>
           </Select>
-        ) : (
-          <Box />  // empty placeholder to keep spacing balanced
-        )}
+        ) : <Box />}
 
-        {/* RIGHT SIDE → For ALL TYPES */}
         {filteredRows.length > 0 && (
           <RowsPerPageControl
             rowsPerPage={rowsPerPage}
@@ -947,34 +1029,50 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
         )}
       </Stack>
 
-
-      <AnimatePresence>
+      {/* MAIN DATA CARD: Glassmorphism Effect */}
+      <AnimatePresence mode="wait">
         {loading ? (
-          <LinearProgress />
+          <Box key="loading" sx={{ py: 8, textAlign: 'center' }}>
+            <LinearProgress
+              sx={{
+                height: 4,
+                borderRadius: 2,
+                bgcolor: 'rgba(255,255,255,0.05)',
+                '& .MuiLinearProgress-bar': { borderRadius: 2 }
+              }}
+            />
+            <Typography variant="caption" sx={{ mt: 2, display: 'block', color: 'rgba(255,255,255,0.5)', letterSpacing: 1 }}>
+              DECODING TELEMETRY PACKETS...
+            </Typography>
+          </Box>
         ) : (
-          <Card variant="outlined">
-
+          <Card
+            key="table-container"
+            component={motion.div}
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4 }}
+            variant="outlined"
+            sx={{
+              bgcolor: "rgba(18, 18, 18, 0.4)",
+              backdropFilter: "blur(12px)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              borderRadius: "12px",
+              boxShadow: "0 8px 32px 0 rgba(0,0,0,0.3)",
+              overflow: "hidden"
+            }}
+          >
             <CardContent sx={{ p: 0 }}>
               {filteredRows.length ? (
                 <StationaryKavachTable
                   rows={paginatedRows.map(formatMovementAuthorityRow)}
-
-
                   columns={columns}
                   visibleKeys={visibleKeys}
                 />
-
               ) : (
-                <Box
-                  sx={{
-                    minHeight: 280,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Typography variant="caption" fontWeight={700}>
-                    No Stationary Kavch Data Found.
+                <Box sx={{ minHeight: 300, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2 }}>
+                  <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.3)", fontWeight: 700, letterSpacing: 1 }}>
+                    NO TELEMETRY DATA AVAILABLE FOR THIS RANGE
                   </Typography>
                 </Box>
               )}
@@ -983,25 +1081,59 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
         )}
       </AnimatePresence>
 
+      {/* PAGINATION SECTION */}
+      {/* PAGINATION SECTION */}
       {filteredRows.length > 0 && (
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            mt: 1,
-            mb: 0.5,
+        <Stack 
+          direction="row" 
+          justifyContent="center" 
+          sx={{ 
+            mt: 3, // Increased margin
+            mb: 2,
+            position: "relative",
+            zIndex: 10,
+            // Deep selector to force MUI internals to show up
+            "& .MuiPagination-root, & .MuiPagination-ul": {
+              display: "flex !important",
+              visibility: "visible !important",
+              opacity: "1 !important",
+            },
+            "& .MuiPaginationItem-root": {
+              color: "#ffffff !important", // Absolute white for testing
+              fontSize: "0.85rem",
+              fontWeight: 700,
+              backgroundColor: "rgba(255,255,255,0.05)",
+              margin: "0 4px",
+              "&:hover": {
+                backgroundColor: "rgba(255,255,255,0.2)",
+              }
+            },
+            "& .Mui-selected": {
+              backgroundColor: "rgba(0, 229, 255, 0.3) !important",
+              color: "#00e5ff !important",
+              border: "1px solid #00e5ff",
+            },
+            "& .MuiPaginationItem-icon": {
+              fill: "#ffffff !important", // Force arrow colors
+              color: "#ffffff !important",
+            }
           }}
+          // Removing variants={itemVariants} to bypass staggered delay
+          component={motion.div}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }} // Slight delay after table shows
         >
           <PaginationControls
             page={page}
             setPage={setPage}
             totalPages={totalPages}
-            size="small"
+            size="medium"
           />
-        </Box>
+        </Stack>
       )}
 
+      {/* DIALOGS */}
       <ColumnFilterDialog
         open={columnDialogOpen}
         values={columns.map((c) => c.label)}

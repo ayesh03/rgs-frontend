@@ -72,32 +72,21 @@ export default function useExport() {
   };
 
   /* ================= EXCEL EXPORT ================= */
-  const exportExcel = (
-    rows,
-    columns,
-    reportType,
-    subPacket
-  ) => {
+  const exportExcel = (rows, columns, reportType, subPacket) => {
+  if (!rows || !rows.length) return;
 
-    if (!rows || !rows.length) return;
+  const isLoco = reportType === "onboard" || reportType === "access";
 
-    // if (reportType?.startsWith("station_")) {
-    //   columns = columns.filter(
-    //     (c) =>
-    //       !c.key.toLowerCase().includes("pkt_type") &&
-    //       !c.key.toLowerCase().includes("pkt_len") &&
-    //       !c.key.toLowerCase().includes("pkt_length")
-    //   );
-    // }
-
-    const data = rows.map(row =>
-      Object.fromEntries(
-        columns.map(col => [
-          col.label,
-          formatFaultCellValue(row, col.key)
-        ])
-      )
-    );
+  const data = rows.map(row =>
+    Object.fromEntries(
+      columns.map(col => [
+        col.label,
+        isLoco
+          ? formatCellValue(row, col.key)        
+          : formatFaultCellValue(row, col.key)
+      ])
+    )
+  );
 
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();

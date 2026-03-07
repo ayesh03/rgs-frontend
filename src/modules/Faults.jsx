@@ -1,28 +1,55 @@
-import { useState, useRef, useCallback } from "react";
-import { Box, Tabs, Tab, Paper, alpha } from "@mui/material";
+import { useState, useRef, useCallback, useEffect } from "react";
+import { Box, Tabs, Tab, Paper, alpha, useTheme } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLocation } from "react-router-dom";
 
 import ReportHeader from "../components/ReportHeader";
 import LocoFaults from "../pages/LocoFaults";
 import FaultSummary from "../pages/FaultSummary";
-
 import useExport from "../hooks/useExport";
 
 export default function Faults() {
+  const theme = useTheme();
+  const location = useLocation();
   const [tab, setTab] = useState(0);
+  const [stage, setStage] = useState("FILTER");
   const { exportExcel, exportPDF } = useExport();
 
+  // Refs for child components
   const stationRef = useRef();
   const locoRef = useRef();
 
-  const [stage, setStage] = useState("FILTER");
-
-  // Correct tab → ref mapping
+  // Map tabs to refs for easier action handling
   const tabRefs = {
     0: stationRef,
     1: locoRef,
   };
 
+  /* ===================== AUTO-GENERATE LOGIC ===================== */
+  useEffect(() => {
+    const state = location.state;
+    if (!state?.autoGenerate) return;
+
+    const runAutoGenerate = async () => {
+      // Determine which tab to trigger based on navigation state
+      const targetTab = state?.targetTab !== undefined ? state.targetTab : 0;
+      setTab(targetTab);
+
+      // Small delay to ensure the ref is attached after tab switch
+      setTimeout(async () => {
+        const currentRef = tabRefs[targetTab]?.current;
+        if (currentRef) {
+          setStage("ENGINE");
+          await currentRef.generate();
+          setStage("PREVIEW");
+        }
+      }, 100);
+    };
+
+    runAutoGenerate();
+  }, [location.state]);
+
+  /* ===================== ACTION HANDLER ===================== */
   const handleAction = useCallback(async (actionType) => {
     const currentRef = tabRefs[tab]?.current;
     if (!currentRef) return;
@@ -39,8 +66,23 @@ export default function Faults() {
     }
   }, [tab]);
 
+  const handleExport = (type, isAll = false) => {
+    const currentRef = tabRefs[tab]?.current;
+    if (!currentRef) return;
+
+    const rows = isAll ? currentRef.getAllRows?.() : currentRef.getFilteredRows?.();
+    const cols = currentRef.getVisibleColumns?.();
+    const filename = tab === 0 ? "station_fault_report" : "loco_fault_report";
+
+    if (rows && cols) {
+      if (type === "excel") exportExcel(rows, cols, filename);
+      else exportPDF(rows, cols, filename);
+    }
+  };
+
   return (
-    <Box sx={{ p: { xs: 1, md: 1 } }}>
+    <Box sx={{ p: { xs: 1, md: 0.5 }, minHeight: "100vh" }}>
+      {/* HEADER SECTION */}
       <ReportHeader
         stage={stage}
         showTableType={false}
@@ -48,51 +90,21 @@ export default function Faults() {
         onGenerate={() => handleAction("generate")}
         onClear={() => handleAction("clear")}
         onColumns={() => tabRefs[tab]?.current?.openColumnDialog?.()}
-
-        onSave={() => {
-          const rows = tabRefs[tab]?.current?.getFilteredRows?.();
-          const cols = tabRefs[tab]?.current?.getVisibleColumns?.();
-          if (rows && cols)
-            exportExcel(
-              rows,
-              cols,
-              tab === 0 ? "fault_station" : "fault_loco"
-            );
-
-        }}
-
-        onSaveAll={() => {
-          const rows = tabRefs[tab]?.current?.getAllRows?.();
-          const cols = tabRefs[tab]?.current?.getVisibleColumns?.();
-          if (rows && cols)
-            exportExcel(
-              rows,
-              cols,
-              tab === 0 ? "fault_station" : "fault_loco"
-            );
-        }}
-
-        onPrint={() => {
-          const rows = tabRefs[tab]?.current?.getFilteredRows?.();
-          const cols = tabRefs[tab]?.current?.getVisibleColumns?.();
-          if (rows && cols)
-            exportPDF(
-              rows,
-              cols,
-              tab === 0 ? "fault_station" : "fault_loco"
-            );
-
-        }}
+        onSave={() => handleExport("excel", false)}
+        onSaveAll={() => handleExport("excel", true)}
+        onPrint={() => handleExport("pdf", false)}
       />
 
+      {/* GLASSMORPHISM TABS */}
       <Paper
         elevation={0}
         sx={{
-          borderRadius: 2,
-          mb: 1,
-          bgcolor: alpha("#f1f5f9", 0.5),
-          border: "1px solid",
-          borderColor: "divider",
+          borderRadius: "12px",
+          mb: 0.3,
+          bgcolor: "rgba(255, 255, 255, 0.03)",
+          backdropFilter: "blur(10px)",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+          overflow: "hidden",
         }}
       >
         <Tabs
@@ -101,8 +113,28 @@ export default function Faults() {
           variant="scrollable"
           scrollButtons="auto"
           sx={{
-            "& .MuiTab-root": { fontWeight: "bold", px: 3 },
-            "& .Mui-selected": { color: "primary.main" },
+            minHeight: "48px",
+            "& .MuiTabs-indicator": {
+              height: 3,
+              borderRadius: "3px 3px 0 0",
+              bgcolor: theme.palette.primary.main,
+              boxShadow: `0 -2px 10px ${theme.palette.primary.main}`,
+            },
+            "& .MuiTab-root": {
+              fontWeight: 700,
+              fontSize: "0.8rem",
+              textTransform: "uppercase",
+              letterSpacing: 1,
+              color: "rgba(255,255,255,0.4)",
+              transition: "0.3s",
+              "&.Mui-selected": {
+                color: "#fff",
+              },
+              "&:hover": {
+                color: "rgba(255,255,255,0.8)",
+                bgcolor: "rgba(255,255,255,0.02)",
+              },
+            },
           }}
         >
           <Tab label="Station Faults" />
@@ -111,14 +143,15 @@ export default function Faults() {
         </Tabs>
       </Paper>
 
-      <Box sx={{ mt: 1 }}>
+      {/* CONTENT AREA WITH ANIMATION */}
+      <Box sx={{ position: "relative" }}>
         <AnimatePresence mode="wait">
           <motion.div
             key={tab}
-            initial={{ opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -10 }}
-            transition={{ duration: 0.2 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
           >
             {tab === 0 && (
               <LocoFaults ref={stationRef} originType="STATION" />
@@ -126,7 +159,11 @@ export default function Faults() {
             {tab === 1 && (
               <LocoFaults ref={locoRef} originType="LOCO" />
             )}
-            {tab === 2 && <FaultSummary />}
+            {tab === 2 && (
+              <Box sx={{ p: 2 }}>
+                <FaultSummary />
+              </Box>
+            )}
           </motion.div>
         </AnimatePresence>
       </Box>

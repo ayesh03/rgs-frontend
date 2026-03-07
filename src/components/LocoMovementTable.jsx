@@ -8,6 +8,7 @@ import {
   Typography,
   Box,
   Chip,
+  alpha,
 } from "@mui/material";
 import {
   decodeDirection,
@@ -17,51 +18,61 @@ import {
   decodeLocoHealth
 } from "../utils/locoFormatters";
 
-
-import NorthIcon from "@mui/icons-material/North";
-import SouthIcon from "@mui/icons-material/South";
-
 export default function LocoMovementTable({
   rows = [],
   columns = [],
   visibleKeys = [],
 }) {
-
   const visibleColumns = columns.filter(col =>
     visibleKeys.includes(col.key)
   );
 
   const renderDirection = (dir) => {
     const d = decodeDirection(dir);
-
     return (
-      <Typography sx={{ fontSize: "0.68rem", fontWeight: 700 }}>
+      <Typography sx={{ fontSize: "0.68rem", fontWeight: 700, color: "#4dabf7" }}>
         {d}
       </Typography>
     );
   };
 
-
-  const getModeChip = (mode) => (
-    <Chip
-      label={decodeLocoMode(mode)}
-      size="small"
-      variant="outlined"
-      sx={{
-        height: 18,
-        fontSize: "0.55rem",
-        fontWeight: 700,
-        textTransform: "uppercase",
-        borderRadius: "4px",
-        borderColor: "divider"
-      }}
-    />
-  );
+  const getModeChip = (mode) => {
+    const modeText = decodeLocoMode(mode);
+    return (
+      <Chip
+        label={modeText}
+        size="small"
+        sx={{
+          height: 20,
+          fontSize: "0.6rem",
+          fontWeight: 800,
+          textTransform: "uppercase",
+          borderRadius: "6px",
+          bgcolor: alpha("#4dabf7", 0.1),
+          color: "#4dabf7",
+          border: `1px solid ${alpha("#4dabf7", 0.3)}`,
+          "& .MuiChip-label": { px: 1 }
+        }}
+      />
+    );
+  };
 
   return (
-    <Box sx={{ width: "100%" }}>
-      <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+    <Box sx={{ width: "100%", bgcolor: "transparent" }}>
+      <TableContainer 
+        sx={{ 
+          width: "100%", 
+          overflowX: "auto",
+          maxHeight: "65vh", // Optional: adds scroll within the card
+          "&::-webkit-scrollbar": { height: 8, width: 8 },
+          "&::-webkit-scrollbar-thumb": { 
+            backgroundColor: "rgba(255,255,255,0.1)", 
+            borderRadius: 4 
+          }
+        }}
+      >
         <Table
+          stickyHeader
           size="small"
           sx={{
             width: "100%",
@@ -74,21 +85,20 @@ export default function LocoMovementTable({
             <TableRow>
               {visibleColumns.map((col) => {
                 const isApproaching = col.label.toLowerCase().includes("approaching");
-
                 return (
                   <TableCell
                     key={col.key}
                     sx={{
-                      px: 1.3,
-                      py: 1.5,
+                      px: 1.5,
+                      py: 2,
                       fontSize: "0.65rem",
                       fontWeight: 900,
-                      color: "text.primary",
-                      lineHeight: 1.1,
+                      color: "rgba(255,255,255,0.7)",
+                      bgcolor: "#12161c", // Dark solid background for sticky header
+                      lineHeight: 1.2,
                       whiteSpace: isApproaching ? "normal" : "nowrap",
-                      verticalAlign: "bottom",
-                      borderBottom: "1px solid",
-                      borderColor: "divider",
+                      letterSpacing: 0.5,
+                      borderBottom: "2px solid rgba(255,255,255,0.05)",
                     }}
                   >
                     {isApproaching ? (
@@ -108,61 +118,60 @@ export default function LocoMovementTable({
                 <TableRow
                   key={row.id || i}
                   sx={{
-                    "&:hover": { backgroundColor: "action.hover" },
-                    transition: "background-color 0.2s"
+                    "&:hover": { 
+                      backgroundColor: "rgba(77, 171, 247, 0.04)",
+                    },
+                    transition: "background-color 0.2s ease",
+                    "& td": {
+                      borderBottom: "1px solid rgba(255,255,255,0.04)",
+                    }
                   }}
                 >
                   {visibleColumns.map((col) => (
                     <TableCell
                       key={col.key}
                       sx={{
-                        px: 1.3,
-                        py: 0.3,
-                        borderBottom: "1px solid",
-                        borderColor: "divider",
+                        px: 1.5,
+                        py: 1,
+                        color: "rgba(255,255,255,0.85)",
                         whiteSpace: "nowrap"
                       }}
                     >
                       {col.key === "loco_health_status" ? (
-                        <Typography>
+                        <Typography sx={{ fontSize: "0.68rem", color: "#1de9b6" }}>
                           {decodeLocoHealth(row[col.key], row.frame_number)}
                         </Typography>
-                      ) :
-
-                        col.key === "tin" ? (
-                          <Typography sx={{ fontSize: "0.68rem", fontWeight: 600 }}>
-                            {decodeTIN(row[col.key])}
+                      ) : col.key === "tin" ? (
+                        <Typography sx={{ fontSize: "0.68rem", fontWeight: 600, fontFamily: "JetBrains Mono, monospace" }}>
+                          {decodeTIN(row[col.key])}
+                        </Typography>
+                      ) : col.key === "movement_direction" ? (
+                        renderDirection(row[col.key])
+                      ) : col.key === "loco_mode" ? (
+                        getModeChip(row[col.key])
+                      ) : col.key === "date" ? (
+                        <Box>
+                          <Typography sx={{ fontSize: "0.68rem", fontWeight: 700, color: "#fff" }}>
+                            {row.date}
                           </Typography>
-                        ) : col.key === "movement_direction" ? (
-                          renderDirection(row[col.key])
-                        ) : col.key === "loco_mode" ? (
-                          getModeChip(row[col.key])
-                        ) : col.key === "date" ? (
-                          <Box>
-                            <Typography sx={{ fontSize: "0.68rem", fontWeight: 600 }}>
-                              {row.date}
-                            </Typography>
-                            <Typography sx={{ fontSize: "0.6rem", color: "text.secondary" }}>
-                              {row.time}
-                            </Typography>
-                          </Box>
-                        ) : (
-                          <Typography sx={{ fontSize: "0.68rem" }}>
-                            {formatCellValue(row, col.key)}
+                          <Typography sx={{ fontSize: "0.6rem", color: "rgba(255,255,255,0.4)" }}>
+                            {row.time}
                           </Typography>
-                        )
-                      }
-
-
+                        </Box>
+                      ) : (
+                        <Typography sx={{ fontSize: "0.68rem", fontWeight: 500 }}>
+                          {formatCellValue(row, col.key)}
+                        </Typography>
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={visibleColumns.length} align="center" sx={{ py: 5 }}>
-                  <Typography variant="caption" sx={{ color: "text.secondary", letterSpacing: 1 }}>
-                    NO DATA AVAILABLE
+                <TableCell colSpan={visibleColumns.length} align="center" sx={{ py: 8 }}>
+                  <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.2)", letterSpacing: 2, fontWeight: 700 }}>
+                    NO LOGS AVAILABLE FOR THIS PERIOD
                   </Typography>
                 </TableCell>
               </TableRow>

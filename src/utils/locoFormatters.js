@@ -9,95 +9,95 @@ export const decodeDirection = (dir) => {
     }
 };
 export const decodeLocoHealth = (value, frameNumber) => {
-  if (value === null || value === undefined) return "-";
+    if (value === null || value === undefined) return "-";
 
-  const faults = [
-    "System Internal Fault",                    // B0
-    "Speed Sensor1 Fault",                      // B1
-    "EB Drive Fault",                           // B2
-    "EB Application (Feedback) Fault",          // B3
-    "RFID Reader1 Link Fail",                   // B4
-    "RFID Reader2 Link Fail",                   // B5
-    "Radio1 Link Fail",                         // B6
-    "Radio2 Link Fail",                         // B7
-    "LP-OCIP (DMI)1 Link Fail",                 // B8
-    "LP-OCIP (DMI)2 Link Fail",                 // B9
-    "GPS1/PPS1 Fail",                           // B10
-    "GPS2/PPS2 Fail",                           // B11
-    "GPS1 view not available since 2 hrs",      // B12
-    "GPS2 view not available since 2 hrs",      // B13
-    "Tag linking incorrect",                    // B14
-    "GSM1 Fault",                               // B15
-    "GSM2 Fault",                               // B16
-    "Radio 1 RSSI Weak",                        // B17
-    "Radio 2 RSSI Weak",                        // B18
-    "Session Key Mismatch",                     // B19
-    "Remaining keys < 5",                       // B20
-    "BIU connectivity fault",                   // B21
-    "Speed Sensor 2 fault",                     // B22
-    "Cab Input fault"                           // B23
-  ];
+    const faults = [
+        "System Internal Fault",                    // B0
+        "Speed Sensor1 Fault",                      // B1
+        "EB Drive Fault",                           // B2
+        "EB Application (Feedback) Fault",          // B3
+        "RFID Reader1 Link Fail",                   // B4
+        "RFID Reader2 Link Fail",                   // B5
+        "Radio1 Link Fail",                         // B6
+        "Radio2 Link Fail",                         // B7
+        "LP-OCIP (DMI)1 Link Fail",                 // B8
+        "LP-OCIP (DMI)2 Link Fail",                 // B9
+        "GPS1/PPS1 Fail",                           // B10
+        "GPS2/PPS2 Fail",                           // B11
+        "GPS1 view not available since 2 hrs",      // B12
+        "GPS2 view not available since 2 hrs",      // B13
+        "Tag linking incorrect",                    // B14
+        "GSM1 Fault",                               // B15
+        "GSM2 Fault",                               // B16
+        "Radio 1 RSSI Weak",                        // B17
+        "Radio 2 RSSI Weak",                        // B18
+        "Session Key Mismatch",                     // B19
+        "Remaining keys < 5",                       // B20
+        "BIU connectivity fault",                   // B21
+        "Speed Sensor 2 fault",                     // B22
+        "Cab Input fault"                           // B23
+    ];
 
-  const num = Number(value);
-  if (isNaN(num) || num === 0) return "No Active fault";
+    const num = Number(value);
+    if (isNaN(num) || num === 0) return "-";
 
-  const mod = Number(frameNumber) % 10;
+    const mod = Number(frameNumber) % 10;
 
 
-  let blockIndex = -1;
+    let blockIndex = -1;
 
-  if (mod === 1 || mod === 5) blockIndex = 0;
-  else if (mod === 2 || mod === 6) blockIndex = 1;
-  else if (mod === 3 || mod === 7) blockIndex = 2;
-  else if (mod === 4 || mod === 8) blockIndex = 3;
-  else return "Healthy";
+    if (mod === 1 ) blockIndex = 0;//| mod === 2
+    else if (mod === 2 ) blockIndex = 1;//|| mod === 4
+    else if (mod === 3 ) blockIndex = 2;
+    else if (mod === 4 ) blockIndex = 3;
+    else return "-";
 
-  const offset = blockIndex * 6;
+    const offset = blockIndex * 6;
 
-  const active = [];
-//   console.log("Frame:", frameNumber);
-// console.log("Mod:", Number(frameNumber) % 10);
-// console.log("Health Value:", num);
+    const active = [];
+    //   console.log("Frame:", frameNumber);
+    // console.log("Mod:", Number(frameNumber) % 10);
+    // console.log("Health Value:", num);
 
-  for (let i = 0; i < 6; i++) {
-    if (num & (1 << i)) {
-      active.push(faults[offset + i]);
+    for (let i = 0; i < 6; i++) {
+        if (num & (1 << i)) {
+            active.push(faults[offset + i]);
+        }
     }
-  }
-  if (active.length === 0) return "No Active Fault";
-  return active.join(", ");
+    if (active.length === 0) return "-";
+    return active.join(", ");
 
 }
 
 export const decodeTIN = (tin) => {
-  if (tin === null || tin === undefined) return "-";
+    if (tin === null || tin === undefined) return "-";
 
-  const value = Number(tin);
-  if (isNaN(value)) return "-";
+    const value = Number(tin);
+    if (isNaN(value)) return "-";
 
-  if (value === 0) return "Ignore";
-  if (value >= 1 && value <= 250) return `Track ID ${value}`;
-  if (value === 251) return "Onboard Shed TIN";
-  if (value >= 252 && value <= 511) return "Reserved for Future Use";
+    if (value === 0) return "Ignore";
+    if (value >= 1 && value <= 250) return `Track ID ${value}`;
+    if (value === 251) return "Onboard Shed TIN";
+    if (value >= 252 && value <= 511) return "Reserved for Future Use";
 
-  return "-";
+    return "-";
 };
 export const decodeLocoMode = (mode) => {
     if (mode === null || mode === undefined) return "-";
     const modes = {
-        0: "STANDBY",
-        1: "STAFF RESPONSIBLE",
-        2: "LIMITED SUPERVISION",
-        3: "FULL SUPERVISION",
-        4: "OVERRIDE",
-        5: "ONSIGHT",
-        6: "TRIP",
-        7: "POST TRIP",
-        8: "NON LEADING",
-        9: "REVERSE",
-        10: "SHUNT",
-        11: "SYSTEM FAILURE",
-        12: "ISOLATION",
+        1: "STANDBY",
+        2: "STAFF RESPONSIBLE",
+        3: "LIMITED SUPERVISION",
+        4: "FULL SUPERVISION",
+        5: "OVERRIDE",
+        6: "ONSIGHT",
+        7: "TRIP",
+        8: "POST TRIP",
+        9: "NON LEADING",
+        10: "REVERSE",
+        11: "SHUNT",
+        12: "SYSTEM FAILURE",
+        13: "ISOLATION",
     };
     return modes[Number(mode)] || "-";
 };
@@ -264,7 +264,7 @@ export const formatCellValue = (row, key) => {
 
         case "tag_duplicate_status":
             return decodeRfidDuplicate(row[key]);
-            
+
         case "loco_health_status":
             return decodeLocoHealth(row[key], row.frame_number);
 

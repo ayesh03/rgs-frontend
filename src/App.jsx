@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useState, useEffect } from "react";
-
+import Dashboard from "./pages/Dashboard";
 import MainLayout from "./layouts/MainLayout";
 import Login from "./pages/Login";
 import Splash from "./components/Splash";
@@ -53,7 +53,8 @@ function App() {
           
 
             {/* Default page AFTER login */}
-            <Route index element={<Navigate to="loco" replace />} />
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
 
             <Route path="track-profile" element={<TrackProfile />} />
             <Route path="tsr" element={<TSR />} />

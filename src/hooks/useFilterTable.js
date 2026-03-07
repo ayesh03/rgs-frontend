@@ -5,14 +5,14 @@ export default function useTableFilter(rows = []) {
 
   const filteredRows = useMemo(() => {
     if (!rows.length) return [];
-    
+
     return rows.filter((row) => {
       return Object.entries(filters).every(([key, filterValue]) => {
         if (!filterValue || (Array.isArray(filterValue) && filterValue.length === 0)) return true;
 
         const rowValue = row[key];
 
-        // 1. Numeric Range Filtering (Special handling for Speed/Distance)
+        
         // Expects filterValue to be { min: number, max: number }
         if (typeof filterValue === "object" && !Array.isArray(filterValue)) {
           const { min, max } = filterValue;
@@ -22,7 +22,7 @@ export default function useTableFilter(rows = []) {
 
         // 2. Array-based (Inclusion)
         if (Array.isArray(filterValue)) {
-          return filterValue.includes(rowValue);
+          return filterValue.map(String).includes(String(rowValue));
         }
 
         // 3. String-based (Search)

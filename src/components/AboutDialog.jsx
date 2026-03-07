@@ -50,7 +50,7 @@ export default function AboutDialog({ open, onClose }) {
           </Avatar>
           <Box>
             <Typography variant="h6" fontWeight="800" lineHeight={1.2}>
-              TCAS RGS
+              RGS
             </Typography>
             <Typography variant="caption" sx={{ opacity: 0.8, letterSpacing: 1 }}>
               REPORT GENERATION SYSTEM
@@ -68,7 +68,7 @@ export default function AboutDialog({ open, onClose }) {
             <Stack direction="row" spacing={1}>
               <Chip 
                 icon={<VerifiedUserIcon style={{ fontSize: '1rem' }} />} 
-                label="Version 2.4.0" 
+                label="Version 1.0" 
                 size="small" 
                 color="primary" 
                 variant="outlined"
@@ -85,7 +85,7 @@ export default function AboutDialog({ open, onClose }) {
             </Typography>
             <Typography variant="body2" color="text.secondary" mt={0.5} lineHeight={1.6}>
               Centralized platform for the processing, visualization, and archival of 
-              Train Collision Avoidance System (TCAS) logs. Developed for precision 
+              Train Collision Avoidance System RGS logs. Developed for precision 
               monitoring of trackside and onboard signaling data.
             </Typography>
           </Box>
