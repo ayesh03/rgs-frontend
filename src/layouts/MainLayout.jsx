@@ -1,7 +1,6 @@
-import React, { useState } from "react";
 import areaLogo from "../assets/arecaLogo.png";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
-
+import React, { useState, useEffect } from "react";
 import {
   AppBar,
   Toolbar,
@@ -46,6 +45,12 @@ export default function MainLayout() {
   const [tempToTime, setTempToTime] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
 
+  useEffect(() => {
+  if (tempFromDate) {
+    setTempToDate(tempFromDate);
+  }
+}, [tempFromDate]);
+
   const {
     fromDate,
     toDate,
@@ -76,26 +81,50 @@ export default function MainLayout() {
     });
   };
 
+  // const handleFromOpen = (event) => {
+  //   const [d, t] = (fromDate || "").split("T");
+  //   setTempFromDate(d || "");
+  //   setTempFromTime(t || "");
+  //   setFromAnchorEl(event.currentTarget);
+  // };
   const handleFromOpen = (event) => {
-    const [d, t] = (fromDate || "").split("T");
-    setTempFromDate(d || "");
-    setTempFromTime(t || "");
-    setFromAnchorEl(event.currentTarget);
-  };
+  const [d, t] = (fromDate || "").split("T");
+  setTempFromDate(d || "");
+  setTempFromTime(t || "00:00:00");   // default
+  setFromAnchorEl(event.currentTarget);
+};
   const handleFromClose = () => setFromAnchorEl(null);
-  const handleFromApply = () => {
-    if (tempFromDate && tempFromTime) {
-      setFromDate(`${tempFromDate}T${tempFromTime}`);
-      handleFromClose();
-    }
-  };
+  // const handleFromApply = () => {
+  //   if (tempFromDate && tempFromTime) {
+  //     setFromDate(`${tempFromDate}T${tempFromTime}`);
+  //     handleFromClose();
+  //   }
+  // };
 
+  const handleFromApply = () => {
+  if (tempFromDate && tempFromTime) {
+    const from = `${tempFromDate}T${tempFromTime}`;
+    const to = `${tempFromDate}T23:59:59`;
+
+    setFromDate(from);
+    setToDate(to);
+
+    handleFromClose();
+  }
+};
+
+  // const handleToOpen = (event) => {
+  //   const [d, t] = (toDate || "").split("T");
+  //   setTempToDate(d || "");
+  //   setTempToTime(t || "");
+  //   setToAnchorEl(event.currentTarget);
+  // };
   const handleToOpen = (event) => {
-    const [d, t] = (toDate || "").split("T");
-    setTempToDate(d || "");
-    setTempToTime(t || "");
-    setToAnchorEl(event.currentTarget);
-  };
+  const [d, t] = (toDate || "").split("T");
+  setTempToDate(d || tempFromDate || "");
+  setTempToTime(t || "23:59:59");   // default
+  setToAnchorEl(event.currentTarget);
+};
   const handleToClose = () => setToAnchorEl(null);
   const handleToApply = () => {
     if (tempToDate && tempToTime) {
