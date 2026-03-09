@@ -147,7 +147,8 @@ export default function MainLayout() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: "easeOut" }}
               sx={{
-                mt: 0.7,
+                mt: 0.5,
+                mb: 0.3,
                 fontWeight: 800,
                 fontSize: "20px",
                 letterSpacing: "1px",
@@ -168,7 +169,7 @@ export default function MainLayout() {
                 component="span"
                 sx={{
                   ml: 1,
-                  fontWeight: 300,
+                  fontWeight: 400,
                   color: "rgba(255,255,255,0.6)",
                   WebkitTextFillColor: "rgba(255,255,255,0.6)",
                   background: "none",
@@ -176,7 +177,7 @@ export default function MainLayout() {
                   fontSize: "16px"
                 }}
               >
-                Report Generating System
+                REPORT GENERATION SYSTEM
               </Box>
             </Typography>
           </Box>

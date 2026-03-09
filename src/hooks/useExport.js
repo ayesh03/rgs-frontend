@@ -1,10 +1,10 @@
-import * as XLSX from "xlsx";
+ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { formatCellValue } from "../utils/locoFormatters";
 import { formatFaultCellValue } from "../utils/faultFormatter";
-
+import areaLogo from "../assets/arecaLogo.png";
 export default function useExport() {
 
   /* ================= TIMESTAMP ================= */
@@ -49,6 +49,8 @@ export default function useExport() {
 
       return `SVK_SR_${tabCode}`;
     }
+
+    const [isExporting, setIsExporting] = useState(false);
 
     // ---------------- STATIONARY ACCESS ----------------
     if (reportType === "station_access") return "SVK_AA";
@@ -110,51 +112,57 @@ export default function useExport() {
   };
 
   /* ================= PDF EXPORT ================= */
-  const exportPDF = (
-    rows,
-    columns,
-    reportType,
-    subPacket
-  ) => {
+const exportPDF = (rows, columns, reportType, subPacket) => {
+  if (!rows || !rows.length) return;
 
-    if (!rows || !rows.length) return;
+  const doc = new jsPDF("l", "pt", "a4");
 
-    // if (reportType?.startsWith("station_")) {
-    //   columns = columns.filter(
-    //     (c) =>
-    //       !c.key.toLowerCase().includes("pkt_type") &&
-    //       !c.key.toLowerCase().includes("pkt_len") &&
-    //       !c.key.toLowerCase().includes("pkt_length")
-    //   );
-    // }
+  autoTable(doc, {
+    startY: 60,
+    margin: { top: 60, bottom: 40 }, 
+    head: [columns.map((col) => col.label.toUpperCase())],
+    body: rows.map((row) =>
+      columns.map((col) =>
+        reportType === "fault_station" || reportType === "fault_loco"
+          ? formatFaultCellValue(row, col.key)
+          : formatCellValue(row, col.key)
+      )
+    ),
+    theme: "striped",
+    styles: { fontSize: 5 },
+    didDrawPage: (data) => {
+      const pageWidth = doc.internal.pageSize.width;
+      const pageHeight = doc.internal.pageSize.height;
 
-    const doc = new jsPDF("l", "pt", "a4");
+      // --- HEADER ---
+      doc.setTextColor(40, 107, 206);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.text("KAVACH REPORT GENERATING SYSTEM", 40, 40);
+      doc.addImage(areaLogo, "PNG", pageWidth - 100, 20, 60, 30);
 
-    doc.setFontSize(14);
-    doc.text("INDIAN RAILWAYS - CIKMS RGS", 40, 40);
+      // --- FOOTER ---
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(6);
+      doc.setTextColor(100, 100, 100); 
 
-    autoTable(doc, {
-      startY: 60,
-      head: [columns.map(col => col.label.toUpperCase())],
-      body: rows.map(row =>
-        columns.map(col =>
-          reportType === "fault_station" || reportType === "fault_loco"
-            ? formatFaultCellValue(row, col.key)
-            : formatCellValue(row, col.key)
-        )
-      ),
+      // Confidential text (Bottom Left)
+      const footerText = "This document is confidential. Using it any purpose without permission of Areca Embedded Systems Pvt. Ltd. is strictly prohibited.";
+      doc.text(footerText, 40, pageHeight - 20);
 
-      theme: "striped",
-      styles: { fontSize: 7 },
-    });
+      // Page Number (Bottom Right)
+      const pageNumber = `Page ${doc.internal.getNumberOfPages()}`;
+      doc.text(pageNumber, pageWidth - 60, pageHeight - 20);
 
+      // Reset for table content
+      doc.setTextColor(0, 0, 0);
+    },
+  });
 
-    const timestamp = getDateTimeStamp();
-    const reportCode = getReportCode(reportType, subPacket);
-
-    doc.save(`${reportCode}_${timestamp}.pdf`);
-  };
-
+  const timestamp = getDateTimeStamp();
+  const reportCode = getReportCode(reportType, subPacket);
+  doc.save(`${reportCode}_${timestamp}.pdf`);
+};
   return {
     exportExcel,
     exportPDF,

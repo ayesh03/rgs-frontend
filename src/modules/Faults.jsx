@@ -139,7 +139,7 @@ export default function Faults() {
         >
           <Tab label="Station Faults" />
           <Tab label="Loco Faults" />
-          <Tab label="Fault Summary" />
+          {/* <Tab label="Fault Summary" /> */}
         </Tabs>
       </Paper>
 
@@ -159,11 +159,11 @@ export default function Faults() {
             {tab === 1 && (
               <LocoFaults ref={locoRef} originType="LOCO" />
             )}
-            {tab === 2 && (
+            {/* {tab === 2 && (
               <Box sx={{ p: 2 }}>
                 <FaultSummary />
               </Box>
-            )}
+            )} */}
           </motion.div>
         </AnimatePresence>
       </Box>
