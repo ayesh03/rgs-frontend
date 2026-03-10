@@ -41,9 +41,9 @@ export default function InterlockingTable({ rows = [], visibleKeys = [] }) {
         bgcolor: "transparent",
         backgroundImage: "none",
         "&::-webkit-scrollbar": { height: "6px" },
-        "&::-webkit-scrollbar-thumb": { 
-          bgcolor: "rgba(255,255,255,0.1)", 
-          borderRadius: "10px" 
+        "&::-webkit-scrollbar-thumb": {
+          bgcolor: "rgba(255,255,255,0.1)",
+          borderRadius: "10px"
         }
       }}
     >
@@ -52,16 +52,16 @@ export default function InterlockingTable({ rows = [], visibleKeys = [] }) {
         <TableHead>
           <TableRow>
             {visibleKeys.map((key) => (
-              <TableCell 
-                key={key} 
-                sx={{ 
+              <TableCell
+                key={key}
+                sx={{
                   bgcolor: "#0a0a0a", // Solid dark for sticky compatibility
                   fontWeight: 800,
-                  fontSize: "0.68rem",
+                  fontSize: "0.85rem",
                   color: "rgba(255,255,255,0.5)",
                   borderBottom: "1px solid rgba(255,255,255,0.1)",
                   letterSpacing: "0.8px",
-                  py: 1.5,
+                  py: 2,
                   textTransform: "uppercase"
                 }}
               >
@@ -74,7 +74,7 @@ export default function InterlockingTable({ rows = [], visibleKeys = [] }) {
         {/* ================= BODY ================= */}
         <TableBody>
           {rows.map((row, index) => (
-            <TableRow 
+            <TableRow
               key={index}
               component={motion.tr}
               initial={{ opacity: 0, x: -15 }}
@@ -85,49 +85,50 @@ export default function InterlockingTable({ rows = [], visibleKeys = [] }) {
                 "&:hover": {
                   bgcolor: "rgba(255, 255, 255, 0.04)",
                 },
-                "& td": { 
+                "& td": {
                   borderBottom: "1px solid rgba(255,255,255,0.03)",
                   color: "rgba(255,255,255,0.85)"
                 },
               }}
             >
               {visibleKeys.map((key) => (
-                <TableCell key={key} sx={{ py: 1.2 }}>
+                <TableCell key={key} sx={{ py: 1.6 }}>
                   {key === "status" ? (
                     <Chip
                       label={getStatusStyle(row.status).label}
                       size="small"
                       sx={{
-                        fontSize: "0.6rem",
+                        fontSize: "0.75rem",
                         fontWeight: 900,
-                        height: 20,
+                        height: 24,
                         bgcolor: getStatusStyle(row.status).glow,
                         color: getStatusStyle(row.status).color,
                         border: `1px solid ${getStatusStyle(row.status).border}`,
                         "& .MuiChip-label": { px: 1 }
                       }}
                     />
-                  ) : key === "time" ? (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <AccessTimeIcon sx={{ fontSize: 13, color: "rgba(255,255,255,0.3)" }} />
-                      <Typography sx={{ fontSize: "0.72rem", fontWeight: 600 }}>
+                  ) : key === "date" ? (
+                    <Box>
+                      <Typography sx={{ fontSize: "0.9rem", fontWeight: 700, color: "#fff" }}>
+                        {row.date || "-"}
+                      </Typography>
+                      <Typography sx={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.4)" }}>
+                        {row.time || "-"}
+                      </Typography>
+                    </Box>) : key === "relay" ? (
+                      <Typography sx={{ fontSize: "0.85rem", fontWeight: 700, color: theme.palette.primary.light }}>
                         {row[key]}
                       </Typography>
-                    </Box>
-                  ) : key === "relay" ? (
-                    <Typography sx={{ fontSize: "0.72rem", fontWeight: 700, color: theme.palette.primary.light }}>
-                      {row[key]}
-                    </Typography>
-                  ) : hexFields.includes(key) ? (
-                    <Typography sx={{ 
-                      fontSize: "0.7rem", 
-                      fontFamily: "'Roboto Mono', monospace", 
-                      color: "rgba(255,255,255,0.5)" 
-                    }}>
-                      0x{row[key]?.toString(16).toUpperCase().padStart(2, '0') || "00"}
-                    </Typography>
-                  ) : (
-                    <Typography sx={{ fontSize: "0.72rem" }}>
+                    ) : hexFields.includes(key) ? (
+                      <Typography sx={{
+                        fontSize: "0.8rem",
+                        fontFamily: "'Roboto Mono', monospace",
+                        color: "rgba(255,255,255,0.5)"
+                      }}>
+                        0x{row[key]?.toString(16).toUpperCase().padStart(2, '0') || "00"}
+                      </Typography>
+                    ) : (
+                    <Typography sx={{ fontSize: "0.85rem" }}>
                       {row[key]}
                     </Typography>
                   )}

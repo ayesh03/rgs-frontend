@@ -36,7 +36,7 @@ const Interlocking = forwardRef((props, ref) => {
   const [allRows, setAllRows] = useState([]);
   const [rows, setRows] = useState([]);
 
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(12);
   const [page, setPage] = useState(1);
 
   const [hasGenerated, setHasGenerated] = useState(false);
@@ -46,7 +46,6 @@ const Interlocking = forwardRef((props, ref) => {
   const [columnDialogOpen, setColumnDialogOpen] = useState(false);
   const DEFAULT_VISIBLE = [
     "date",
-    "time",
     "frameNo",
     "station",
     "relay",
@@ -246,7 +245,7 @@ const Interlocking = forwardRef((props, ref) => {
       {/* ===== GLASS FILTER BAR ===== */}
       <Box
         sx={{
-          mb: 0.5,
+          mb: 0.8,
           p: 1,
           display: "flex",
           alignItems: "center",

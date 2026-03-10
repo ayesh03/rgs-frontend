@@ -35,7 +35,7 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
     const [loading, setLoading] = useState(false);
     const [rows, setRows] = useState([]);
     const [page, setPage] = useState(1);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rowsPerPage, setRowsPerPage] = useState(12);
 
     const [columnDialogOpen, setColumnDialogOpen] = useState(false);
     const [visibleKeys, setVisibleKeys] = useState(
@@ -175,7 +175,7 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
     });
 
     return (
-        <Box p={1}>
+        <Box sx={{ width: "100%", p: { xs: 1, md: 0.5 } }}>
             {/* ===== HEADER BAR ===== */}
             <motion.div
                 initial={{ opacity: 0, y: -10 }}
@@ -205,7 +205,7 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
                                 display: 'flex'
                             }}
                         >
-                            <HealthAndSafetyIcon sx={{ color: theme.palette.primary.light, fontSize: 24 }} />
+                            <HealthAndSafetyIcon sx={{ color: theme.palette.primary.light, fontSize: 26 }} />
                         </Box>
                         <Box>
                             <Typography variant="subtitle1" fontWeight={500} sx={{ color: "#fff", lineHeight: 0.8, letterSpacing: 0.5 }}>
@@ -246,14 +246,14 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
                             }}
                         />
                         <Typography
-                            variant="caption"
                             sx={{
-                                mt: 2,
-                                display: "block",
-                                color: "rgba(255,255,255,0.5)",
-                                fontWeight: 700,
-                                letterSpacing: 2
-                            }}
+  mt: 2,
+  display: "block",
+  color: "rgba(255,255,255,0.5)",
+  fontWeight: 800,
+  fontSize: "0.8rem",
+  letterSpacing: 2
+}}
                         >
                             ANALYZING HEALTH PACKETS…
                         </Typography>
@@ -279,6 +279,7 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
                                 rows={paginatedRows}
                                 columns={dynamicColumns}
                                 visibleKeys={visibleKeys}
+                                formatter={(row, key) => row[key] ?? "-"}
                             />
 
                             <Box

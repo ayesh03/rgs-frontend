@@ -73,9 +73,9 @@ import {
 
 const COMMON_HEADER_COLUMNS = [
   // { key: "sof", label: "SOF" },
-  { key: "msg_type", label: "Message Type" },
-  { key: "msg_length", label: "Message Length" },
-  { key: "msg_sequence", label: "Message Sequence" },
+  // { key: "msg_type", label: "Message Type" },
+  // { key: "msg_length", label: "Message Length" },
+  // { key: "msg_sequence", label: "Message Sequence" },
   { key: "stationary_kavach_id", label: "Stationary Kavach ID" },
   { key: "nms_system_id", label: "NMS System ID" },
   { key: "system_version", label: "System Version" },
@@ -628,9 +628,9 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
 
   const buildCommonHeader = (packet) => ({
     // Annexure-G Header
-    msg_type: packet.msg_type,
-    msg_length: packet.msg_length,
-    msg_sequence: packet.msg_sequence,
+    // msg_type: packet.msg_type,
+    // msg_length: packet.msg_length,
+    // msg_sequence: packet.msg_sequence,
     stationary_kavach_id: packet.stationary_kavach_id,
     nms_system_id: packet.nms_system_id,
     system_version: packet.system_version,

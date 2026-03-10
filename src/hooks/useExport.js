@@ -52,6 +52,8 @@ export default function useExport() {
     }
 
 
+
+
     // ---------------- STATIONARY ACCESS ----------------
     if (reportType === "station_access") return "SVK_AA";
 
@@ -72,6 +74,38 @@ export default function useExport() {
 
     return "REPORT";
   };
+  const getReportTitle = (reportType, subPacket) => {
+
+    if (reportType === "onboard") return "ONBOARD REGULAR REPORT";
+    if (reportType === "access") return "ONBOARD ACCESS REPORT";
+
+    if (reportType === "station_regular") {
+      const map = {
+        ma: "MOVEMENT AUTHORITY REPORT",
+        ssp: "STATIC SPEED PROFILE REPORT",
+        gradient: "GRADIENT REPORT",
+        lc: "LEVEL CROSSING REPORT",
+        turnout: "TURNOUT REPORT",
+        tag: "TAG REPORT",
+        track: "TRACK CONDITION REPORT",
+        tsr: "TEMPORARY SPEED RESTRICTION REPORT"
+      };
+      return map[subPacket] || "STATIONARY REGULAR REPORT";
+    }
+
+    if (reportType === "station_access") return "STATIONARY ACCESS AUTHORITY REPORT";
+    if (reportType === "station_emergency") return "STATIONARY EMERGENCY REPORT";
+
+    if (reportType === "fault_station") return "STATION FAULT REPORT";
+    if (reportType === "fault_loco") return "LOCO FAULT REPORT";
+
+    if (reportType === "interlocking") return "INTERLOCKING REPORT";
+
+    if (reportType === "health_stationary") return "STATIONARY HEALTH REPORT";
+    if (reportType === "health_onboard") return "ONBOARD HEALTH REPORT";
+
+    return "KAVACH REPORT";
+  };
 
   /* ================= EXCEL EXPORT ================= */
   const exportExcel = (rows, columns, reportType, subPacket) => {
@@ -80,17 +114,19 @@ export default function useExport() {
     const isLoco = reportType === "onboard" || reportType === "access";
 
     const data = rows.map(row =>
-  Object.fromEntries(
-    columns.map(col => [
-      col.label,
-      row[col.key] ?? (
-        isLoco
-          ? formatCellValue(row, col.key)
-          : formatFaultCellValue(row, col.key)
+      Object.fromEntries(
+        columns.map(col => [
+          col.label,
+          (reportType === "interlocking" || reportType === "onboard" || reportType === "access") && col.key === "date"
+            ? `${row.date || ""} ${row.time || ""}`  
+            : row[col.key] ?? (
+              isLoco
+                ? formatCellValue(row, col.key)
+                : formatFaultCellValue(row, col.key)
+            )
+        ])
       )
-    ])
-  )
-);
+    );
 
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
@@ -138,13 +174,14 @@ export default function useExport() {
       didDrawPage: (data) => {
         const pageWidth = doc.internal.pageSize.width;
         const pageHeight = doc.internal.pageSize.height;
+        const reportTitle = getReportTitle(reportType, subPacket);
 
         // --- HEADER ---
         doc.setTextColor(40, 107, 206);
         doc.setFont("helvetica", "bold");
         doc.setFontSize(16);
-        doc.text(`KAVACH REPORT GENERATING SYSTEM - ${reportCode}`, 40, 40);
-        doc.addImage(areaLogo, "PNG", pageWidth - 100, 20, 60, 30);
+        doc.text(`KAVACH REPORT GENERATING SYSTEM - ${reportTitle}`, 40, 45);
+        doc.addImage(areaLogo, "PNG", pageWidth - 100, 17, 60, 30);
 
         // --- FOOTER ---
         doc.setFont("helvetica", "normal");

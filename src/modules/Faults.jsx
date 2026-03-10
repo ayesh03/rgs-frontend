@@ -72,7 +72,7 @@ export default function Faults() {
 
     const rows = isAll ? currentRef.getAllRows?.() : currentRef.getFilteredRows?.();
     const cols = currentRef.getVisibleColumns?.();
-    const filename = tab === 0 ? "station_fault_report" : "loco_fault_report";
+    const filename = tab === 0 ? "fault_station" : "fault_loco";
 
     if (rows && cols) {
       if (type === "excel") exportExcel(rows, cols, filename);

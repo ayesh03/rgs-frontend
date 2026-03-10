@@ -1,6 +1,6 @@
 import areaLogo from "../assets/arecaLogo.png";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   AppBar,
   Toolbar,
@@ -19,6 +19,7 @@ import {
   Stack,
   Popover,
 } from "@mui/material";
+import AnimatedTrain from "./AnimatedTrain"
 import { motion, AnimatePresence } from "framer-motion";
 import SettingsIcon from '@mui/icons-material/Settings';
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
@@ -44,12 +45,14 @@ export default function MainLayout() {
   const [tempToDate, setTempToDate] = useState("");
   const [tempToTime, setTempToTime] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
+  const fromDateRef = useRef(null);
+  const toDateRef = useRef(null);
 
   useEffect(() => {
-  if (tempFromDate) {
-    setTempToDate(tempFromDate);
-  }
-}, [tempFromDate]);
+    if (tempFromDate) {
+      setTempToDate(tempFromDate);
+    }
+  }, [tempFromDate]);
 
   const {
     fromDate,
@@ -88,11 +91,15 @@ export default function MainLayout() {
   //   setFromAnchorEl(event.currentTarget);
   // };
   const handleFromOpen = (event) => {
-  const [d, t] = (fromDate || "").split("T");
-  setTempFromDate(d || "");
-  setTempFromTime(t || "00:00:00");   // default
-  setFromAnchorEl(event.currentTarget);
-};
+    const [d, t] = (fromDate || "").split("T");
+    setTempFromDate(d || "");
+    setTempFromTime(t || "00:00:00");
+    setFromAnchorEl(event.currentTarget);
+
+    setTimeout(() => {
+      fromDateRef.current?.focus();
+    }, 100);
+  };
   const handleFromClose = () => setFromAnchorEl(null);
   // const handleFromApply = () => {
   //   if (tempFromDate && tempFromTime) {
@@ -102,16 +109,16 @@ export default function MainLayout() {
   // };
 
   const handleFromApply = () => {
-  if (tempFromDate && tempFromTime) {
-    const from = `${tempFromDate}T${tempFromTime}`;
-    const to = `${tempFromDate}T23:59:59`;
+    if (tempFromDate && tempFromTime) {
+      const from = `${tempFromDate}T${tempFromTime}`;
+      const to = `${tempFromDate}T23:59:59`;
 
-    setFromDate(from);
-    setToDate(to);
+      setFromDate(from);
+      setToDate(to);
 
-    handleFromClose();
-  }
-};
+      handleFromClose();
+    }
+  };
 
   // const handleToOpen = (event) => {
   //   const [d, t] = (toDate || "").split("T");
@@ -120,11 +127,15 @@ export default function MainLayout() {
   //   setToAnchorEl(event.currentTarget);
   // };
   const handleToOpen = (event) => {
-  const [d, t] = (toDate || "").split("T");
-  setTempToDate(d || tempFromDate || "");
-  setTempToTime(t || "23:59:59");   // default
-  setToAnchorEl(event.currentTarget);
-};
+    const [d, t] = (toDate || "").split("T");
+    setTempToDate(d || tempFromDate || "");
+    setTempToTime(t || "23:59:59");
+    setToAnchorEl(event.currentTarget);
+
+    setTimeout(() => {
+      toDateRef.current?.focus();
+    }, 100);
+  };
   const handleToClose = () => setToAnchorEl(null);
   const handleToApply = () => {
     if (tempToDate && tempToTime) {
@@ -171,23 +182,23 @@ export default function MainLayout() {
             </a>
 
             <Typography
-  component={motion.div}
-  initial={{ opacity: 0, y: -10 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.6, ease: "easeOut" }}
-  sx={{
-    mt: 0.5,
-    mb: 0.,
-    fontWeight: 800,
-    fontSize: "2.125rem",
-    letterSpacing: -1,
-    background: "linear-gradient(90deg,#4dabf7,#74c0fc,#4dabf7)",
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent",
-    textShadow: "0 0 10px rgba(77,171,247,0.4)",
-    
-  }}
->
+              component={motion.div}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              sx={{
+                mt: 0.5,
+                mb: 0.,
+                fontWeight: 800,
+                fontSize: "2.125rem",
+                letterSpacing: -1,
+                background: "linear-gradient(90deg,#4dabf7,#74c0fc,#4dabf7)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                textShadow: "0 0 10px rgba(77,171,247,0.4)",
+
+              }}
+            >
               <motion.span
                 animate={{ letterSpacing: ["1px", "2px", "1px"] }}
                 transition={{ duration: 4, repeat: Infinity }}
@@ -195,23 +206,29 @@ export default function MainLayout() {
                 KAVACH
               </motion.span>
 
+              
+
               <Box
-  component="span"
-  sx={{
-    ml: 1,
-    fontWeight: 800,
-    color: "#fff",
-    WebkitTextFillColor: "#fff",
-    background: "none",
-    textShadow: "none",
-    fontSize: "2.125rem",
-    lineHeight: 1
-  }}
->
-  REPORT GENERATION SYSTEM
-</Box>
+                component="span"
+                sx={{
+                  ml: 1,
+                  fontWeight: 800,
+                  color: "#fff",
+                  WebkitTextFillColor: "#fff",
+                  background: "none",
+                  textShadow: "none",
+                  fontSize: "2.125rem",
+                  lineHeight: 1
+                }}
+              >
+                REPORT GENERATION SYSTEM
+              </Box>
             </Typography>
+            <Box component="span" sx={{ display: "inline-flex", verticalAlign: "middle", mx: 0.5 }}>
+                <AnimatedTrain width={320} />
+              </Box>
           </Box>
+
 
           {/* FILTER BAR SECTION */}
           <Box sx={{
@@ -251,7 +268,7 @@ export default function MainLayout() {
                   <Typography variant="subtitle2" sx={{ mb: 1.5 }}>Select Start Date/Time</Typography>
                   <Stack spacing={2}>
                     <TextField
-                      label="Date" type="date" size="small" fullWidth
+                      label="Date" type="date" size="small" inputRef={fromDateRef} fullWidth
                       value={tempFromDate}
                       onChange={(e) => setTempFromDate(e.target.value)}
                       InputLabelProps={{ shrink: true }}
@@ -299,7 +316,7 @@ export default function MainLayout() {
                 <Box sx={{ p: 2, minWidth: 250 }}>
                   <Typography variant="subtitle2" sx={{ mb: 1.5 }}>Select End Date/Time</Typography>
                   <Stack spacing={2}>
-                    <TextField label="Date" type="date" size="small" fullWidth value={tempToDate} onChange={(e) => setTempToDate(e.target.value)} InputLabelProps={{ shrink: true }} sx={{ input: { color: "#fff" }, label: { color: "#888" }, "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "#444" } } }} />
+                    <TextField label="Date" type="date" size="small" inputRef={toDateRef} fullWidth value={tempToDate} onChange={(e) => setTempToDate(e.target.value)} InputLabelProps={{ shrink: true }} sx={{ input: { color: "#fff" }, label: { color: "#888" }, "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "#444" } } }} />
                     <TextField
                       label="Time" type="time" size="small" fullWidth
                       value={tempToTime}

@@ -10,8 +10,7 @@ export const INTERLOCKING_COLUMNS = [
   { key: "nms_system_id", label: "NMS System ID" },
   { key: "system_version", label: "System Version" },
 
-  { key: "date", label: "Date" },
-  // { key: "time", label: "Time" },
+  { key: "date", label: "Packet Event Time" },
   { key: "frameNo", label: "Frame No" },
   { key: "station", label: "Station" },
   { key: "relay", label: "Relay ID" },

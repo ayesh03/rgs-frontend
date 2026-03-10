@@ -326,7 +326,7 @@ export default function Graph() {
       const yAxisLabel = isSpeedGraph ? "Speed (km/h)" : "Mode";
 
       // ── Serialize SVG ONCE — reuse the string every page ──
-      
+
       const serializer = new XMLSerializer();
       const rawSvgStr = serializer.serializeToString(svgEl);
 
@@ -522,7 +522,7 @@ export default function Graph() {
   const isModeGraph = graphType.includes("Mode");
   return (
     <Box
-      p={1}
+      sx={{ width: "100%", p: { xs: 1, md: 0.5 } }}
       component={motion.div}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
@@ -569,7 +569,7 @@ export default function Graph() {
       {/* CONFIG */}
       <Card
         sx={{
-          mb: 0.5,
+          mb: 1.5,
           borderRadius: "6px",
           bgcolor: "rgba(255,255,255,0.02)",
           border: "1px solid rgba(255,255,255,0.08)",
@@ -671,6 +671,8 @@ export default function Graph() {
           <Grid item xs={12} sm={4}>
             <input
               type="time"
+              value={timeEnd}
+              onChange={(e) => setTimeEnd(e.target.value)}
               style={{
                 width: "100%", padding: "8px",
                 background: "rgba(255, 255, 255, 0.05)",
@@ -687,7 +689,7 @@ export default function Graph() {
         {noData && <Typography color="warning.main" mt={0.5}>No graph data available.</Typography>}
         {/* </CardContent> */}
       </Card>
-      <Stack direction="row" spacing={2} mb={0.5}>
+      <Stack direction="row" spacing={2} mb={2}>
         <Chip
           label="Zoom +"
           onClick={() => setZoom(z => z + 0.2)}
@@ -717,7 +719,16 @@ export default function Graph() {
               "& .MuiLinearProgress-bar": { boxShadow: `0 0 10px ${theme.palette.primary.main}` }
             }}
           />
-          <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.4)", mt: 2, display: 'block', letterSpacing: 2 }}>
+          <Typography
+            sx={{
+              mt: 2,
+              display: "block",
+              color: "rgba(255,255,255,0.5)",
+              fontWeight: 800,
+              fontSize: "0.8rem",
+              letterSpacing: 2
+            }}
+          >
             FETCHING TELEMETRY DATA...
           </Typography>
         </Box>
@@ -736,7 +747,7 @@ export default function Graph() {
             backdropFilter: "blur(20px)",
             border: "1px solid rgba(255, 255, 255, 0.1)",
             backgroundImage: "none",
-            p: 2
+            p: 2.5
           }}
         >
 
@@ -745,6 +756,7 @@ export default function Graph() {
               <Chip
                 label={`Loco: ${locoId}`}
                 sx={{
+                  fontSize: "0.85rem",
                   color: "#fff",
                   bgcolor: "rgba(255,255,255,0.08)",
                   border: "1px solid rgba(255,255,255,0.2)"
@@ -754,6 +766,7 @@ export default function Graph() {
               <Chip
                 label={`Direction: ${direction}`}
                 sx={{
+                  fontSize: "0.85rem",
                   color: "#fff",
                   bgcolor: "rgba(255,255,255,0.08)",
                   border: "1px solid rgba(255,255,255,0.2)"
@@ -762,9 +775,12 @@ export default function Graph() {
             </Stack>
 
             <Typography
-              fontWeight={700}
-              mb={2}
-              sx={{ color: "#fff", letterSpacing: 0.5 }}
+              sx={{
+                fontWeight: 900,
+                fontSize: "1rem",
+                color: "#fff",
+                letterSpacing: 1
+              }}
             >
               {graphType}
             </Typography>
@@ -774,7 +790,7 @@ export default function Graph() {
                 {graphType === "Location Vs Speed" && (
                   <AreaChart
                     width={Math.max(graphData.length * 12 * zoom, 1400)}
-                    height={420}
+                    height={530}
                     data={getFilteredByTime()}
                     margin={{ top: 10, right: 30, left: 0, bottom: 50 }}
                   >
@@ -848,7 +864,7 @@ export default function Graph() {
                 {graphType === "Time Vs Speed" && (
                   <AreaChart
                     width={Math.max(graphData.length * 12 * zoom, 1400)}
-                    height={420}
+                    height={530}
                     data={getFilteredByTime()}
                     margin={{ top: 10, right: 30, left: 0, bottom: 50 }}
                   >
@@ -884,7 +900,7 @@ export default function Graph() {
                 {graphType === "Location Vs Mode" && (
                   <ComposedChart
                     width={Math.max(graphData.length * 12 * zoom, 1400)}
-                    height={420}
+                    height={550}
                     data={getFilteredByTime()}
                     margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
                   >
@@ -948,7 +964,7 @@ export default function Graph() {
                 {graphType === "Time Vs Mode" && (
                   <ComposedChart
                     width={Math.max(graphData.length * 12 * zoom, 1400)}
-                    height={420}
+                    height={550}
                     data={getFilteredByTime()}
                     margin={{ top: 40, right: 30, left: 20, bottom: 60 }}
                   >

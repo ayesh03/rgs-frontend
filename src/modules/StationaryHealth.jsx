@@ -115,7 +115,7 @@ export default function Health() {
                         minHeight: 40,
                         "& .MuiTab-root": { 
                             fontWeight: 800, 
-                            fontSize: "0.75rem",
+                            fontSize: "1.2rem",
                             px: 4,
                             color: "rgba(255,255,255,0.4)",
                             transition: "0.3s",

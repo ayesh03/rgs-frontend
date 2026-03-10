@@ -29,18 +29,23 @@ export default function Interlocking() {
   };
 
   const handleExport = (type, isAll = false) => {
-    const rows = isAll 
-      ? interlockingRef.current?.getAllRows?.() 
-      : interlockingRef.current?.getFilteredRows?.();
-    
-    const filename = `interlocking_report_${new Date().getTime()}`;
-    
-    if (type === "excel") {
-      exportExcel(rows, INTERLOCKING_COLUMNS, filename);
-    } else {
-      exportPDF(rows, INTERLOCKING_COLUMNS, filename);
-    }
-  };
+
+  const rows = isAll
+    ? interlockingRef.current?.getAllRows?.()
+    : interlockingRef.current?.getFilteredRows?.();
+
+  const columns = isAll
+    ? INTERLOCKING_COLUMNS
+    : interlockingRef.current?.getVisibleColumns?.();
+
+  if (!rows || !rows.length) return;
+
+  if (type === "excel") {
+    exportExcel(rows, columns, "interlocking");
+  } else {
+    exportPDF(rows, columns, "interlocking");
+  }
+};
 
   return (
     <Box sx={{ p: { xs: 1, md: 0.5 }, minHeight: '100vh' }}>

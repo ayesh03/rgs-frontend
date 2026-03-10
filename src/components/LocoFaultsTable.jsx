@@ -21,6 +21,7 @@ export default function LocoFaultsTable({
   rows = [],
   columns = [],
   visibleKeys = [],
+  formatter = formatFaultCellValue
 }) {
   const visibleColumns = columns.filter(col =>
     visibleKeys.includes(col.key)
@@ -59,9 +60,9 @@ export default function LocoFaultsTable({
         bgcolor: "transparent",
         overflowX: "auto",
         "&::-webkit-scrollbar": { height: "8px" },
-        "&::-webkit-scrollbar-thumb": { 
-          bgcolor: "rgba(255,255,255,0.1)", 
-          borderRadius: "10px" 
+        "&::-webkit-scrollbar-thumb": {
+          bgcolor: "rgba(255,255,255,0.1)",
+          borderRadius: "10px"
         }
       }}
     >
@@ -70,7 +71,7 @@ export default function LocoFaultsTable({
         <TableHead>
           <TableRow>
             {visibleColumns.map(col => (
-              <TableCell 
+              <TableCell
                 key={col.key}
                 sx={{
                   bgcolor: "#1a1a1a", // Solid dark for sticky header
@@ -103,7 +104,7 @@ export default function LocoFaultsTable({
                   "&:hover": {
                     bgcolor: "rgba(255, 255, 255, 0.03)",
                   },
-                  "& td": { 
+                  "& td": {
                     borderBottom: "1px solid rgba(255,255,255,0.05)",
                     color: "rgba(255,255,255,0.8)"
                   },
@@ -131,12 +132,12 @@ export default function LocoFaultsTable({
 
                     ) : col.key === "kavach_subsystem_id" ? (
                       <Typography sx={{ fontSize: "0.95rem", fontWeight: 700, color: "#00e5ff" }}>
-                        {formatFaultCellValue(row, col.key)}
+                        {formatter(row, col.key)}
                       </Typography>
-                      
+
                     ) : (
                       <Typography sx={{ fontSize: "0.95rem" }}>
-                        {row[col.key] ?? formatFaultCellValue(row, col.key)}
+                        {formatter(row, col.key)}
                       </Typography>
                     )}
                   </TableCell>
