@@ -1,6 +1,7 @@
  import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import jsPDF from "jspdf";
+import { useState , useEffect} from "react";
 import autoTable from "jspdf-autotable";
 import { formatCellValue } from "../utils/locoFormatters";
 import { formatFaultCellValue } from "../utils/faultFormatter";
@@ -50,7 +51,6 @@ export default function useExport() {
       return `SVK_SR_${tabCode}`;
     }
 
-    const [isExporting, setIsExporting] = useState(false);
 
     // ---------------- STATIONARY ACCESS ----------------
     if (reportType === "station_access") return "SVK_AA";

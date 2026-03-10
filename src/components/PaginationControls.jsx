@@ -62,7 +62,7 @@ export default function PaginationControls({
         {/* Page Selector */}
         <Stack direction="row" alignItems="center" spacing={1.5}>
           <Typography sx={{ 
-            fontSize: '0.6rem', 
+            fontSize: '0.8rem', 
             fontWeight: 900, 
             color: 'rgba(255,255,255,0.4)',
             letterSpacing: 1
@@ -79,7 +79,7 @@ export default function PaginationControls({
             sx={{ 
               height: 28, 
               minWidth: 45, 
-              fontSize: '0.75rem', 
+              fontSize: '0.9rem', 
               fontWeight: 800,
               color: "#4dabf7",
               bgcolor: 'rgba(255,255,255,0.05)',
@@ -97,7 +97,7 @@ export default function PaginationControls({
                   border: "1px solid rgba(255,255,255,0.1)",
                   maxHeight: 200,
                   "& .MuiMenuItem-root": {
-                    fontSize: "0.75rem",
+                    fontSize: "0.9rem",
                     color: "#fff",
                     justifyContent: "center",
                     "&:hover": { bgcolor: "rgba(77, 171, 247, 0.1)" }
@@ -114,7 +114,7 @@ export default function PaginationControls({
           </Select>
 
           <Typography sx={{ 
-            fontSize: '0.6rem', 
+            fontSize: '0.9rem', 
             fontWeight: 900, 
             color: 'rgba(255,255,255,0.4)',
             letterSpacing: 1

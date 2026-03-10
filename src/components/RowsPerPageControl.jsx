@@ -41,7 +41,7 @@ export default function RowsPerPageControl({
   const inputStyles = {
     width: 100,
     "& .MuiOutlinedInput-root": {
-      fontSize: "0.75rem",
+      fontSize: "1rem",
       fontWeight: 700,
       color: "#fff",
       bgcolor: "rgba(255, 255, 255, 0.05)",
@@ -68,7 +68,7 @@ export default function RowsPerPageControl({
           color: "rgba(255, 255, 255, 0.5)", 
           textTransform: "uppercase",
           letterSpacing: 1,
-          fontSize: "0.65rem"
+          fontSize: "1rem"
         }}
       >
         Rows:

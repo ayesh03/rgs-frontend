@@ -122,7 +122,7 @@ export default function Faults() {
             },
             "& .MuiTab-root": {
               fontWeight: 700,
-              fontSize: "0.8rem",
+              fontSize: "1.2rem",
               textTransform: "uppercase",
               letterSpacing: 1,
               color: "rgba(255,255,255,0.4)",

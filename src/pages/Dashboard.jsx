@@ -77,7 +77,7 @@ const Dashboard = () => {
         {
             title: "TOTAL MOVEMENT",
             value: dashboardData?.total_movement ?? 0,
-            icon: <DirectionsRailwayIcon sx={{ fontSize: 32 }} />,
+            icon: <DirectionsRailwayIcon sx={{ fontSize: 38 }} />,
             color: "#4dabf7", // Electric Blue
             route: "loco",
             autoGenerate: true
@@ -85,33 +85,43 @@ const Dashboard = () => {
         {
             title: "ONBOARD EMERGENCY",
             value: dashboardData?.onboard_emergency ?? 0,
-            icon: <WarningAmberIcon sx={{ fontSize: 32 }} />,
+            icon: <WarningAmberIcon sx={{ fontSize: 38 }} />,
             color: "#ff5252", // Neon Red
             route: "loco",
             autoGenerate: true,
-            filter: { field: "emergency_status", value: ["1", "2", "3", "4", "5", "6"] }
+            filter: { field: "emergency_status", value: [1, 2, 3, 4, 5, 6] }
         },
         {
             title: "STATION EMERGENCY",
             value: dashboardData?.station_emergency || 0,
-            icon: <WarningAmberIcon sx={{ fontSize: 32 }} />,
-            color: "#ff1744", 
+            icon: <WarningAmberIcon sx={{ fontSize: 38 }} />,
+            color: "#ff1744",
             route: "StationaryKavachInfo",
             autoGenerate: true,
             tab: 2
         },
         {
-            title: "FAULTS",
-            value: dashboardData?.total_faults ?? 0,
-            icon: <EngineeringIcon sx={{ fontSize: 32 }} />,
-            color: "#ffd740", // Amber Glow
+            title: "LOCO FAULTS",
+            value: dashboardData?.loco_faults ?? 0,
+            icon: <EngineeringIcon sx={{ fontSize: 38 }} />,
+            color: "#ffd740",
             route: "faults",
-            autoGenerate: true
+            autoGenerate: true,
+            tab: 1
+        },
+        {
+            title: "STATION FAULTS",
+            value: dashboardData?.station_faults ?? 0,
+            icon: <EngineeringIcon sx={{ fontSize: 38 }} />,
+            color: "#ffab00",
+            route: "faults",
+            autoGenerate: true,
+            tab: 0
         },
         {
             title: "SYSTEM FAILURE MODE",
             value: dashboardData?.system_failure_mode ?? 0,
-            icon: <HealthAndSafetyIcon sx={{ fontSize: 32 }} />,
+            icon: <HealthAndSafetyIcon sx={{ fontSize: 38 }} />,
             color: "#f44336",
             route: "loco",
             autoGenerate: true,
@@ -120,7 +130,7 @@ const Dashboard = () => {
         {
             title: "EMERGENCY BRAKE",
             value: dashboardData?.emergency_brake ?? 0,
-            icon: <SpeedIcon sx={{ fontSize: 32 }} />,
+            icon: <SpeedIcon sx={{ fontSize: 38 }} />,
             color: "#e040fb", // Purple Neon
             route: "loco",
             autoGenerate: true,
@@ -129,7 +139,7 @@ const Dashboard = () => {
         {
             title: "STATION HEALTH",
             value: dashboardData?.station_health_count ?? 0,
-            icon: <HealthAndSafetyIcon sx={{ fontSize: 32 }} />,
+            icon: <HealthAndSafetyIcon sx={{ fontSize: 38 }} />,
             color: "#00e5ff",
             route: "health",
             autoGenerate: true,
@@ -138,7 +148,7 @@ const Dashboard = () => {
         {
             title: "ONBOARD HEALTH",
             value: dashboardData?.onboard_health_count ?? 0,
-            icon: <HealthAndSafetyIcon sx={{ fontSize: 32 }} />,
+            icon: <HealthAndSafetyIcon sx={{ fontSize: 38 }} />,
             color: "#1de9b6",
             route: "health",
             autoGenerate: true,
@@ -147,14 +157,14 @@ const Dashboard = () => {
     ];
 
     const handleNavigate = (item) => {
-        navigate(`/app/${item.route}`, {
-            state: {
-                autoGenerate: item.autoGenerate || false,
-                dashboardFilter: item.filter || null,
-                tabIndex: item.tab ?? null
-            }
-        });
-    };
+    navigate(`/app/${item.route}`, {
+        state: {
+            autoGenerate: item.autoGenerate || false,
+            dashboardFilter: item.filter || null,
+            targetTab: item.tab ?? null
+        }
+    });
+};
 
     return (
         <Box
@@ -189,7 +199,7 @@ const Dashboard = () => {
             <Grid container spacing={3}>
                 <AnimatePresence>
                     {summary.map((item, index) => (
-                        <Grid item xs={12} sm={6} md={4} lg={3} xl={2.4} key={index}>
+                        <Grid item xs={12} sm={6} md={4} lg={4} xl={3} key={index}>
                             <MotionCard
                                 variants={itemVariants}
                                 whileHover={{
@@ -221,15 +231,15 @@ const Dashboard = () => {
                                     background: `linear-gradient(90deg, transparent, ${item.color}, transparent)`,
                                 }} />
 
-                                <CardContent sx={{ p: 3 }}>
+                                <CardContent sx={{ p: 5 }}>
                                     <Stack spacing={2.5}>
                                         <Box
                                             sx={{
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
-                                                width: 54,
-                                                height: 54,
+                                                width: 72,
+                                                height: 72,
                                                 borderRadius: '14px',
                                                 backgroundColor: alpha(item.color, 0.1),
                                                 color: item.color,
@@ -248,7 +258,7 @@ const Dashboard = () => {
                                                     color: "rgba(255,255,255,0.5)",
                                                     textTransform: 'uppercase',
                                                     letterSpacing: 1.2,
-                                                    fontSize: '0.65rem',
+                                                    fontSize: '0.8rem',
                                                     display: 'block',
                                                     mb: 0.5
                                                 }}
@@ -260,8 +270,8 @@ const Dashboard = () => {
                                                 sx={{
                                                     fontWeight: 800,
                                                     color: "#fff",
-                                                    fontSize: '2rem',
-                                                    fontFamily: '"JetBrains Mono", "Roboto Mono", monospace' 
+                                                    fontSize: '2.8rem',
+                                                    fontFamily: '"JetBrains Mono", "Roboto Mono", monospace'
                                                 }}
                                             >
                                                 {item.value}

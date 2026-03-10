@@ -182,7 +182,7 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
       <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 0.5 }}>
         <Stack direction="row" spacing={1} alignItems="center">
           <MovingIcon sx={{ color: "#4dabf7", fontSize: "1rem" }} />
-          <Typography fontWeight={800} fontSize="0.85rem" sx={{ letterSpacing: 1, color: "#eee" }}>
+          <Typography fontWeight={800} fontSize="1.2rem" sx={{ letterSpacing: 1, color: "#eee" }}>
             LOCO MOVEMENT
           </Typography>
         </Stack>

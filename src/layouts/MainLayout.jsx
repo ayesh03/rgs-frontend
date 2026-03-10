@@ -167,26 +167,27 @@ export default function MainLayout() {
           {/* LOGO SECTION */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <a href="https://www.areca.in/" target="_blank" rel="noopener noreferrer">
-              <Box component="img" src={areaLogo} alt="Logo" sx={{ height: 24, cursor: "pointer", filter: "brightness(0) invert(1)" }} />
+              <Box component="img" src={areaLogo} alt="Logo" sx={{ height: 38, cursor: "pointer", filter: "brightness(0) invert(1)" }} />
             </a>
 
             <Typography
-              component={motion.div}
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              sx={{
-                mt: 0.5,
-                mb: 0.3,
-                fontWeight: 800,
-                fontSize: "20px",
-                letterSpacing: "1px",
-                background: "linear-gradient(90deg,#4dabf7,#74c0fc,#4dabf7)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                textShadow: "0 0 10px rgba(77,171,247,0.4)",
-              }}
-            >
+  component={motion.div}
+  initial={{ opacity: 0, y: -10 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.6, ease: "easeOut" }}
+  sx={{
+    mt: 0.5,
+    mb: 0.,
+    fontWeight: 800,
+    fontSize: "2.125rem",
+    letterSpacing: -1,
+    background: "linear-gradient(90deg,#4dabf7,#74c0fc,#4dabf7)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+    textShadow: "0 0 10px rgba(77,171,247,0.4)",
+    
+  }}
+>
               <motion.span
                 animate={{ letterSpacing: ["1px", "2px", "1px"] }}
                 transition={{ duration: 4, repeat: Infinity }}
@@ -195,19 +196,20 @@ export default function MainLayout() {
               </motion.span>
 
               <Box
-                component="span"
-                sx={{
-                  ml: 1,
-                  fontWeight: 400,
-                  color: "rgba(255,255,255,0.6)",
-                  WebkitTextFillColor: "rgba(255,255,255,0.6)",
-                  background: "none",
-                  textShadow: "none",
-                  fontSize: "16px"
-                }}
-              >
-                REPORT GENERATION SYSTEM
-              </Box>
+  component="span"
+  sx={{
+    ml: 1,
+    fontWeight: 800,
+    color: "#fff",
+    WebkitTextFillColor: "#fff",
+    background: "none",
+    textShadow: "none",
+    fontSize: "2.125rem",
+    lineHeight: 1
+  }}
+>
+  REPORT GENERATION SYSTEM
+</Box>
             </Typography>
           </Box>
 
@@ -353,7 +355,7 @@ export default function MainLayout() {
                 component={Link}
                 to={item.path}
                 sx={{
-                  px: 1.5, py: 0.5, textTransform: "none", fontSize: "0.8rem",
+                  px: 1.5, py: 0.5, textTransform: "none", fontSize: "1.4rem",
                   fontWeight: isActive ? 700 : 500,
                   color: isActive ? "#fff" : "#888",
                   bgcolor: isActive ? "#0b4dbb" : "transparent",

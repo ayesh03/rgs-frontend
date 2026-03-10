@@ -997,12 +997,13 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
               },
             }}
             sx={{
+              mb: 1,
               minWidth: 240,
               bgcolor: "rgba(255,255,255,0.05)",
               backdropFilter: "blur(4px)",
               borderRadius: "8px",
-              fontSize: "0.8rem",
-              fontWeight: 600,
+              fontSize: "1.1rem",
+              fontWeight: 700,
               color: theme.palette.primary.light, // This ensures the SELECTED text is visible
               "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.1)" },
               "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: theme.palette.primary.main },
@@ -1081,7 +1082,6 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
         )}
       </AnimatePresence>
 
-      {/* PAGINATION SECTION */}
       {/* PAGINATION SECTION */}
       {filteredRows.length > 0 && (
         <Stack 

@@ -40,9 +40,9 @@ export default function LocoFaultsTable({
         label={label}
         size="small"
         sx={{
-          fontSize: "0.6rem",
+          fontSize: "0.8rem",
           fontWeight: 800,
-          height: 20,
+          height: 28,
           bgcolor: isFault ? alpha("#ff1744", 0.1) : alpha("#00e676", 0.1),
           color: isFault ? "#ff8a80" : "#b9f6ca",
           border: `1px solid ${isFault ? alpha("#ff1744", 0.3) : alpha("#00e676", 0.3)}`,
@@ -75,11 +75,11 @@ export default function LocoFaultsTable({
                 sx={{
                   bgcolor: "#1a1a1a", // Solid dark for sticky header
                   fontWeight: 800,
-                  fontSize: "0.65rem",
+                  fontSize: "0.8rem",
                   color: "rgba(255,255,255,0.4)",
                   borderBottom: "2px solid rgba(255,255,255,0.05)",
                   letterSpacing: "0.5px",
-                  py: 1.5,
+                  py: 2,
                   whiteSpace: "nowrap"
                 }}
               >
@@ -113,15 +113,15 @@ export default function LocoFaultsTable({
                 {visibleColumns.map(col => (
                   <TableCell
                     key={col.key}
-                    sx={{ py: 1, whiteSpace: "nowrap" }}
+                    sx={{ py: 1.8, whiteSpace: "nowrap" }}
                   >
                     {/* DATE / TIME */}
                     {col.key === "date" ? (
                       <Box>
-                        <Typography sx={{ fontSize: "0.7rem", fontWeight: 700, color: "#fff" }}>
+                        <Typography sx={{ fontSize: "1rem", fontWeight: 700, color: "#fff" }}>
                           {row.date}
                         </Typography>
-                        <Typography sx={{ fontSize: "0.6rem", color: "rgba(255,255,255,0.4)" }}>
+                        <Typography sx={{ fontSize: "0.85rem", color: "rgba(255,255,255,0.4)" }}>
                           {row.time}
                         </Typography>
                       </Box>
@@ -130,12 +130,12 @@ export default function LocoFaultsTable({
                       renderFaultType(row.fault_type)
 
                     ) : col.key === "kavach_subsystem_id" ? (
-                      <Typography sx={{ fontSize: "0.7rem", fontWeight: 700, color: "#00e5ff" }}>
+                      <Typography sx={{ fontSize: "0.95rem", fontWeight: 700, color: "#00e5ff" }}>
                         {formatFaultCellValue(row, col.key)}
                       </Typography>
                       
                     ) : (
-                      <Typography sx={{ fontSize: "0.7rem" }}>
+                      <Typography sx={{ fontSize: "0.95rem" }}>
                         {formatFaultCellValue(row, col.key)}
                       </Typography>
                     )}

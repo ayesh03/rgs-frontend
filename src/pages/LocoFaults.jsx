@@ -33,7 +33,7 @@ const LocoFaults = forwardRef(({ originType }, ref) => {
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState([]);
   const [page, setPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(isMobile ? 6 : 10);
+  const [rowsPerPage, setRowsPerPage] = useState(isMobile ? 6: 12);
   const [columnDialogOpen, setColumnDialogOpen] = useState(false);
   const [visibleKeys, setVisibleKeys] = useState(
     FAULT_ALL_COLUMNS.map((c) => c.key)
@@ -130,7 +130,7 @@ const LocoFaults = forwardRef(({ originType }, ref) => {
         direction="row"
         alignItems="center"
         justifyContent="space-between"
-        sx={{ mb:0.5, px: 1 }}
+        sx={{ mb:1,mt: 0.5, px: 1 }}
       >
         <Stack direction="row" alignItems="center" spacing={1.5}>
           {/* <Box
@@ -206,7 +206,7 @@ const LocoFaults = forwardRef(({ originType }, ref) => {
               direction="row"
               justifyContent="center"
               sx={{
-                mt: 1,
+                mt: 1.2,
                 "& .MuiPaginationItem-root": {
                   color: "rgba(255,255,255,0.7)",
                   borderColor: "rgba(255,255,255,0.1)",

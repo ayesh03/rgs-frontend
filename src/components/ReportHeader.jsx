@@ -44,6 +44,9 @@ export default function ReportHeader({
       animate={{ opacity: 1, y: 0 }}
       elevation={0}
       sx={{
+        px: 4,
+        py: 1,
+        fontSize: "0.95rem",
         p: 1,
         mb: 0.5,
         borderRadius: "16px",
@@ -59,16 +62,17 @@ export default function ReportHeader({
             placeholder="Search Loco ID..."
             variant="outlined"
             onChange={(e) => onSearch?.(e.target.value)}
-            sx={{ 
-                width: 220, 
-                "& .MuiOutlinedInput-root": {
-                    bgcolor: "rgba(255, 255, 255, 0.05)",
-                    color: "#fff",
-                    fontSize: "0.85rem",
-                    borderRadius: "10px",
-                    "& fieldset": { borderColor: "rgba(255,255,255,0.1)" },
-                    "&:hover fieldset": { borderColor: "#4dabf7" },
-                }
+            sx={{
+              width: 220,
+              "& .MuiOutlinedInput-root": {
+                bgcolor: "rgba(255, 255, 255, 0.05)",
+                color: "#fff",
+                fontSize: "0.85rem",
+                borderRadius: "10px",
+            py: 0.4,
+                "& fieldset": { borderColor: "rgba(255,255,255,0.1)" },
+                "&:hover fieldset": { borderColor: "#4dabf7" },
+              }
             }}
             InputProps={{
               startAdornment: (
@@ -91,6 +95,7 @@ export default function ReportHeader({
               color: "#fff",
               borderRadius: "6px",
               fontSize: "0.85rem",
+            py: 0.4,
               "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.1)" },
               "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#4dabf7" },
               "& .MuiSvgIcon-root": { color: "rgba(15, 14, 14, 0.5)" }
@@ -106,15 +111,17 @@ export default function ReportHeader({
           startIcon={<PlayArrowIcon />}
           onClick={onGenerate}
           disabled={isEngine}
-          sx={{ 
-            borderRadius: "6px", 
-            px: 3, 
+          sx={{
+            borderRadius: "6px",
+            px: 4,
+            py: 1,
+            fontSize: "0.95rem",
             fontWeight: 800,
             textTransform: "none",
             background: "linear-gradient(45deg, #0b4dbb, #4dabf7)",
             boxShadow: "0 4px 14px 0 rgba(11, 77, 187, 0.39)",
             "&:hover": {
-                background: "linear-gradient(45deg, #093d96, #3a96e0)",
+              background: "linear-gradient(45deg, #093d96, #3a96e0)",
             }
           }}
         >
@@ -124,30 +131,36 @@ export default function ReportHeader({
         <Box sx={{ flexGrow: 1 }} />
 
         <Stack direction="row" spacing={1}>
-          <Button 
-            variant="outlined" 
-            startIcon={<SaveIcon />} 
-            onClick={onSave} 
+          <Button
+            variant="outlined"
+            startIcon={<SaveIcon />}
+            onClick={onSave}
             disabled={!canExport}
-            sx={{ 
-                borderColor: "rgba(255,255,255,0.1)", 
-                color: "#eee", 
-                borderRadius: "10px",
-                textTransform: "none",
-                "&:hover": { borderColor: "#fff", bgcolor: "rgba(255,255,255,0.05)" }
+            sx={{
+              px: 4,
+              py: 1,
+              fontSize: "0.95rem",
+              borderColor: "rgba(255,255,255,0.1)",
+              color: "#eee",
+              borderRadius: "10px",
+              textTransform: "none",
+              "&:hover": { borderColor: "#fff", bgcolor: "rgba(255,255,255,0.05)" }
             }}
           >
             Save
           </Button>
 
           {showSaveAll && (
-            <Button 
-              variant="outlined" 
-              onClick={onSaveAll} 
+            <Button
+              variant="outlined"
+              onClick={onSaveAll}
               disabled={!canExport}
-              sx={{ 
-                borderColor: "rgba(255,255,255,0.1)", 
-                color: "#eee", 
+              sx={{
+                px: 4,
+                py: 1,
+                fontSize: "0.95rem",
+                borderColor: "rgba(255,255,255,0.1)",
+                color: "#eee",
                 borderRadius: "10px",
                 textTransform: "none",
                 "&:hover": { borderColor: "#fff", bgcolor: "rgba(255,255,255,0.05)" }
@@ -162,9 +175,12 @@ export default function ReportHeader({
               variant="outlined"
               startIcon={<ViewColumnIcon />}
               onClick={onColumns}
-              sx={{ 
-                borderColor: "rgba(255,255,255,0.1)", 
-                color: "#eee", 
+              sx={{
+                px: 4,
+                py: 1,
+                fontSize: "0.95rem",
+                borderColor: "rgba(255,255,255,0.1)",
+                color: "#eee",
                 borderRadius: "10px",
                 textTransform: "none",
                 "&:hover": { borderColor: "#fff", bgcolor: "rgba(255,255,255,0.05)" }
@@ -179,12 +195,15 @@ export default function ReportHeader({
             color="inherit"
             startIcon={<FilterListOffIcon />}
             onClick={onClear}
-            sx={{ 
-                borderColor: "rgba(255,255,255,0.1)", 
-                color: "rgba(255,255,255,0.6)", 
-                borderRadius: "10px",
-                textTransform: "none",
-                "&:hover": { borderColor: "#ff5252", color: "#ff5252" }
+            sx={{
+              px: 4,
+              py: 1,
+              fontSize: "0.95rem",
+              borderColor: "rgba(255,255,255,0.1)",
+              color: "#eee",
+              borderRadius: "10px",
+              textTransform: "none",
+              "&:hover": { borderColor: "#fff", bgcolor: "rgba(255,255,255,0.05)" }
             }}
           >
             Clear
@@ -195,12 +214,15 @@ export default function ReportHeader({
             startIcon={<PrintIcon />}
             onClick={onPrint}
             disabled={!canExport}
-            sx={{ 
-                borderColor: "rgba(255,255,255,0.1)", 
-                color: "#eee", 
-                borderRadius: "10px",
-                textTransform: "none",
-                "&:hover": { borderColor: "#fff", bgcolor: "rgba(255,255,255,0.05)" }
+            sx={{
+              px: 4,
+              py: 1,
+              fontSize: "0.95rem",
+              borderColor: "rgba(255,255,255,0.1)",
+              color: "#eee",
+              borderRadius: "10px",
+              textTransform: "none",
+              "&:hover": { borderColor: "#fff", bgcolor: "rgba(255,255,255,0.05)" }
             }}
           >
             Print

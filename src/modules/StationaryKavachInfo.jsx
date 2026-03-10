@@ -40,7 +40,7 @@ export default function StationaryKavachInfo() {
   const state = location.state;
   if (!state?.autoGenerate) return;
 
-  const tabIndex = state.tabIndex ?? 0;
+  const tabIndex = state.targetTab ?? 0;
 
   setTab(tabIndex);
 
@@ -48,7 +48,7 @@ export default function StationaryKavachInfo() {
   const tryGenerate = () => {
     const ref = tabRefs[tabIndex]?.current;
     if (!ref) {
-      setTimeout(tryGenerate, 100); // wait until tab mounts
+      setTimeout(tryGenerate, 100);
       return;
     }
 
@@ -144,8 +144,8 @@ export default function StationaryKavachInfo() {
             },
             "& .MuiTab-root": {
               color: "rgba(255, 255, 255, 0.5)",
-              fontSize: "0.75rem",
-              fontWeight: 700,
+              fontSize: "1.2rem",
+              fontWeight: 800,
               textTransform: "uppercase",
               letterSpacing: 1,
               py: 2,

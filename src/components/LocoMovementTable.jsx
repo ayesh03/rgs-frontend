@@ -30,7 +30,7 @@ export default function LocoMovementTable({
   const renderDirection = (dir) => {
     const d = decodeDirection(dir);
     return (
-      <Typography sx={{ fontSize: "0.68rem", fontWeight: 700, color: "#4dabf7" }}>
+      <Typography sx={{ fontSize: "1rem", fontWeight: 700, color: "#4dabf7" }}>
         {d}
       </Typography>
     );
@@ -43,8 +43,8 @@ export default function LocoMovementTable({
         label={modeText}
         size="small"
         sx={{
-          height: 20,
-          fontSize: "0.6rem",
+          height: 30,
+          fontSize: "0.9rem",
           fontWeight: 800,
           textTransform: "uppercase",
           borderRadius: "6px",
@@ -63,7 +63,7 @@ export default function LocoMovementTable({
         sx={{ 
           width: "100%", 
           overflowX: "auto",
-          maxHeight: "65vh", // Optional: adds scroll within the card
+          maxHeight: "70vh", // Optional: adds scroll within the card
           "&::-webkit-scrollbar": { height: 8, width: 8 },
           "&::-webkit-scrollbar-thumb": { 
             backgroundColor: "rgba(255,255,255,0.1)", 
@@ -91,7 +91,7 @@ export default function LocoMovementTable({
                     sx={{
                       px: 1.5,
                       py: 2,
-                      fontSize: "0.65rem",
+                      fontSize: "1rem",
                       fontWeight: 900,
                       color: "rgba(255,255,255,0.7)",
                       bgcolor: "#12161c", // Dark solid background for sticky header
@@ -132,17 +132,17 @@ export default function LocoMovementTable({
                       key={col.key}
                       sx={{
                         px: 1.5,
-                        py: 1,
+                        py: 2,
                         color: "rgba(255,255,255,0.85)",
                         whiteSpace: "nowrap"
                       }}
                     >
                       {col.key === "loco_health_status" ? (
-                        <Typography sx={{ fontSize: "0.68rem", color: "#1de9b6" }}>
+                        <Typography sx={{ fontSize: "1rem", color: "#1de9b6" }}>
                           {decodeLocoHealth(row[col.key], row.frame_number)}
                         </Typography>
                       ) : col.key === "tin" ? (
-                        <Typography sx={{ fontSize: "0.68rem", fontWeight: 600, fontFamily: "JetBrains Mono, monospace" }}>
+                        <Typography sx={{ fontSize: "1rem", fontWeight: 600, fontFamily: "JetBrains Mono, monospace" }}>
                           {decodeTIN(row[col.key])}
                         </Typography>
                       ) : col.key === "movement_direction" ? (
@@ -151,15 +151,15 @@ export default function LocoMovementTable({
                         getModeChip(row[col.key])
                       ) : col.key === "date" ? (
                         <Box>
-                          <Typography sx={{ fontSize: "0.68rem", fontWeight: 700, color: "#fff" }}>
+                          <Typography sx={{ fontSize: "1rem", fontWeight: 700, color: "#fff" }}>
                             {row.date}
                           </Typography>
-                          <Typography sx={{ fontSize: "0.6rem", color: "rgba(255,255,255,0.4)" }}>
+                          <Typography sx={{ fontSize: "0.9rem", color: "rgba(255,255,255,0.4)" }}>
                             {row.time}
                           </Typography>
                         </Box>
                       ) : (
-                        <Typography sx={{ fontSize: "0.68rem", fontWeight: 500 }}>
+                        <Typography sx={{ fontSize: "1rem", fontWeight: 500 }}>
                           {formatCellValue(row, col.key)}
                         </Typography>
                       )}
