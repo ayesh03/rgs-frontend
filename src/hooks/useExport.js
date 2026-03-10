@@ -1,7 +1,7 @@
- import * as XLSX from "xlsx";
+import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import jsPDF from "jspdf";
-import { useState , useEffect} from "react";
+import { useState, useEffect } from "react";
 import autoTable from "jspdf-autotable";
 import { formatCellValue } from "../utils/locoFormatters";
 import { formatFaultCellValue } from "../utils/faultFormatter";
@@ -75,20 +75,22 @@ export default function useExport() {
 
   /* ================= EXCEL EXPORT ================= */
   const exportExcel = (rows, columns, reportType, subPacket) => {
-  if (!rows || !rows.length) return;
+    if (!rows || !rows.length) return;
 
-  const isLoco = reportType === "onboard" || reportType === "access";
+    const isLoco = reportType === "onboard" || reportType === "access";
 
-  const data = rows.map(row =>
-    Object.fromEntries(
-      columns.map(col => [
-        col.label,
+    const data = rows.map(row =>
+  Object.fromEntries(
+    columns.map(col => [
+      col.label,
+      row[col.key] ?? (
         isLoco
-          ? formatCellValue(row, col.key)        
+          ? formatCellValue(row, col.key)
           : formatFaultCellValue(row, col.key)
-      ])
-    )
-  );
+      )
+    ])
+  )
+);
 
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
@@ -112,57 +114,62 @@ export default function useExport() {
   };
 
   /* ================= PDF EXPORT ================= */
-const exportPDF = (rows, columns, reportType, subPacket) => {
-  if (!rows || !rows.length) return;
+  const exportPDF = (rows, columns, reportType, subPacket) => {
+    if (!rows || !rows.length) return;
 
-  const doc = new jsPDF("l", "pt", "a4");
+    const doc = new jsPDF("l", "pt", "a4");
+    const timestamp = getDateTimeStamp();
+    const reportCode = getReportCode(reportType, subPacket);
 
-  autoTable(doc, {
-    startY: 60,
-    margin: { top: 60, bottom: 40 }, 
-    head: [columns.map((col) => col.label.toUpperCase())],
-    body: rows.map((row) =>
-      columns.map((col) =>
-        reportType === "fault_station" || reportType === "fault_loco"
-          ? formatFaultCellValue(row, col.key)
-          : formatCellValue(row, col.key)
-      )
-    ),
-    theme: "striped",
-    styles: { fontSize: 5 },
-    didDrawPage: (data) => {
-      const pageWidth = doc.internal.pageSize.width;
-      const pageHeight = doc.internal.pageSize.height;
+    autoTable(doc, {
+      startY: 60,
+      margin: { top: 60, bottom: 40 },
+      head: [columns.map((col) => col.label.toUpperCase())],
+      body: rows.map((row) =>
+        columns.map((col) =>
+          reportType === "fault_station" || reportType === "fault_loco"
+            ? formatFaultCellValue(row, col.key)
+            : formatCellValue(row, col.key)
+        )
+      ),
+      theme: "striped",
+      styles: { fontSize: 9 },
+      headStyles: { fontSize: 10 },
+      didDrawPage: (data) => {
+        const pageWidth = doc.internal.pageSize.width;
+        const pageHeight = doc.internal.pageSize.height;
 
-      // --- HEADER ---
-      doc.setTextColor(40, 107, 206);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(14);
-      doc.text("KAVACH REPORT GENERATING SYSTEM", 40, 40);
-      doc.addImage(areaLogo, "PNG", pageWidth - 100, 20, 60, 30);
+        // --- HEADER ---
+        doc.setTextColor(40, 107, 206);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(16);
+        doc.text(`KAVACH REPORT GENERATING SYSTEM - ${reportCode}`, 40, 40);
+        doc.addImage(areaLogo, "PNG", pageWidth - 100, 20, 60, 30);
 
-      // --- FOOTER ---
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(6);
-      doc.setTextColor(100, 100, 100); 
+        // --- FOOTER ---
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(7);
+        doc.setTextColor(100, 100, 100);
 
-      // Confidential text (Bottom Left)
-      const footerText = "This document is confidential. Using it any purpose without permission of Areca Embedded Systems Pvt. Ltd. is strictly prohibited.";
-      doc.text(footerText, 40, pageHeight - 20);
+        // Confidential text (Bottom Left)
+        const footerText = "This document is confidential. Using it any purpose without permission of Areca Embedded Systems Pvt. Ltd. is strictly prohibited.";
+        doc.text(footerText, 40, pageHeight - 20);
 
-      // Page Number (Bottom Right)
-      const pageNumber = `Page ${doc.internal.getNumberOfPages()}`;
-      doc.text(pageNumber, pageWidth - 60, pageHeight - 20);
+        const timeText = `Generated: ${new Date().toLocaleString()}`;
+        doc.text(timeText, pageWidth - 200, pageHeight - 20);
 
-      // Reset for table content
-      doc.setTextColor(0, 0, 0);
-    },
-  });
+        const pageNumber = `Page ${doc.internal.getNumberOfPages()}`;
+        doc.text(pageNumber, pageWidth - 60, pageHeight - 20);
 
-  const timestamp = getDateTimeStamp();
-  const reportCode = getReportCode(reportType, subPacket);
-  doc.save(`${reportCode}_${timestamp}.pdf`);
-};
+        // Reset for table content
+        doc.setTextColor(0, 0, 0);
+      },
+    });
+
+    // const timestamp = getDateTimeStamp();
+    // const reportCode = getReportCode(reportType, subPacket);
+    doc.save(`${reportCode}_${timestamp}.pdf`);
+  };
   return {
     exportExcel,
     exportPDF,
