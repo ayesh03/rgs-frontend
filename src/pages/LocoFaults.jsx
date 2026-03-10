@@ -41,12 +41,12 @@ const LocoFaults = forwardRef(({ originType }, ref) => {
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-  /* ===================== AUTO-FETCH ON TAB CHANGE ===================== */
-  useEffect(() => {
-    if (selectedFile && fromDate && toDate && isDateRangeValid) {
-      generate();
-    }
-  }, [originType, selectedFile]);
+  // /* ===================== AUTO-FETCH ON TAB CHANGE ===================== */
+  // useEffect(() => {
+  //   if (selectedFile && fromDate && toDate && isDateRangeValid) {
+  //     generate();
+  //   }
+  // }, [originType, selectedFile]);
 
   /* ===================== GENERATE ===================== */
   const generate = async () => {
