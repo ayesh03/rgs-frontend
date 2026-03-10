@@ -24,6 +24,7 @@ import { useAppContext } from "../context/AppContext";
 import {
     formatStationaryHealth,
     formatOnboardHealth,
+    decodeSystemVersion
 } from "../utils/healthFormatter";
 
 const StationaryHealth = forwardRef(({ healthType }, ref) => {
@@ -94,6 +95,7 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
                     ? new Date(r.event_time)
                     : null;
 
+                const versionText = decodeSystemVersion(r.system_version);
                 const expandedEvents = (r.events || []).map((ev, i) => {
                     const formatter =
                         healthType === "STATIONARY"
@@ -101,12 +103,14 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
                             : formatOnboardHealth;
 
                     const formatted = formatter(ev.event_id, ev.event_data);
+                    
 
                     return {
                         ...r,
                         id: `${idx + 1}-${i}`,
                         date: dt ? dt.toISOString().slice(0, 10) : "",
                         time: dt ? dt.toTimeString().slice(0, 8) : "",
+                        system_version: versionText,   // add this
                         event_id: ev.event_id,
                         event_name: formatted.name,
                         event_description: formatted.desc,
@@ -223,7 +227,7 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
             {/* ===== CONTENT AREA ===== */}
             <AnimatePresence mode="wait">
                 {loading ? (
-                    <Box 
+                    <Box
                         key="loading"
                         component={motion.div}
                         initial={{ opacity: 0 }}
@@ -231,15 +235,15 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
                         exit={{ opacity: 0 }}
                         sx={{ width: "100%", py: 8, textAlign: 'center' }}
                     >
-                        <LinearProgress 
-                            sx={{ 
-                                height: 4, 
-                                borderRadius: 2, 
+                        <LinearProgress
+                            sx={{
+                                height: 4,
+                                borderRadius: 2,
                                 bgcolor: alpha(theme.palette.primary.main, 0.1),
                                 "& .MuiLinearProgress-bar": {
                                     boxShadow: `0 0 10px ${theme.palette.primary.main}`
                                 }
-                            }} 
+                            }}
                         />
                         <Typography
                             variant="caption"

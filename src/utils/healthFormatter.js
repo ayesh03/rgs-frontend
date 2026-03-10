@@ -42,6 +42,14 @@ const moduleHealth = {
   1: "OK"
 };
 
+export const decodeSystemVersion = (v) => {
+  const version = parseInt(v);
+
+  if (version === 0) return "KAVACH 3.2";
+  if (version === 1) return "KAVACH 4.0";
+
+  return "-";
+};
 /* =========================================================
    ===================== 0x17 STATIONARY ===================
 ========================================================= */

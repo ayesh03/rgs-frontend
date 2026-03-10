@@ -136,7 +136,7 @@ export default function LocoFaultsTable({
                       
                     ) : (
                       <Typography sx={{ fontSize: "0.95rem" }}>
-                        {formatFaultCellValue(row, col.key)}
+                        {row[col.key] ?? formatFaultCellValue(row, col.key)}
                       </Typography>
                     )}
                   </TableCell>
