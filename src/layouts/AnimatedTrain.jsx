@@ -1,4 +1,3 @@
-// AnimatedTrain.jsx
 import React, { useEffect, useState, useRef } from "react";
 import { Box } from "@mui/material";
 import { motion, useAnimationControls, useMotionValue } from "framer-motion";
@@ -13,14 +12,14 @@ const SmokePuff = ({ delay, flipped }) => (
       top: -10,
       left: flipped ? "auto" : 6,
       right: flipped ? 6 : "auto",
-      width: 5,
+      width: 8,
       height: 5,
       borderRadius: "50%",
       background: "rgba(255,255,255,0.9)",
       pointerEvents: "none",
     }}
     animate={{
-      y: [-2, -18],
+      y: [-2, -16],
       x: flipped ? [0, 4] : [0, -4],
       opacity: [0.9, 0],
       scale: [0.6, 1.8],
@@ -220,7 +219,7 @@ export default function AnimatedTrain({ width = TRACK_WIDTH }) {
       // PAUSE — save current x position
       pausedRef.current = true;
       setPaused(true);
-      xVal.set(xVal.get()); 
+      xVal.set(xVal.get());
       controls.stop();
     }
   };
@@ -243,7 +242,7 @@ export default function AnimatedTrain({ width = TRACK_WIDTH }) {
 
       <motion.div
         animate={controls}
-        onUpdate={(latest) => xVal.set(latest.x)} 
+        onUpdate={(latest) => xVal.set(latest.x)}
         style={{
           position: "absolute",
           bottom: 3,

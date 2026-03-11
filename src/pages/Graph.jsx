@@ -12,6 +12,7 @@ import ReportHeader from "../components/ReportHeader";
 import { useAppContext } from "../context/AppContext";
 import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
+import areaLogo from "../assets/arecaLogo.png";
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 /* =====================================================
    Frame → Time (DESKTOP PARITY)
@@ -307,6 +308,8 @@ export default function Graph() {
       const plotX = clipPathRect ? parseFloat(clipPathRect.getAttribute("x") || "0") : 65;
       const plotWidth = clipPathRect ? parseFloat(clipPathRect.getAttribute("width") || String(svgWidth)) : svgWidth - 65;
       const rightMarginW = svgWidth - plotX - plotWidth;
+      const plotY = clipPathRect ? parseFloat(clipPathRect.getAttribute("y") || "0") : 10;
+      const plotHeight = clipPathRect ? parseFloat(clipPathRect.getAttribute("height") || String(svgHeight)) : svgHeight - 60;
 
       const isModeGraph = graphType.includes("Mode");
       const isSpeedGraph = graphType.includes("Speed");
@@ -331,7 +334,7 @@ export default function Graph() {
       const rawSvgStr = serializer.serializeToString(svgEl);
 
       // ── PDF setup ──
-      const pdf = new jsPDF("l", "pt", "a4");
+      const pdf = new jsPDF("l", "pt", "a3");
       const pdfW = pdf.internal.pageSize.getWidth();
       const pdfH = pdf.internal.pageSize.getHeight();
       const outerMargin = 40;
@@ -351,7 +354,7 @@ export default function Graph() {
       const sliceDataW = Math.max(minDataSlice, 600);
       const totalPages = Math.ceil(plotWidth / sliceDataW);
 
-      console.log(`[PDF] pages=${totalPages} sliceW=${sliceDataW}`);
+      // console.log(`[PDF] pages=${totalPages} sliceW=${sliceDataW}`);
 
       // ── Use lower pixel ratio to reduce per-canvas memory ──
       const PIXEL_RATIO = 1.5;   // was 2 — saves ~44% memory per canvas
@@ -435,15 +438,21 @@ export default function Graph() {
         pdf.rect(outerMargin, graphTop, pdfW - outerMargin * 2, graphH, "F");
 
         // ── Header ──
-        pdf.setFillColor(15, 15, 30);
-        pdf.rect(outerMargin, outerMargin - 16, pdfW - outerMargin * 2, 20, "F");
+
+        pdf.setTextColor(40, 107, 206);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(16);
+        pdf.text(`KAVACH REPORT GENERATING SYSTEM - GRAPH ANALYSIS`, outerMargin, outerMargin - 5);
+
+        pdf.addImage(areaLogo, "PNG", pdfW - outerMargin - 80, outerMargin - 18, 60, 30);
+
+        pdf.setFont("helvetica", "normal");
         pdf.setFontSize(8);
         pdf.setTextColor(180, 180, 220);
         pdf.text(
           `${graphType}   |   Loco: ${locoId}   |   Direction: ${direction}   |   Page ${page + 1} of ${totalPages}`,
-          outerMargin + 6, outerMargin - 2
+          outerMargin, outerMargin + 10
         );
-
         // ── Graph image ──
         pdf.addImage(imgData, "JPEG", graphLeft, graphTop, graphW, graphH);
 
@@ -459,8 +468,10 @@ export default function Graph() {
         pdf.text(yAxisLabel, outerMargin + yAxisPdfW / 2, graphTop + graphH / 2, { angle: 90, align: "center" });
 
         yTicks.forEach(({ value, label }) => {
+          const pdfPlotTop = graphTop + (plotY / svgHeight) * graphH;
+          const pdfPlotH = (plotHeight / svgHeight) * graphH;
           const ratio = 1 - (value - yMin) / (yMax - yMin);
-          const tickY = graphTop + ratio * graphH;
+          const tickY = pdfPlotTop + ratio * pdfPlotH;
           pdf.setDrawColor(40, 45, 65);
           pdf.setLineWidth(0.3);
           pdf.line(yAxisRight, tickY, graphRight, tickY);
@@ -484,16 +495,27 @@ export default function Graph() {
         pdf.setTextColor(90, 95, 130);
         pdf.text(`Data: ${startPct}% – ${endPct}%`, graphRight - 2, graphBottom + 18, { align: "right" });
 
-        // ── Footer progress bar ──
-        const barY = pdfH - outerMargin - 8;
-        const barFill = ((page + 1) / totalPages) * (pdfW - outerMargin * 2);
-        pdf.setFillColor(25, 28, 48);
-        pdf.roundedRect(outerMargin, barY, pdfW - outerMargin * 2, 5, 2, 2, "F");
-        pdf.setFillColor(99, 102, 241);
-        pdf.roundedRect(outerMargin, barY, barFill, 5, 2, 2, "F");
-        pdf.setFontSize(6.5);
-        pdf.setTextColor(110, 115, 160);
-        pdf.text(`${page + 1} / ${totalPages}`, pdfW - outerMargin - 2, barY + 9, { align: "right" });
+        // --- CONFIDENTIAL FOOTER ---
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(9);
+        pdf.setTextColor(100, 100, 100);
+
+        const footerText = "This document is confidential. Using it any purpose without permission of Areca Embedded Systems Pvt. Ltd. is strictly prohibited.";
+        pdf.text(footerText, outerMargin, pdfH - outerMargin + 10);
+
+        const timeText = `Generated: ${new Date().toLocaleString()}`;
+        pdf.text(timeText, pdfW - outerMargin - 160, pdfH - outerMargin + 10);
+
+        // // ── Footer progress bar ──
+        // const barY = pdfH - outerMargin - 8;
+        // const barFill = ((page + 1) / totalPages) * (pdfW - outerMargin * 2);
+        // pdf.setFillColor(25, 28, 48);
+        // pdf.roundedRect(outerMargin, barY, pdfW - outerMargin * 2, 5, 2, 2, "F");
+        // pdf.setFillColor(99, 102, 241);
+        // pdf.roundedRect(outerMargin, barY, barFill, 5, 2, 2, "F");
+        // pdf.setFontSize(6.5);
+        // pdf.setTextColor(110, 115, 160);
+        // pdf.text(`${page + 1} / ${totalPages}`, pdfW - outerMargin - 2, barY + 9, { align: "right" });
       }
 
       setPdfProgress(100);
@@ -613,7 +635,7 @@ export default function Graph() {
               sx={selectStyle}
               MenuProps={menuProps}
             >
-              <MenuItem value="">Loco ID</MenuItem>
+              <MenuItem value="">Loco Id</MenuItem>
               {meta.locos.map(l => (
                 <MenuItem key={l} value={l}>{l}</MenuItem>
               ))}

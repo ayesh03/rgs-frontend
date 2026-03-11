@@ -78,7 +78,7 @@ const COMMON_HEADER_COLUMNS = [
   // { key: "msg_sequence", label: "Message Sequence" },
   { key: "stationary_kavach_id", label: "Stationary Kavach ID" },
   { key: "nms_system_id", label: "NMS System ID" },
-  { key: "system_version", label: "System Version" },
+  { key: "source_version", label: "System Version" },
   { key: "date_hex", label: "Packet Date" },
   { key: "time", label: "Time" },
   { key: "station_active_radio_desc", label: "Active Radio" },

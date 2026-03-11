@@ -205,9 +205,6 @@ export default function MainLayout() {
               >
                 KAVACH
               </motion.span>
-
-              
-
               <Box
                 component="span"
                 sx={{
@@ -225,8 +222,8 @@ export default function MainLayout() {
               </Box>
             </Typography>
             <Box component="span" sx={{ display: "inline-flex", verticalAlign: "middle", mx: 0.5 }}>
-                <AnimatedTrain width={320} />
-              </Box>
+              <AnimatedTrain width={320} />
+            </Box>
           </Box>
 
 
