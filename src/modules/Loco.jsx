@@ -36,29 +36,29 @@ export default function Loco() {
   const { exportExcel, exportPDF } = useExport();
 
   useEffect(() => {
-  const state = location.state;
-  if (!state?.autoGenerate) return;
+    const state = location.state;
+    if (!state?.autoGenerate) return;
 
-  const run = async () => {
-    const ref = locoRef.current;
-    if (!ref) return;
+    const run = async () => {
+      const ref = locoRef.current;
+      if (!ref) return;
 
-    setStage("ENGINE");
+      setStage("ENGINE");
 
-    await ref.generate();
+      await ref.generate();
 
-    if (state.dashboardFilter) {
-      ref.setFilter?.(
-        state.dashboardFilter.field,
-        state.dashboardFilter.value
-      );
-    }
+      if (state.dashboardFilter) {
+        ref.setFilter?.(
+          state.dashboardFilter.field,
+          state.dashboardFilter.value
+        );
+      }
 
-    setStage("PREVIEW");
-  };
+      setStage("PREVIEW");
+    };
 
-  run();
-}, []);
+    run();
+  }, []);
 
   const handleGenerate = async () => {
     const ref = activeTabContext.ref.current;
@@ -73,7 +73,7 @@ export default function Loco() {
     // }
 
     ref.clearFilters?.();
-await ref.generate();
+    await ref.generate();
 
     setStage("PREVIEW");
   };
@@ -127,17 +127,17 @@ await ref.generate();
 
       {/* ===== TAB NAVIGATION ===== */}
       {/* <Paper elevation={0} sx={{ borderBottom: 1, borderColor: "divider" }}> */}
-        {/* <Tabs */}
-          {/* value={tab} */}
-          {/* onChange={(e, v) => { */}
-            {/* setTab(v); */}
-            {/* setStage("FILTER"); */}
-          {/* }} */}
-        {/* > */}
+      {/* <Tabs */}
+      {/* value={tab} */}
+      {/* onChange={(e, v) => { */}
+      {/* setTab(v); */}
+      {/* setStage("FILTER"); */}
+      {/* }} */}
+      {/* > */}
 
-          {/* <Tab label="Loco Movement" /> */}
-          {/* <Tab label="Exception Report" /> */}
-        {/* </Tabs> */}
+      {/* <Tab label="Loco Movement" /> */}
+      {/* <Tab label="Exception Report" /> */}
+      {/* </Tabs> */}
       {/* </Paper> */}
 
       {/* ===== CONTENT ===== */}

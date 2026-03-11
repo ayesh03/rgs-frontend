@@ -269,7 +269,7 @@ const Dashboard = () => {
                                                 variant="h3"
                                                 sx={{
                                                     fontWeight: 800,
-                                                    color: "#fff",
+                                                    color: "#ffffff",
                                                     fontSize: '2.8rem',
                                                     fontFamily: '"JetBrains Mono", "Roboto Mono", monospace'
                                                 }}

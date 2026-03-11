@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Box } from "@mui/material";
 import { motion, useAnimationControls, useMotionValue } from "framer-motion";
 
-const TRACK_WIDTH = 420;
+const TRACK_WIDTH = 430;
 
 // ─ Smoke puff 
 const SmokePuff = ({ delay, flipped }) => (
@@ -113,6 +113,14 @@ const Buggy = ({ flipped }) => (
 const Coupler = () => (
   <Box sx={{ width: 4, height: 2, bgcolor: "#4dabf7", alignSelf: "flex-end", mb: "5px", borderRadius: 1, flexShrink: 0 }} />
 );
+// ─ Sinal light
+const SignalLight = ({ x, isGreen }) => (
+  <Box sx={{ position: "absolute", bottom: 3, left: x, display: "flex", flexDirection: "column", alignItems: "center" }}>
+    <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: isGreen ? "#00e676" : "#f44336", boxShadow: isGreen ? "0 0 6px #00e676" : "0 0 6px #f44336", transition: "all 0.3s" }} />
+    <Box sx={{ width: 2, height: 16, bgcolor: "#4dabf7" }} />
+  </Box>
+);
+
 
 // ─ Track 
 const Track = ({ width }) => (
@@ -143,6 +151,8 @@ export default function AnimatedTrain({ width = TRACK_WIDTH }) {
   const endX = width + 4;
   const totalDist = endX - startX;      // full track distance
   const SPEED = totalDist / 3.5;        // px per second
+  const signalX = width / 2 + 40;
+  const [signalGreen, setSignalGreen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -214,8 +224,7 @@ export default function AnimatedTrain({ width = TRACK_WIDTH }) {
           }
         };
         loop();
-      }
-    } else {
+      }} else {
       // PAUSE — save current x position
       pausedRef.current = true;
       setPaused(true);
@@ -239,10 +248,15 @@ export default function AnimatedTrain({ width = TRACK_WIDTH }) {
       }}
     >
       <Track width={width} />
+      <SignalLight x={signalX} isGreen={signalGreen} />
 
       <motion.div
         animate={controls}
-        onUpdate={(latest) => xVal.set(latest.x)}
+        onUpdate={(latest) => {
+          xVal.set(latest.x);
+          const trainFront = flippedRef.current ? latest.x : latest.x + trainWidth;
+          setSignalGreen(trainFront > signalX - 40 && trainFront < signalX + 40);
+        }}
         style={{
           position: "absolute",
           bottom: 3,

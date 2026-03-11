@@ -442,7 +442,7 @@ export default function Graph() {
         pdf.setTextColor(40, 107, 206);
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(16);
-        pdf.text(`KAVACH REPORT GENERATING SYSTEM - GRAPH ANALYSIS`, outerMargin, outerMargin - 5);
+        pdf.text(`KAVACH REPORT GENERATION SYSTEM - GRAPH ANALYSIS`, outerMargin, outerMargin - 5);
 
         pdf.addImage(areaLogo, "PNG", pdfW - outerMargin - 80, outerMargin - 18, 60, 30);
 
@@ -456,7 +456,7 @@ export default function Graph() {
         // ── Graph image ──
         pdf.addImage(imgData, "JPEG", graphLeft, graphTop, graphW, graphH);
 
-        // ── Y axis (drawn by jsPDF — zero memory cost) ──
+        // ── Y axis (drawn by jsPDF)
         const yAxisRight = outerMargin + yAxisPdfW;
         pdf.setFillColor(15, 18, 26);
         pdf.rect(outerMargin, graphTop, yAxisPdfW, graphH, "F");
@@ -503,7 +503,7 @@ export default function Graph() {
         const footerText = "This document is confidential. Using it any purpose without permission of Areca Embedded Systems Pvt. Ltd. is strictly prohibited.";
         pdf.text(footerText, outerMargin, pdfH - outerMargin + 10);
 
-        const timeText = `Generated: ${new Date().toLocaleString()}`;
+        const timeText = `Generated at: ${new Date().toLocaleString()}`;
         pdf.text(timeText, pdfW - outerMargin - 160, pdfH - outerMargin + 10);
 
         // // ── Footer progress bar ──
