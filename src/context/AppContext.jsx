@@ -7,7 +7,7 @@ export function AppProvider({ children }) {
   const [fromDate, setFromDate] = useState(""); // Blank on fresh login
   const [toDate, setToDate] = useState("");     // Blank on fresh login
   const [logDir, setLogDir] = useState("C:/RGS/LOGS"); // Always has default
-  
+
   // UI State (Global Search & Sidebar)
   const [globalSearch, setGlobalSearch] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -32,7 +32,7 @@ export function AppProvider({ children }) {
     globalSearch,
     isSidebarOpen,
     isDateRangeValid,
-    
+
     // Setters
     setFromDate,
     setToDate,
@@ -41,7 +41,7 @@ export function AppProvider({ children }) {
     setIsSidebarOpen,
     resetFilters,
     dashboardData,
-setDashboardData
+    setDashboardData
   };
 
   return (

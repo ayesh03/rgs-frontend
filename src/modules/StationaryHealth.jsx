@@ -69,14 +69,14 @@ export default function Health() {
         const fileName = tab === 0 ? "health_stationary" : "health_onboard";
 
         if (rows && cols) {
-            format === "excel" 
-                ? exportExcel(rows, cols, fileName) 
+            format === "excel"
+                ? exportExcel(rows, cols, fileName)
                 : exportPDF(rows, cols, fileName);
         }
     };
 
     return (
-        <Box 
+        <Box
             sx={{ p: { xs: 1, md: 0.5 } }}
             component={motion.div}
             initial={{ opacity: 0 }}
@@ -92,6 +92,9 @@ export default function Health() {
                 onSave={() => handleExport("excel", false)}
                 onSaveAll={() => handleExport("excel", true)}
                 onPrint={() => handleExport("pdf", false)}
+                onSearch={(value) =>
+                    tabRefs[tab]?.current?.searchByHealth?.(value)
+                }
             />
 
             {/* ===== GLASSMORPHISM TABS ===== */}
@@ -113,8 +116,8 @@ export default function Health() {
                     scrollButtons="auto"
                     sx={{
                         minHeight: 40,
-                        "& .MuiTab-root": { 
-                            fontWeight: 800, 
+                        "& .MuiTab-root": {
+                            fontWeight: 800,
                             fontSize: "1.2rem",
                             px: 4,
                             color: "rgba(255,255,255,0.4)",
@@ -123,8 +126,8 @@ export default function Health() {
                             textTransform: "uppercase",
                             "&:hover": { color: "#fff" }
                         },
-                        "& .Mui-selected": { 
-                            color: theme.palette.primary.light + " !important" 
+                        "& .Mui-selected": {
+                            color: theme.palette.primary.light + " !important"
                         },
                         "& .MuiTabs-indicator": {
                             height: 3,

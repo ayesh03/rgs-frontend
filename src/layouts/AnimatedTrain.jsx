@@ -137,7 +137,7 @@ const Track = ({ width }) => (
 );
 
 // ─ Main 
-export default function AnimatedTrain({ width = TRACK_WIDTH }) {
+export default function Animatedtrain({ width = TRACK_WIDTH }) {
   const controls = useAnimationControls();
   const [flipped, setFlipped] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -224,7 +224,8 @@ export default function AnimatedTrain({ width = TRACK_WIDTH }) {
           }
         };
         loop();
-      }} else {
+      }
+    } else {
       // PAUSE — save current x position
       pausedRef.current = true;
       setPaused(true);

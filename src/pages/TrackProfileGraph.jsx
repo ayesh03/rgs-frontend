@@ -1,26 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import {
-    Box,
-    Card,
-    CardContent,
-    Typography,
-    Stack,
-    Grid,
-    Select,
-    MenuItem,
-    LinearProgress,
-    Chip,
-} from "@mui/material";
+import {Box,Card,CardContent,Typography,Stack,Grid,Select,MenuItem,LinearProgress,Chip,} from "@mui/material";
 import { motion } from "framer-motion";
-import {
-    AreaChart,
-    Area,
-    XAxis,
-    YAxis,
-    Tooltip,
-    ResponsiveContainer,
-    CartesianGrid,
-} from "recharts";
+import {AreaChart,Area,XAxis,YAxis,Tooltip,ResponsiveContainer,CartesianGrid,} from "recharts";
 
 import ShowChartIcon from "@mui/icons-material/ShowChart";
 import TimelineIcon from "@mui/icons-material/Timeline";

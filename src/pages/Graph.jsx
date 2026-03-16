@@ -402,7 +402,7 @@ export default function Graph() {
         const base64 = btoa(unescape(encodeURIComponent(svgString)));
         const dataUrl = `data:image/svg+xml;base64,${base64}`;
 
-        // ── Create canvas, draw, extract, then IMMEDIATELY destroy ──
+        // ── Create canvas, draw, extract, then IMMEDIATELY destroy 
         const cW = Math.ceil(viewBoxW * PIXEL_RATIO);
         const cH = Math.ceil(svgHeight * PIXEL_RATIO);
 

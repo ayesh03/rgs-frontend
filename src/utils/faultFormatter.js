@@ -79,7 +79,7 @@ export const decodeFaultMessage = (row) => {
 
 
 
-  // If backend already sends HEX like "0240"
+  // If backend already sends HEX "0240"
   if (code.length === 3) code = code.padStart(4, "0");
 
   // Convert HEX type to readable

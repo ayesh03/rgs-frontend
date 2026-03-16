@@ -1,17 +1,8 @@
 import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  LinearProgress,
-  Stack,
-  useTheme,
-  useMediaQuery,
-} from "@mui/material";
+import { Box, Card, CardContent, Typography, LinearProgress, Stack, useTheme, useMediaQuery, } from "@mui/material";
 import { useOutletContext } from "react-router-dom";
 import RowsPerPageControl from "../components/RowsPerPageControl";
-
+import { useLocation } from "react-router-dom";
 import { Select, MenuItem } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import MovingIcon from "@mui/icons-material/Moving";
@@ -561,6 +552,7 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
   const [rows, setRows] = useState([]);
   const [page, setPage] = useState(1);
   const [columnDialogOpen, setColumnDialogOpen] = useState(false);
+  const location = useLocation();
 
   const [visibleKeys, setVisibleKeys] = useState(
     MA_COLUMNS.map((c) => c.key)
@@ -579,7 +571,13 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
     setRowsPerPage(isMobile ? 6 : 10);
   }, [isMobile]);
 
+  useEffect(() => {
+    if (!location.state?.dashboardFilter || !rows.length) return;
 
+    const { field, value } = location.state.dashboardFilter;
+    setFilter(field, value);
+
+  }, [rows.length, location.state, setFilter]);
   /* ================= COLUMN SELECTION ================= */
   const getColumns = () => {
 
@@ -1084,10 +1082,10 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
 
       {/* PAGINATION SECTION */}
       {filteredRows.length > 0 && (
-        <Stack 
-          direction="row" 
-          justifyContent="center" 
-          sx={{ 
+        <Stack
+          direction="row"
+          justifyContent="center"
+          sx={{
             mt: 3, // Increased margin
             mb: 2,
             position: "relative",

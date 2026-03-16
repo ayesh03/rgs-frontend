@@ -8,26 +8,28 @@ export default function useTableFilter(rows = []) {
 
     return rows.filter((row) => {
       return Object.entries(filters).every(([key, filterValue]) => {
-        if (!filterValue || (Array.isArray(filterValue) && filterValue.length === 0)) return true;
+
+        if (!filterValue || (Array.isArray(filterValue) && filterValue.length === 0))
+          return true;
 
         const rowValue = row[key];
 
-        
-        // Expects filterValue to be { min: number, max: number }
+        // Range filter
         if (typeof filterValue === "object" && !Array.isArray(filterValue)) {
           const { min, max } = filterValue;
           const val = parseFloat(rowValue);
-          return (min === undefined || val >= min) && (max === undefined || val <= max);
+          return (min === undefined || val >= min) &&
+            (max === undefined || val <= max);
         }
 
-        // 2. Array-based (Inclusion)
+        // Array inclusion
         if (Array.isArray(filterValue)) {
           return filterValue.map(String).includes(String(rowValue));
         }
 
-        // 3. String-based (Search)
-        if (typeof filterValue === "string") {
-          return String(rowValue).toLowerCase().includes(filterValue.toLowerCase());
+        // Exact match (IMPORTANT FIX)
+        if (typeof filterValue === "string" || typeof filterValue === "number") {
+          return String(rowValue) === String(filterValue);
         }
 
         return true;

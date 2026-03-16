@@ -1,16 +1,6 @@
 import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { useLocation } from "react-router-dom";
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  LinearProgress,
-  Stack,
-  useTheme,
-  useMediaQuery,
-  alpha,
-} from "@mui/material";
+import { Box, Card, CardContent, Typography, LinearProgress, Stack, useTheme, useMediaQuery, alpha, } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import MovingIcon from "@mui/icons-material/Moving";
 import { useOutletContext } from "react-router-dom";
@@ -93,7 +83,7 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
     setLoading(true);
     setRows([]);
     clearFilters();
-    setDashboardFilter(null);
+    // setDashboardFilter(null);
 
     try {
       const normalizeDate = (v) => v && v.length === 16 ? `${v}:00` : v;
@@ -130,8 +120,15 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
           ...r,
         };
       });
+      let finalRows = mappedRows;
+
+      if (dashboardFilter) {
+        const { field, value } = dashboardFilter;
+        finalRows = mappedRows.filter(r => String(r[field]) === String(value));
+      }
+
       setAllRows(mappedRows);
-      setRows(mappedRows);
+      setRows(finalRows);
       setPage(1);
       return mappedRows;
     } catch (err) {
@@ -157,7 +154,7 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
     getAllRows: () => allRows,
     getVisibleColumns: () => columns.filter(c => visibleKeys.includes(c.key)),
     openColumnDialog: () => setColumnDialogOpen(true),
-    searchByLoco: (field, value) => setFilter(field, value),
+    searchByLoco: (value) => setFilter("source_loco_id", value),
   }));
 
   const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
@@ -166,16 +163,22 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
     page * rowsPerPage
   );
 
-  useEffect(() => {
-    if (!dashboardFilter || !rows.length) return;
-    const { field, value } = dashboardFilter;
-    setFilter(field, value);
-  }, [rows.length, dashboardFilter, setFilter]);
+  //   useEffect(() => {
+  //   if (!dashboardFilter || !rows.length) return;
+
+  //   const { field, value } = dashboardFilter;
+
+  //   setFilter(field, value);
+
+  //   // IMPORTANT: remove dashboard filter after applying once
+  //   setDashboardFilter(null);
+
+  // }, [rows.length]);
 
   return (
-    <Box 
-      component={motion.div} 
-      initial={{ opacity: 0, y: 10 }} 
+    <Box
+      component={motion.div}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       sx={{ color: "#fff" }}
     >
@@ -186,7 +189,7 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
             LOCO MOVEMENT
           </Typography>
         </Stack>
-        
+
         {filteredRows.length > 0 && (
           <RowsPerPageControl
             rowsPerPage={rowsPerPage}
@@ -199,15 +202,15 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
       <AnimatePresence mode="wait">
         {loading ? (
           <Box key="loader" sx={{ width: '100%', mb: 1 }}>
-            <LinearProgress 
-              sx={{ 
-                height: 3, 
-                borderRadius: 5, 
+            <LinearProgress
+              sx={{
+                height: 3,
+                borderRadius: 5,
                 bgcolor: alpha("#4dabf7", 0.1),
                 "& .MuiLinearProgress-bar": {
                   background: `linear-gradient(90deg, #0b4dbb, #4dabf7)`
                 }
-              }} 
+              }}
             />
           </Box>
         ) : (
@@ -217,10 +220,10 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
           >
-            <Card 
-              variant="outlined" 
-              sx={{ 
-                bgcolor: "rgba(255, 255, 255, 0.02)", 
+            <Card
+              variant="outlined"
+              sx={{
+                bgcolor: "rgba(255, 255, 255, 0.02)",
                 borderColor: "rgba(255, 255, 255, 0.08)",
                 borderRadius: 3,
                 backdropFilter: "blur(10px)"

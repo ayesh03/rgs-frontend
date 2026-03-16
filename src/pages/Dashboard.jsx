@@ -11,6 +11,10 @@ import {
     useTheme,
     useMediaQuery,
     alpha,
+    Popover,
+    Select,
+    MenuItem,
+    Button
 } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
@@ -47,6 +51,11 @@ const Dashboard = () => {
     const { fromDate, toDate } = useAppContext();
     const { selectedFile } = useOutletContext();
     const { dashboardData, setDashboardData } = useAppContext();
+    const [openSelector, setOpenSelector] = React.useState(false);
+    const [selectorType, setSelectorType] = React.useState(null);
+    const [selectedValue, setSelectedValue] = React.useState("");
+    const [currentItem, setCurrentItem] = React.useState(null);
+    const [anchorEl, setAnchorEl] = React.useState(null);
 
     useEffect(() => {
         const fetchSummary = async () => {
@@ -157,14 +166,14 @@ const Dashboard = () => {
     ];
 
     const handleNavigate = (item) => {
-    navigate(`/app/${item.route}`, {
-        state: {
-            autoGenerate: item.autoGenerate || false,
-            dashboardFilter: item.filter || null,
-            targetTab: item.tab ?? null
-        }
-    });
-};
+        navigate(`/app/${item.route}`, {
+            state: {
+                autoGenerate: item.autoGenerate || false,
+                dashboardFilter: item.filter || null,
+                targetTab: item.tab ?? null
+            }
+        });
+    };
 
     return (
         <Box
@@ -276,6 +285,38 @@ const Dashboard = () => {
                                             >
                                                 {item.value}
                                             </Typography>
+
+                                            <Stack direction="row" spacing={3} sx={{ mt: 1 }}>
+                                                <Typography
+                                                    variant="caption"
+                                                    sx={{ color: "#4dabf7", cursor: "pointer" }}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setSelectorType("loco");
+                                                        setCurrentItem(item);
+                                                        setSelectedValue("");
+                                                        setAnchorEl(e.currentTarget);
+                                                        setOpenSelector(true);
+                                                    }}
+                                                >
+                                                    LOCOS: {dashboardData?.total_loco_ids ?? 0}
+                                                </Typography>
+
+                                                <Typography
+                                                    variant="caption"
+                                                    sx={{ color: "#1de9b6", cursor: "pointer" }}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setSelectorType("station");
+                                                        setCurrentItem(item);
+                                                        setSelectedValue("");
+                                                        setAnchorEl(e.currentTarget);
+                                                        setOpenSelector(true);
+                                                    }}
+                                                >
+                                                    STATIONS: {dashboardData?.total_station_ids ?? 0}
+                                                </Typography>
+                                            </Stack>
                                         </Box>
                                     </Stack>
                                 </CardContent>
@@ -284,6 +325,134 @@ const Dashboard = () => {
                     ))}
                 </AnimatePresence>
             </Grid>
+            <Popover
+                open={openSelector}
+                anchorEl={anchorEl}
+                onClose={() => setOpenSelector(false)}
+                anchorOrigin={{
+                    vertical: "bottom",
+                    horizontal: "left"
+                }}
+                transformOrigin={{
+                    vertical: "top",
+                    horizontal: "left"
+                }}
+            >
+
+                <Box
+                    sx={{
+                        p: 2,
+                        minWidth: 220,
+                        backgroundColor: "#111827",
+                        color: "#fff",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        borderRadius: "10px"
+                    }}
+                >
+
+                    <Typography
+                        sx={{
+                            mb: 1,
+                            fontWeight: 700,
+                            fontSize: "0.85rem",
+                            color: selectorType === "loco" ? "#4dabf7" : "#1de9b6"
+                        }}
+                    >
+                        {selectorType === "loco" ? "Loco IDs" : "Station IDs"}
+                    </Typography>
+
+                    <Select
+                        fullWidth
+                        size="small"
+                        value={selectedValue}
+                        displayEmpty
+                        onChange={(e) => setSelectedValue(e.target.value)}
+                        sx={{
+                            background: "#0a0c10",
+                            color: "#fff",
+                            borderRadius: "6px"
+                        }}
+                    >
+
+                        <MenuItem disabled value="">
+                            {selectorType === "loco" ? "Loco ID" : "Station ID"}
+                        </MenuItem>
+
+                        {(selectorType === "loco"
+                            ? dashboardData?.loco_ids || []
+                            : dashboardData?.station_ids || []
+                        ).map((id) => (
+
+                            <MenuItem key={id} value={id}>
+                                {id}
+                            </MenuItem>
+
+                        ))}
+
+                    </Select>
+
+                    <Button
+                        variant="contained"
+                        size="small"
+                        fullWidth
+                        sx={{ mt: 1.5 }}
+                        onClick={() => {
+
+                            if (!selectedValue) return;
+
+                            let filterField = "";
+
+                            if (selectorType === "loco") {
+                                if (currentItem.route === "StationaryKavachInfo")
+                                    filterField = "dest_loco_id";
+                                else
+                                    filterField = "source_loco_id";
+                            }
+
+                            if (selectorType === "station") {
+                                filterField = "source_stn_id";
+                            }
+
+                            if (currentItem.route === "health" && selectorType === "loco") {
+                                filterField = "onboard_kavach_id";
+                            }
+
+                            if (currentItem.route === "health" && selectorType === "station") {
+                                filterField = "stationary_kavach_id";
+                            }
+
+                            const selectorFilter = {
+                                field: filterField,
+                                value: selectedValue
+                            };
+
+                            let finalFilter = selectorFilter;
+
+                            if (currentItem.filter) {
+                                finalFilter = {
+                                    ...selectorFilter,
+                                    extra: currentItem.filter
+                                };
+                            }
+
+                            navigate(`/app/${currentItem.route}`, {
+                                state: {
+                                    autoGenerate: true,
+                                    dashboardFilter: finalFilter,
+                                    targetTab: currentItem.tab ?? null
+                                }
+                            });
+
+                            setOpenSelector(false);
+
+                        }}
+                    >
+                        Apply
+                    </Button>
+
+                </Box>
+
+            </Popover>
         </Box>
     );
 };

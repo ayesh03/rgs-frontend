@@ -6,7 +6,7 @@ import Login from "./pages/Login";
 import Splash from "./components/Splash";
 
 import TrackProfile from "./modules/TrackProfile";
-import TSR from "./modules/TSR";
+// import TSR from "./modules/TSR";
 import Loco from "./modules/Loco";
 import Interlocking from "./modules/Interlocking";
 import Faults from "./modules/Faults";
@@ -57,7 +57,7 @@ function App() {
             <Route path="dashboard" element={<Dashboard />} />
 
             <Route path="track-profile" element={<TrackProfile />} />
-            <Route path="tsr" element={<TSR />} />
+            {/* <Route path="tsr" element={<TSR />} /> */}
             <Route path="loco" element={<Loco />} />
             <Route path="interlocking" element={<Interlocking />} />
             <Route path="faults" element={<Faults />} />

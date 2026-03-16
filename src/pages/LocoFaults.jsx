@@ -1,14 +1,4 @@
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  LinearProgress,
-  Stack,
-  alpha,
-  useTheme,
-  useMediaQuery,
-} from "@mui/material";
+import { Box, Card, CardContent, Typography, LinearProgress, Stack, alpha, useTheme, useMediaQuery, } from "@mui/material";
 import { useState, forwardRef, useImperativeHandle, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import EngineeringIcon from "@mui/icons-material/Engineering";
@@ -19,7 +9,7 @@ import LocoFaultsTable from "../components/LocoFaultsTable";
 import PaginationControls from "../components/PaginationControls";
 import NoResult from "../components/NoResult";
 import ColumnFilterDialog from "../components/ColumnFilterDialog";
-
+import { useLocation } from "react-router-dom";
 import { FAULT_ALL_COLUMNS } from "../constants/faultColumns";
 import { useAppContext } from "../context/AppContext";
 
@@ -28,12 +18,13 @@ const LocoFaults = forwardRef(({ originType }, ref) => {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { fromDate, toDate, isDateRangeValid } = useAppContext();
   const { selectedFile } = useOutletContext();
-
+  const location = useLocation();
   /* ===================== STATE ===================== */
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState([]);
+  const [allRows, setAllRows] = useState([]);
   const [page, setPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(isMobile ? 6: 12);
+  const [rowsPerPage, setRowsPerPage] = useState(isMobile ? 6 : 12);
   const [columnDialogOpen, setColumnDialogOpen] = useState(false);
   const [visibleKeys, setVisibleKeys] = useState(
     FAULT_ALL_COLUMNS.map((c) => c.key)
@@ -83,6 +74,7 @@ const LocoFaults = forwardRef(({ originType }, ref) => {
         };
       });
 
+      setAllRows(mappedRows);
       setRows(mappedRows);
       setPage(1);
     } catch (err) {
@@ -105,9 +97,32 @@ const LocoFaults = forwardRef(({ originType }, ref) => {
     getAllRows: () => rows,
     getVisibleColumns: () => FAULT_ALL_COLUMNS.filter((c) => visibleKeys.includes(c.key)),
     openColumnDialog: () => setColumnDialogOpen(true),
+    searchByFault: (value) => {
+      if (!value) {
+        setRows(allRows);
+        return;
+      }
+
+      const filtered = allRows.filter(r =>
+        String(r.kavach_subsystem_id).includes(value)
+      );
+
+      setRows(filtered);
+      setPage(1);
+    },
   }));
 
-  const filteredRows = rows.filter((r) => r.fault_origin === originType);
+  const dashboardFilter = location.state?.dashboardFilter;
+
+  const filteredRows = rows.filter((r) => {
+    if (r.fault_origin !== originType) return false;
+
+    if (!dashboardFilter) return true;
+
+    const { field, value } = dashboardFilter;
+
+    return String(r[field]) === String(value);
+  });
   const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
   const paginatedRows = filteredRows.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
@@ -130,7 +145,7 @@ const LocoFaults = forwardRef(({ originType }, ref) => {
         direction="row"
         alignItems="center"
         justifyContent="space-between"
-        sx={{ mb:1,mt: 0.5, px: 1 }}
+        sx={{ mb: 1, mt: 0.5, px: 1 }}
       >
         <Stack direction="row" alignItems="center" spacing={1.5}>
           {/* <Box

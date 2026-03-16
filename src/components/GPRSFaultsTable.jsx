@@ -1,15 +1,4 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Chip,
-  Typography,
-  alpha,
-} from "@mui/material";
+import {Table,TableBody,TableCell,TableContainer,TableHead,TableRow,Paper,Chip,Typography,alpha,} from "@mui/material";
 import WifiOffIcon from '@mui/icons-material/WifiOff';
 
 export default function GPRSFaultsTable({ rows = [], visibleKeys = [] }) {

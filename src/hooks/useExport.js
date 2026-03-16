@@ -187,7 +187,7 @@ export default function useExport() {
         doc.setFontSize(7);
         doc.setTextColor(100, 100, 100);
 
-        // Confidential text (Bottom Left)
+        // Confidential text 
         const footerText = "This document is confidential. Using it any purpose without permission of Areca Embedded Systems Pvt. Ltd. is strictly prohibited.";
         doc.text(footerText, 40, pageHeight - 20);
 

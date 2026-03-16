@@ -1,21 +1,7 @@
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  Typography,
-  Button,
-  DialogActions,
-  Box,
-  Stack,
-  Chip,
-  Avatar,
-  alpha,
-  Divider,
-} from "@mui/material";
+import {Dialog,DialogTitle,DialogContent,Typography,Button,DialogActions,Box,Stack,Chip,Avatar,alpha,Divider,} from "@mui/material";
 import { motion } from "framer-motion";
 import SettingsInputAntennaIcon from '@mui/icons-material/SettingsInputAntenna';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
-import TerminalIcon from '@mui/icons-material/Terminal';
 
 export default function AboutDialog({ open, onClose }) {
   return (

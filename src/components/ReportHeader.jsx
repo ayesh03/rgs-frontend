@@ -1,14 +1,4 @@
-import {
-  Box,
-  Button,
-  Stack,
-  TextField,
-  alpha,
-  Paper,
-  InputAdornment,
-  Select,
-  MenuItem,
-} from "@mui/material";
+import {Box,Button,Stack,TextField,alpha,Paper,InputAdornment,Select,MenuItem,} from "@mui/material";
 import { motion } from "framer-motion";
 import SearchIcon from "@mui/icons-material/Search";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
@@ -59,7 +49,7 @@ export default function ReportHeader({
         {showAdvancedSearch && (
           <TextField
             size="small"
-            placeholder="Search Loco ID..."
+            placeholder="Search ID..."
             variant="outlined"
             onChange={(e) => onSearch?.(e.target.value)}
             sx={{
@@ -98,13 +88,14 @@ export default function ReportHeader({
             py: 0.4,
               "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.1)" },
               "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#4dabf7" },
-              "& .MuiSvgIcon-root": { color: "rgba(15, 14, 14, 0.5)" }
+              "& .MuiSvgIcon-root": { color: "rgb(255, 255, 255)" }
             }}
           >
             <MenuItem value="onboard">Onboard</MenuItem>
             <MenuItem value="access">Access</MenuItem>
           </Select>
         )}
+        
 
         <Button
           variant="contained"

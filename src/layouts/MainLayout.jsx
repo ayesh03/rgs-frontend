@@ -1,25 +1,8 @@
 import areaLogo from "../assets/arecaLogo.png";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import React, { useState, useEffect, useRef } from "react";
-import {
-  AppBar,
-  Toolbar,
-  Button,
-  Box,
-  Typography,
-  TextField,
-  Paper,
-  IconButton,
-  Divider,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-  Stack,
-  Popover,
-} from "@mui/material";
-import AnimatedTrain from "./AnimatedTrain"
+import {AppBar,Toolbar,Button,Box,Typography,TextField,Paper,IconButton,Divider,Dialog,DialogTitle,DialogContent,DialogContentText,DialogActions,Stack,Popover,} from "@mui/material";
+import Animatedtrain from "./AnimatedTrain"
 import { motion, AnimatePresence } from "framer-motion";
 import SettingsIcon from '@mui/icons-material/Settings';
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
@@ -136,6 +119,7 @@ export default function MainLayout() {
       toDateRef.current?.focus();
     }, 100);
   };
+
   const handleToClose = () => setToAnchorEl(null);
   const handleToApply = () => {
     if (tempToDate && tempToTime) {
@@ -222,7 +206,7 @@ export default function MainLayout() {
               </Box>
             </Typography>
             <Box component="span" sx={{ display: "inline-flex", verticalAlign: "middle", mx: 0.5 }}>
-              <AnimatedTrain width={320} />
+              <Animatedtrain width={320} />
             </Box>
           </Box>
 

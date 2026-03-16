@@ -48,10 +48,13 @@ export default function Loco() {
       await ref.generate();
 
       if (state.dashboardFilter) {
-        ref.setFilter?.(
-          state.dashboardFilter.field,
-          state.dashboardFilter.value
-        );
+        const { field, value, extra } = state.dashboardFilter;
+
+        ref.setFilter?.(field, value);
+
+        if (extra) {
+          ref.setFilter?.(extra.field, extra.value);
+        }
       }
 
       setStage("PREVIEW");

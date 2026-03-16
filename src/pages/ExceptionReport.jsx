@@ -1,16 +1,5 @@
 import { useState, forwardRef, useImperativeHandle } from "react";
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  LinearProgress,
-  Select,
-  MenuItem,
-  Stack,
-  Chip,
-  Divider,
-} from "@mui/material";
+import {Box,Card,CardContent,Typography,LinearProgress,Select,MenuItem,Stack,Chip,Divider,} from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion"; // Modern animation engine
 import PaginationControls from "../components/PaginationControls";
 import DataPreview from "../components/DataPreview";
@@ -46,56 +35,56 @@ const ExceptionReport = forwardRef((props, ref) => {
   const rowsPerPage = 5;
 
   const generate = async () => {
-  setLoading(true);
-  setRows([]);
-  setPage(1);
+    setLoading(true);
+    setRows([]);
+    setPage(1);
 
-  try {
-    const API_BASE = import.meta.env.VITE_API_BASE_URL;
+    try {
+      const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-const res = await fetch(`${API_BASE}/api/loco-movement/latest`);
+      const res = await fetch(`${API_BASE}/api/loco-movement/latest`);
 
-    const json = await res.json();
+      const json = await res.json();
 
-    const filtered = json.data.filter((r) => {
-      switch (exceptionType) {
-        case "Emergency Brake":
-          return r.brake_mode === "EMERGENCY";
-        case "Loco SOS":
-          return r.loco_sos === "1";
-        case "Station SOS":
-          return r.emergency_general_sos === "1";
-        case "Override Mode":
-          return r.tcas_mode === "OS";
-        case "Trip Mode":
-          return r.tcas_mode === "TR";
-        default:
-          return false;
-      }
-    });
+      const filtered = json.data.filter((r) => {
+        switch (exceptionType) {
+          case "Emergency Brake":
+            return r.brake_mode === "EMERGENCY";
+          case "Loco SOS":
+            return r.loco_sos === "1";
+          case "Station SOS":
+            return r.emergency_general_sos === "1";
+          case "Override Mode":
+            return r.tcas_mode === "OS";
+          case "Trip Mode":
+            return r.tcas_mode === "TR";
+          default:
+            return false;
+        }
+      });
 
-    const mapped = filtered.map((r, idx) => {
-      const [date, time] = r.event_time.split(" ");
-      return {
-        id: idx + 1,
-        date,
-        time,
-        locoId: r.loco_id,
-        station: r.station_code,
-        exception: exceptionType,
-      };
-    });
+      const mapped = filtered.map((r, idx) => {
+        const [date, time] = r.event_time.split(" ");
+        return {
+          id: idx + 1,
+          date,
+          time,
+          locoId: r.loco_id,
+          station: r.station_code,
+          exception: exceptionType,
+        };
+      });
 
-    setRows(mapped);
+      setRows(mapped);
 
-    return mapped.length > 0; 
-  } catch (err) {
-    console.error(err);
-    return false;
-  } finally {
-    setLoading(false);
-  }
-};
+      return mapped.length > 0;
+    } catch (err) {
+      console.error(err);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const clear = () => {
     setRows([]);
@@ -105,13 +94,13 @@ const res = await fetch(`${API_BASE}/api/loco-movement/latest`);
 
 
   useImperativeHandle(ref, () => ({
-  generate,
-  clear,
-  hasExceptions: () => rows.length > 0,
+    generate,
+    clear,
+    hasExceptions: () => rows.length > 0,
 
-  getFilteredRows: () => rows,
-  getAllRows: () => rows,
-}));
+    getFilteredRows: () => rows,
+    getAllRows: () => rows,
+  }));
 
 
 

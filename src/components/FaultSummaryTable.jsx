@@ -1,15 +1,4 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Box,
-  Typography,
-  alpha,
-} from "@mui/material";
+import {Table,TableBody,TableCell,TableContainer,TableHead,TableRow,Paper,Box,Typography,alpha,} from "@mui/material";
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 
 export default function FaultSummaryTable({ rows = [] }) {

@@ -37,31 +37,31 @@ export default function StationaryKavachInfo() {
   };
 
   useEffect(() => {
-  const state = location.state;
-  if (!state?.autoGenerate) return;
+    const state = location.state;
+    if (!state?.autoGenerate) return;
 
-  const tabIndex = state.targetTab ?? 0;
+    const tabIndex = state.targetTab ?? 0;
 
-  setTab(tabIndex);
+    setTab(tabIndex);
 
-  const run = async () => {
-  const tryGenerate = () => {
-    const ref = tabRefs[tabIndex]?.current;
-    if (!ref) {
-      setTimeout(tryGenerate, 100);
-      return;
-    }
+    const run = async () => {
+      const tryGenerate = () => {
+        const ref = tabRefs[tabIndex]?.current;
+        if (!ref) {
+          setTimeout(tryGenerate, 100);
+          return;
+        }
 
-    setStage("ENGINE");
-    ref.generate().then(() => setStage("PREVIEW"));
-  };
+        setStage("ENGINE");
+        ref.generate().then(() => setStage("PREVIEW"));
+      };
 
-  tryGenerate();
-};
+      tryGenerate();
+    };
 
-  const timer = setTimeout(run, 200);
-  return () => clearTimeout(timer);
-}, [location.state]);
+    const timer = setTimeout(run, 200);
+    return () => clearTimeout(timer);
+  }, [location.state]);
 
   const getCurrentRef = () => tabRefs[tab]?.current;
 
@@ -118,6 +118,9 @@ export default function StationaryKavachInfo() {
         onSave={() => processExport(exportExcel)}
         onSaveAll={() => processExport(exportExcel, "all")}
         onPrint={() => processExport(exportPDF)}
+        onSearch={(value) =>
+  getCurrentRef()?.searchByStation?.(value)
+}
       />
 
       <Paper

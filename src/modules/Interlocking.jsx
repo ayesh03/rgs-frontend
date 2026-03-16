@@ -53,6 +53,7 @@ export default function Interlocking() {
       {/* ===== HEADER SECTION ===== */}
       <ReportHeader
         stage={stage}
+        showAdvancedSearch={false}
         showException
         showTableType={false}
         onGenerate={handleGenerate}

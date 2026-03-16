@@ -1,13 +1,4 @@
-import {
-    Box,
-    Card,
-    CardContent,
-    Typography,
-    LinearProgress,
-    Stack,
-    alpha,
-    useTheme
-} from "@mui/material";
+import { Box, Card, CardContent, Typography, LinearProgress, Stack, alpha, useTheme } from "@mui/material";
 import { useState, forwardRef, useImperativeHandle, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import HealthAndSafetyIcon from "@mui/icons-material/HealthAndSafety";
@@ -18,7 +9,7 @@ import LocoFaultsTable from "../components/LocoFaultsTable";
 import PaginationControls from "../components/PaginationControls";
 import NoResult from "../components/NoResult";
 import ColumnFilterDialog from "../components/ColumnFilterDialog";
-
+import { useLocation } from "react-router-dom";
 import { HEALTH_ALL_COLUMNS } from "../constants/healthColumns";
 import { useAppContext } from "../context/AppContext";
 import {
@@ -31,11 +22,12 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
     const theme = useTheme();
     const { fromDate, toDate, isDateRangeValid } = useAppContext();
     const { selectedFile } = useOutletContext();
-
+    const location = useLocation();
     const [loading, setLoading] = useState(false);
     const [rows, setRows] = useState([]);
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(12);
+    const [allRows, setAllRows] = useState([]);
 
     const [columnDialogOpen, setColumnDialogOpen] = useState(false);
     const [visibleKeys, setVisibleKeys] = useState(
@@ -103,7 +95,7 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
                             : formatOnboardHealth;
 
                     const formatted = formatter(ev.event_id, ev.event_data);
-                    
+
 
                     return {
                         ...r,
@@ -122,7 +114,9 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
                 return expandedEvents;
             }).flat();
 
+            setAllRows(mappedRows);
             setRows(mappedRows);
+            setPage(1);
             setPage(1);
 
         } catch (err) {
@@ -149,6 +143,19 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
         getVisibleColumns: () =>
             dynamicColumns.filter((c) => visibleKeys.includes(c.key)),
         openColumnDialog: () => setColumnDialogOpen(true),
+       searchByHealth: (value) => {
+    if (!value) {
+        setRows(allRows);
+        return;
+    }
+
+    const filtered = allRows.filter(r =>
+        String(r.stationary_kavach_id).includes(value)
+    );
+
+    setRows(filtered);
+    setPage(1);
+},
     }));
 
     const totalPages = Math.ceil(rows.length / rowsPerPage);
@@ -161,6 +168,14 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
         setVisibleKeys(HEALTH_ALL_COLUMNS.map((c) => c.key));
     }, []);
 
+    useEffect(() => {
+        if (!location.state?.dashboardFilter) return;
+
+        const { field, value } = location.state.dashboardFilter;
+
+        setRows(prev => prev.filter(r => String(r[field]) === String(value)));
+
+    }, [location.state]);
     const dynamicColumns = HEALTH_ALL_COLUMNS.map((col) => {
         if (col.key === "stationary_kavach_id") {
             return {
@@ -247,13 +262,13 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
                         />
                         <Typography
                             sx={{
-  mt: 2,
-  display: "block",
-  color: "rgba(255,255,255,0.5)",
-  fontWeight: 800,
-  fontSize: "0.8rem",
-  letterSpacing: 2
-}}
+                                mt: 2,
+                                display: "block",
+                                color: "rgba(255,255,255,0.5)",
+                                fontWeight: 800,
+                                fontSize: "0.8rem",
+                                letterSpacing: 2
+                            }}
                         >
                             ANALYZING HEALTH PACKETS…
                         </Typography>

@@ -1,16 +1,4 @@
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  FormGroup,
-  FormControlLabel,
-  Checkbox,
-  Button,
-  Box,
-  Typography,
-  IconButton,
-  Divider
-} from "@mui/material";
+import {Dialog,DialogTitle,DialogContent,FormGroup,FormControlLabel,Checkbox,Button,Box,Typography,IconButton,Divider} from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { motion, AnimatePresence } from "framer-motion";
 

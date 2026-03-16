@@ -1,15 +1,4 @@
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  Stack,
-  Select,
-  MenuItem,
-  LinearProgress,
-  alpha,
-  useTheme
-} from "@mui/material";
+import {Box,Card,CardContent,Typography,Stack,Select,MenuItem,LinearProgress,alpha,useTheme} from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import { forwardRef, useImperativeHandle, useState, useEffect } from "react";
 import { useAppContext } from "../context/AppContext";
@@ -76,11 +65,10 @@ const Interlocking = forwardRef((props, ref) => {
     "& .MuiSvgIcon-root": { color: "rgba(255, 255, 255, 0.7)" },
   };
 
-  // This ensures the actual dropdown list matches the dark glass theme
   const menuProps = {
     PaperProps: {
       sx: {
-        bgcolor: "#1a1a1a", // Deep dark background
+        bgcolor: "#1a1a1a", 
         backgroundImage: "none",
         border: "1px solid rgba(255,255,255,0.1)",
         color: "#fff",

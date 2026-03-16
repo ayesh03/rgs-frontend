@@ -93,6 +93,9 @@ export default function Faults() {
         onSave={() => handleExport("excel", false)}
         onSaveAll={() => handleExport("excel", true)}
         onPrint={() => handleExport("pdf", false)}
+        onSearch={(value) =>
+          tabRefs[tab]?.current?.searchByFault?.(value)
+        }
       />
 
       {/* GLASSMORPHISM TABS */}

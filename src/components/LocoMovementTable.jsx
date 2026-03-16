@@ -1,22 +1,5 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableRow,
-  TableHead,
-  Typography,
-  Box,
-  Chip,
-  alpha,
-} from "@mui/material";
-import {
-  decodeDirection,
-  decodeLocoMode,
-  formatCellValue,
-  decodeTIN,
-  decodeLocoHealth
-} from "../utils/locoFormatters";
+import {Table,TableBody,TableCell,TableContainer,TableRow,TableHead,Typography,Box,Chip,alpha,} from "@mui/material";
+import {decodeDirection,decodeLocoMode,formatCellValue,decodeTIN,decodeLocoHealth} from "../utils/locoFormatters";
 
 export default function LocoMovementTable({
   rows = [],

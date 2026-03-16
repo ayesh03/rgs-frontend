@@ -367,7 +367,9 @@ export const TURNOUT_SPEED_FORMAT = (v) => {
 
   // 00001 (1) → 5 kmph
   // 00010 (2) → 10 kmph
-  // ...
+  // .
+  // .
+  // .
   // 10010 (18) → 90 kmph
   if (v >= 1 && v <= 18) return `Upto ${v * 5} kmph`;
 
@@ -429,8 +431,6 @@ export const TRACK_CONDITION_MAP = {
   14: "Reserved",
   15: "Reserved",
 };
-
-
 
 
 /* ============================================================
