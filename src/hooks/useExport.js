@@ -118,10 +118,12 @@ export default function useExport() {
         columns.map(col => [
           col.label,
           reportType === "onboard" || reportType === "access"
-            ? formatCellValue(row, col.key)   // always use formatter for loco
+            ? formatCellValue(row, col.key)
             : reportType === "interlocking" && col.key === "date"
               ? `${row.date || ""} ${row.time || ""}`
-              : formatFaultCellValue(row, col.key)
+              : reportType === "health_stationary" || reportType === "health_onboard"
+                ? row[col.key] ?? "-"
+                : formatFaultCellValue(row, col.key)
         ])
       )
     );
@@ -152,6 +154,7 @@ export default function useExport() {
     if (!rows || !rows.length) return;
 
     const isStation = reportType === "station_regular";
+    const isLoco = reportType === "onboard" || reportType === "access";
     const doc = new jsPDF("l", "pt", isStation ? [columns.length * 80, 841.89] : "a3");
     const timestamp = getDateTimeStamp();
     const reportCode = getReportCode(reportType, subPacket);
@@ -164,11 +167,22 @@ export default function useExport() {
         columns.map((col) =>
           reportType === "fault_station" || reportType === "fault_loco"
             ? formatFaultCellValue(row, col.key)
-            : formatCellValue(row, col.key)
+            : reportType === "health_stationary" || reportType === "health_onboard"
+              ? row[col.key] ?? "-"
+              : formatCellValue(row, col.key)
         )
       ),
-      styles: isStation ? { fontSize: 5.5, cellPadding: 2, overflow: "linebreak" } : { fontSize: 9 },
-      headStyles: isStation ? { fontSize: 6, cellPadding: 2, halign: "center" } : { fontSize: 10 },
+      styles: isStation
+        ? { fontSize: 5.5, cellPadding: 2, overflow: "linebreak" }
+        : isLoco
+          ? { fontSize: 6.5, cellPadding: 2 }
+          : { fontSize: 9 },
+
+      headStyles: isStation
+        ? { fontSize: 6, cellPadding: 2, halign: "center" }
+        : isLoco
+          ? { fontSize: 7 }
+          : { fontSize: 10 },
       columnStyles: isStation ? Object.fromEntries(columns.map((_, i) => [i, { cellWidth: "auto", minCellWidth: 22 }])) : {},
       didDrawPage: (data) => {
         const pageWidth = doc.internal.pageSize.width;

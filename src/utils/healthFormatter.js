@@ -47,7 +47,7 @@ export const decodeSystemVersion = (v) => {
 
   if (version === 0) return "KAVACH 3.2";
   if (version === 1) return "KAVACH 4.0";
-  // if (version === 2) return "KAVACH 4.0";
+  if (version === 2) return "KAVACH 4.0";
   return "-";
 };
 /* =========================================================
