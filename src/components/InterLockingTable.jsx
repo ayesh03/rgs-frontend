@@ -122,7 +122,16 @@ export default function InterlockingTable({
 
         {/* ================= BODY ================= */}
         <TableBody>
-          {rows.map((row, index) => (
+          {rows.length === 0 ? (
+  <TableRow>
+    <TableCell colSpan={visibleKeys.length} align="center" sx={{ py: 6 }}>
+      <Typography sx={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.4)", letterSpacing: 1 }}>
+        NO DATA FOUND
+      </Typography>
+    </TableCell>
+  </TableRow>
+) : (
+  rows.map((row, index) => (
             <TableRow
               key={index}
               component={motion.tr}
@@ -185,11 +194,12 @@ export default function InterlockingTable({
                     <Typography sx={{ fontSize: "0.85rem" }}>
                       {row[key]}
                     </Typography>
+                    
                   )}
                 </TableCell>
               ))}
             </TableRow>
-          ))}
+          )))}
         </TableBody>
       </Table>
       <Popover

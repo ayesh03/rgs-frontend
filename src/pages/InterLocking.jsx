@@ -318,7 +318,7 @@ const Interlocking = forwardRef((props, ref) => {
               </Typography>
             </Box>
           </motion.div>
-        ) : filteredRows.length > 0 ? (
+        ) : hasGenerated ? (
           <motion.div
             key="table"
             initial={{ opacity: 0, scale: 0.99 }}
