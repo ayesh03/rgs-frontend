@@ -149,8 +149,12 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
                 return;
             }
 
+            const v = value.toLowerCase();
+
             const filtered = allRows.filter(r =>
-                String(r.stationary_kavach_id).includes(value)
+                Object.values(r).some(val =>
+                    String(val ?? "").toLowerCase().includes(v)
+                )
             );
 
             setRows(filtered);
@@ -273,7 +277,7 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
                             ANALYZING HEALTH PACKETS…
                         </Typography>
                     </Box>
-                ) : rows.length > 0 ? (
+                ) : (
                     <Card
                         key="data"
                         component={motion.div}
@@ -295,6 +299,38 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
                                 columns={dynamicColumns}
                                 visibleKeys={visibleKeys}
                                 formatter={(row, key) => row[key] ?? "-"}
+
+                                onColumnSearch={(key, value) => {
+                                    if (!value) {
+                                        setRows(allRows);
+                                        return;
+                                    }
+
+                                    const filtered = allRows.filter(r =>
+                                        String(r[key] ?? "").toLowerCase().includes(value.toLowerCase())
+                                    );
+
+                                    setRows(filtered);
+                                    setPage(1);
+                                }}
+
+                                onSort={(key, direction) => {
+                                    if (!direction) {
+                                        setRows(allRows);
+                                        return;
+                                    }
+
+                                    const sorted = [...rows].sort((a, b) => {
+                                        const av = a[key] ?? "";
+                                        const bv = b[key] ?? "";
+
+                                        return direction === "asc"
+                                            ? String(av).localeCompare(String(bv), undefined, { numeric: true })
+                                            : String(bv).localeCompare(String(av), undefined, { numeric: true });
+                                    });
+
+                                    setRows(sorted);
+                                }}
                             />
 
                             <Box
@@ -313,10 +349,6 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
                             </Box>
                         </CardContent>
                     </Card>
-                ) : (
-                    <motion.div key="none" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                        <NoResult />
-                    </motion.div>
                 )}
             </AnimatePresence>
 

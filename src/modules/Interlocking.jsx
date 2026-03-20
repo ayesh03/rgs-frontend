@@ -30,26 +30,26 @@ export default function Interlocking() {
 
   const handleExport = (type, isAll = false) => {
 
-  const rows = isAll
-    ? interlockingRef.current?.getAllRows?.()
-    : interlockingRef.current?.getFilteredRows?.();
+    const rows = isAll
+      ? interlockingRef.current?.getAllRows?.()
+      : interlockingRef.current?.getFilteredRows?.();
 
-  const columns = isAll
-    ? INTERLOCKING_COLUMNS
-    : interlockingRef.current?.getVisibleColumns?.();
+    const columns = isAll
+      ? INTERLOCKING_COLUMNS
+      : interlockingRef.current?.getVisibleColumns?.();
 
-  if (!rows || !rows.length) return;
+    if (!rows || !rows.length) return;
 
-  if (type === "excel") {
-    exportExcel(rows, columns, "interlocking");
-  } else {
-    exportPDF(rows, columns, "interlocking");
-  }
-};
+    if (type === "excel") {
+      exportExcel(rows, columns, "interlocking");
+    } else {
+      exportPDF(rows, columns, "interlocking");
+    }
+  };
 
   return (
     <Box sx={{ p: { xs: 1, md: 0.5 }, minHeight: '100vh' }}>
-      
+
       {/* ===== HEADER SECTION ===== */}
       <ReportHeader
         stage={stage}
@@ -82,8 +82,8 @@ export default function Interlocking() {
           justifyContent: 'space-between'
         }}
       > */}
-        {/* <Stack direction="row" alignItems="center" spacing={2}> */}
-          {/* <Box
+      {/* <Stack direction="row" alignItems="center" spacing={2}> */}
+      {/* <Box
             sx={{
               p: 1,
               borderRadius: "10px",
@@ -102,7 +102,7 @@ export default function Interlocking() {
               Monitoring Electronic Interlocking (EI) Packet Exchange
             </Typography>
           </Box> */}
-        {/* </Stack> */}
+      {/* </Stack> */}
       {/* </Paper> */}
 
       {/* ===== DATA DISPLAY AREA ===== */}
