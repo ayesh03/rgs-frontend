@@ -1,7 +1,7 @@
 import areaLogo from "../assets/arecaLogo.png";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import React, { useState, useEffect, useRef } from "react";
-import {AppBar,Toolbar,Button,Box,Typography,TextField,Paper,IconButton,Divider,Dialog,DialogTitle,DialogContent,DialogContentText,DialogActions,Stack,Popover,} from "@mui/material";
+import { AppBar, Toolbar, Button, Box, Typography, TextField, Paper, IconButton, Divider, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Stack, Popover, } from "@mui/material";
 import Animatedtrain from "./AnimatedTrain"
 import { motion, AnimatePresence } from "framer-motion";
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -30,6 +30,9 @@ export default function MainLayout() {
   const [selectedFile, setSelectedFile] = useState(null);
   const fromDateRef = useRef(null);
   const toDateRef = useRef(null);
+  const fileHandleRef = useRef(null);
+  const lastModifiedRef = useRef(null);
+  const pollingRef = useRef(null);
 
   useEffect(() => {
     if (tempFromDate) {
@@ -137,14 +140,48 @@ export default function MainLayout() {
     { label: "Health", path: "health" },
     { label: "Graphs", path: "graphs" },
   ];
+const handleFileSelect = async () => {
+  try {
+    const [handle] = await window.showOpenFilePicker({
+      types: [{ description: "BIN Files", accept: { "application/octet-stream": [".bin"] } }],
+    });
 
+    const file = await handle.getFile();
+    fileHandleRef.current = handle;
+    lastModifiedRef.current = file.lastModified;
+    setSelectedFile(file);
+
+    if (pollingRef.current) clearInterval(pollingRef.current);
+
+    pollingRef.current = setInterval(async () => {
+      try {
+        const updatedFile = await fileHandleRef.current.getFile();
+        if (updatedFile.lastModified !== lastModifiedRef.current) {
+          lastModifiedRef.current = updatedFile.lastModified;
+          setSelectedFile(updatedFile);
+        }
+      } catch (e) {
+        console.error("Polling error", e);
+      }
+    }, 2000);
+
+  } catch (err) {
+    console.warn("File picker cancelled", err);
+  }
+};
+
+useEffect(() => {
+  return () => {
+    if (pollingRef.current) clearInterval(pollingRef.current);
+  };
+}, []);
   return (
     <Box sx={{
       display: "flex",
       flexDirection: "column",
       width: "100%",
       minHeight: "100vh",
-      background: "#0a0c10", // Deep dark background
+      background: "#0a0c10", 
       color: "#e0e0e0"
     }}>
 
@@ -319,17 +356,16 @@ export default function MainLayout() {
             <Stack direction="row" alignItems="center" spacing={1}>
               <Typography variant="caption" sx={{ fontWeight: 700, color: "#888" }}>BIN:</Typography>
               <Button
-                component="label"
                 size="small"
                 variant="outlined"
                 startIcon={<FolderOpenIcon sx={{ fontSize: 14 }} />}
+                onClick={handleFileSelect}
                 sx={{
                   textTransform: "none", fontSize: "0.75rem",
                   color: "#eee", borderColor: "rgba(255,255,255,0.2)"
                 }}
               >
                 {selectedFile ? selectedFile.name : "Select File"}
-                <input type="file" hidden accept=".bin" onChange={(e) => setSelectedFile(e.target.files[0])} />
               </Button>
             </Stack>
 

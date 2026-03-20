@@ -1,11 +1,20 @@
-import {Table,TableBody,TableCell,TableContainer,TableRow,TableHead,Typography,Box,Chip,alpha,} from "@mui/material";
-import {decodeDirection,decodeLocoMode,formatCellValue,decodeTIN,decodeLocoHealth} from "../utils/locoFormatters";
-
+import { useState, useRef } from "react";
+import { Table, TableBody, TableCell, TableContainer, TableRow, TableHead, Typography, Box, Chip, alpha, Popover, TextField, IconButton, Stack } from "@mui/material";
+import { decodeDirection, decodeLocoMode, formatCellValue, decodeTIN, decodeLocoHealth } from "../utils/locoFormatters";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import FilterListIcon from "@mui/icons-material/FilterList";
 export default function LocoMovementTable({
   rows = [],
   columns = [],
   visibleKeys = [],
+  onSort,        // (key, direction) => void
+  onColumnSearch, // (key, value) => void
 }) {
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [activeCol, setActiveCol] = useState(null);
+  const [searchVal, setSearchVal] = useState("");
+  const [sortState, setSortState] = useState({}); // { colKey: "asc"|"desc" }
   const visibleColumns = columns.filter(col =>
     visibleKeys.includes(col.key)
   );
@@ -42,15 +51,15 @@ export default function LocoMovementTable({
 
   return (
     <Box sx={{ width: "100%", bgcolor: "transparent" }}>
-      <TableContainer 
-        sx={{ 
-          width: "100%", 
+      <TableContainer
+        sx={{
+          width: "100%",
           overflowX: "auto",
           maxHeight: "70vh", // Optional: adds scroll within the card
           "&::-webkit-scrollbar": { height: 8, width: 8 },
-          "&::-webkit-scrollbar-thumb": { 
-            backgroundColor: "rgba(255,255,255,0.1)", 
-            borderRadius: 4 
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: "rgba(255,255,255,0.1)",
+            borderRadius: 4
           }
         }}
       >
@@ -68,27 +77,57 @@ export default function LocoMovementTable({
             <TableRow>
               {visibleColumns.map((col) => {
                 const isApproaching = col.label.toLowerCase().includes("approaching");
+                const sort = sortState[col.key];
                 return (
                   <TableCell
                     key={col.key}
                     sx={{
-                      px: 1.5,
-                      py: 2,
-                      fontSize: "1rem",
-                      fontWeight: 900,
+                      px: 1.5, py: 1.5,
+                      fontSize: "1rem", fontWeight: 900,
                       color: "rgba(255,255,255,0.7)",
-                      bgcolor: "#12161c", // Dark solid background for sticky header
-                      lineHeight: 1.2,
+                      bgcolor: "#12161c",
                       whiteSpace: isApproaching ? "normal" : "nowrap",
                       letterSpacing: 0.5,
                       borderBottom: "2px solid rgba(255,255,255,0.05)",
                     }}
                   >
-                    {isApproaching ? (
-                      <>APPROACHING<br />STATION</>
-                    ) : (
-                      col.label.toUpperCase()
-                    )}
+                    <Stack direction="row" alignItems="center" spacing={0.5}>
+                      <Typography sx={{ fontSize: "1rem", fontWeight: 900, color: "rgba(255,255,255,0.7)", whiteSpace: "nowrap" }}>
+                        {isApproaching ? "APPROACHING STATION" : col.label.toUpperCase()}
+                      </Typography>
+
+                      {/* SORT BUTTON */}
+                      <IconButton size="small"
+                        onClick={() => {
+                          let next;
+
+                          if (!sort) next = "asc";
+                          else if (sort === "asc") next = "desc";
+                          else next = null; // RESET TO ORIGINAL
+
+                          setSortState(prev => ({ ...prev, [col.key]: next }));
+
+                          onSort?.(col.key, next);
+                        }}
+                        sx={{ p: 0.2, color: sort ? "#5b8ffe" : "rgba(255, 255, 255, 0.78)" }}
+                      >
+                        {sort === "desc"
+                          ? <ArrowDownwardIcon sx={{ fontSize: 13 }} />
+                          : <ArrowUpwardIcon sx={{ fontSize: 13 }} />}
+                      </IconButton>
+
+                      {/* FILTER BUTTON */}
+                      <IconButton size="small"
+                        onClick={(e) => {
+                          setAnchorEl(e.currentTarget);
+                          setActiveCol(col.key);
+                          setSearchVal("");
+                        }}
+                        sx={{ p: 0.2, color: "rgba(255, 253, 253, 0.77)", "&:hover": { color: "#5b8ffe" } }}
+                      >
+                        <FilterListIcon sx={{ fontSize: 13 }} />
+                      </IconButton>
+                    </Stack>
                   </TableCell>
                 );
               })}
@@ -101,7 +140,7 @@ export default function LocoMovementTable({
                 <TableRow
                   key={row.id || i}
                   sx={{
-                    "&:hover": { 
+                    "&:hover": {
                       backgroundColor: "rgba(77, 171, 247, 0.04)",
                     },
                     transition: "background-color 0.2s ease",
@@ -150,18 +189,45 @@ export default function LocoMovementTable({
                   ))}
                 </TableRow>
               ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={visibleColumns.length} align="center" sx={{ py: 8 }}>
-                  <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.2)", letterSpacing: 2, fontWeight: 700 }}>
-                    NO LOGS AVAILABLE FOR THIS PERIOD
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            )}
+            ) : null}
           </TableBody>
         </Table>
       </TableContainer>
+      {/* COLUMN FILTER POPOVER */}
+      <Popover
+        open={Boolean(anchorEl)}
+        anchorEl={anchorEl}
+        onClose={() => setAnchorEl(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+        PaperProps={{ sx: { bgcolor: "#1e2227", border: "1px solid #333", borderRadius: 2 } }}
+      >
+        <Box sx={{ p: 1.5, minWidth: 180 }}>
+          <Typography sx={{ fontSize: "0.75rem", color: "#888", mb: 1 }}>
+            Filter: {activeCol}
+          </Typography>
+          <TextField
+            autoFocus
+            size="small" fullWidth
+            placeholder="Search..."
+            value={searchVal}
+            onChange={(e) => {
+              setSearchVal(e.target.value);
+              onColumnSearch?.(activeCol, e.target.value);
+            }}
+            onKeyDown={(e) => { if (e.key === "Escape") setAnchorEl(null); }}
+            sx={{
+              input: { color: "#fff", fontSize: "0.85rem" },
+              "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "#444" } }
+            }}
+          />
+          <Stack direction="row" justifyContent="flex-end" mt={1}>
+            <IconButton size="small" onClick={() => { onColumnSearch?.(activeCol, ""); setSearchVal(""); setAnchorEl(null); }}
+              sx={{ color: "#aaa", fontSize: "0.75rem" }}>
+              Clear
+            </IconButton>
+          </Stack>
+        </Box>
+      </Popover>
     </Box>
   );
 }

@@ -112,8 +112,10 @@ const Dashboard = () => {
         {
             title: "LOCO FAULTS",
             value: dashboardData?.loco_faults ?? 0,
+            kavachIds: dashboardData?.loco_fault_ids ?? [],
+            kavachCount: dashboardData?.loco_fault_ids_count ?? 0,
             icon: <EngineeringIcon sx={{ fontSize: 38 }} />,
-            color: "#ffd740",
+            color: "#f9e496",
             route: "faults",
             autoGenerate: true,
             tab: 1
@@ -307,14 +309,16 @@ const Dashboard = () => {
                                                     sx={{ color: "#1de9b6", cursor: "pointer" }}
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        setSelectorType("station");
+                                                        setSelectorType(item.title === "LOCO FAULTS" ? "kavach" : "station");
                                                         setCurrentItem(item);
                                                         setSelectedValue("");
                                                         setAnchorEl(e.currentTarget);
                                                         setOpenSelector(true);
                                                     }}
                                                 >
-                                                    STATIONS: {dashboardData?.total_station_ids ?? 0}
+                                                    {item.title === "LOCO FAULTS"
+                                                        ? `KAVACH IDS: ${item.kavachCount ?? 0}`
+                                                        : `STATIONS: ${dashboardData?.total_station_ids ?? 0}`}
                                                 </Typography>
                                             </Stack>
                                         </Box>
@@ -380,7 +384,9 @@ const Dashboard = () => {
 
                         {(selectorType === "loco"
                             ? dashboardData?.loco_ids || []
-                            : dashboardData?.station_ids || []
+                            : selectorType === "kavach"
+                                ? dashboardData?.loco_fault_ids || []
+                                : dashboardData?.station_ids || []
                         ).map((id) => (
 
                             <MenuItem key={id} value={id}>
@@ -409,8 +415,8 @@ const Dashboard = () => {
                                     filterField = "source_loco_id";
                             }
 
-                            if (selectorType === "station") {
-                                filterField = "source_stn_id";
+                            if (selectorType === "kavach") {
+                                filterField = "kavach_subsystem_id";
                             }
 
                             if (currentItem.route === "health" && selectorType === "loco") {

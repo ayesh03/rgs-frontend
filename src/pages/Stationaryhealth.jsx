@@ -143,19 +143,19 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
         getVisibleColumns: () =>
             dynamicColumns.filter((c) => visibleKeys.includes(c.key)),
         openColumnDialog: () => setColumnDialogOpen(true),
-       searchByHealth: (value) => {
-    if (!value) {
-        setRows(allRows);
-        return;
-    }
+        searchByHealth: (value) => {
+            if (!value) {
+                setRows(allRows);
+                return;
+            }
 
-    const filtered = allRows.filter(r =>
-        String(r.stationary_kavach_id).includes(value)
-    );
+            const filtered = allRows.filter(r =>
+                String(r.stationary_kavach_id).includes(value)
+            );
 
-    setRows(filtered);
-    setPage(1);
-},
+            setRows(filtered);
+            setPage(1);
+        },
     }));
 
     const totalPages = Math.ceil(rows.length / rowsPerPage);

@@ -563,7 +563,9 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
   const { fromDate, toDate, isDateRangeValid } = useAppContext();
   const { selectedFile } = useOutletContext();
 
-  const { filteredRows, setFilter, clearFilters } = useTableFilter(rows);
+  const formattedRows = rows.map(formatMovementAuthorityRow);
+
+  const { filteredRows, setFilter, clearFilters } = useTableFilter(formattedRows);
 
   const [rowsPerPage, setRowsPerPage] = useState(isMobile ? 6 : 10);
 
@@ -1062,16 +1064,95 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
             }}
           >
             <CardContent sx={{ p: 0 }}>
-              {filteredRows.length ? (
-                <StationaryKavachTable
-                  rows={paginatedRows.map(formatMovementAuthorityRow)}
-                  columns={columns}
-                  visibleKeys={visibleKeys}
-                />
-              ) : (
-                <Box sx={{ minHeight: 300, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2 }}>
-                  <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.3)", fontWeight: 700, letterSpacing: 1 }}>
-                    NO TELEMETRY DATA AVAILABLE FOR THIS RANGE
+              <StationaryKavachTable
+                rows={paginatedRows}
+                columns={columns}
+                visibleKeys={visibleKeys}
+
+                onColumnSearch={(key, value) => {
+                  if (value) setFilter(key, value);
+                  else setFilter(key, "");
+                }}
+
+                onSort={(key, direction) => {
+
+                  if (!direction) {
+                    let original = [...allRows];
+
+                    if (tableType === "station_regular" && subPacket !== "ma") {
+                      let flattened = [];
+
+                      allRows.forEach((packet) => {
+                        const header = buildCommonHeader(packet);
+
+                        if (subPacket === "ssp" && packet.static_speed_profile?.length) {
+                          packet.static_speed_profile.forEach((ssp) => {
+                            flattened.push({ ...header, ...ssp });
+                          });
+                        }
+
+                        if (subPacket === "gradient" && packet.gradient_profile?.length) {
+                          packet.gradient_profile.forEach((g) => {
+                            flattened.push({ ...header, ...g });
+                          });
+                        }
+
+                        if (subPacket === "lc" && packet.lc_gate_profile?.length) {
+                          packet.lc_gate_profile.forEach((lc) => {
+                            flattened.push({ ...header, ...lc });
+                          });
+                        }
+
+                        if (subPacket === "turnout" && packet.turnout_speed_profile?.length) {
+                          packet.turnout_speed_profile.forEach((t) => {
+                            flattened.push({ ...header, ...t });
+                          });
+                        }
+
+                        if (subPacket === "tag" && packet.rfid_list?.length) {
+                          packet.rfid_list.forEach((r) => {
+                            flattened.push({ ...header, ...r });
+                          });
+                        }
+
+                        if (subPacket === "track" && packet.track_conditions?.length) {
+                          packet.track_conditions.forEach((tc) => {
+                            flattened.push({ ...header, ...tc });
+                          });
+                        }
+
+                        if (subPacket === "tsr" && packet.tsr_list?.length) {
+                          packet.tsr_list.forEach((tsr) => {
+                            flattened.push({ ...header, ...tsr });
+                          });
+                        }
+                      });
+
+                      setRows(flattened);
+                    } else {
+                      setRows(original);
+                    }
+
+                    return;
+                  }
+
+                  const sorted = [...rows].sort((a, b) => {
+                    const av = a[key] ?? "";
+                    const bv = b[key] ?? "";
+
+                    return direction === "asc"
+                      ? String(av).localeCompare(String(bv), undefined, { numeric: true })
+                      : String(bv).localeCompare(String(av), undefined, { numeric: true });
+                  });
+
+                  setRows(sorted);
+                }}
+              />
+
+              {filteredRows.length === 0 && !loading && (
+                <Box sx={{ minHeight: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Typography variant="caption" sx={{ fontWeight: 700, letterSpacing: 1, color: "rgba(255,255,255,0.3)" }}>
+                    NO DATA FOUND
                   </Typography>
                 </Box>
               )}

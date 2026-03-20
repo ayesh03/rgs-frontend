@@ -50,10 +50,22 @@ export default function Loco() {
       if (state.dashboardFilter) {
         const { field, value, extra } = state.dashboardFilter;
 
-        ref.setFilter?.(field, value);
+        const normalizedValue = Array.isArray(value)
+          ? value.map(v => Number(v))   // keep array BUT ensure numbers
+          : Number(value);
 
+        // handle array filter manually
+        if (Array.isArray(normalizedValue)) {
+          ref.setFilter?.(field, (val) => normalizedValue.includes(Number(val)));
+        } else {
+          ref.setFilter?.(field, normalizedValue);
+        }
         if (extra) {
-          ref.setFilter?.(extra.field, extra.value);
+          const extraValue = Array.isArray(extra.value)
+            ? extra.value.map(v => isNaN(v) ? v : Number(v))
+            : isNaN(extra.value) ? extra.value : Number(extra.value);
+
+          ref.setFilter?.(extra.field, extraValue);
         }
       }
 

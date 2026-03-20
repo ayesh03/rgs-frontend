@@ -288,7 +288,7 @@ export default function Animatedtrain({ width = TRACK_WIDTH }) {
         )}
       </motion.div>
 
-      {paused && (
+      {/* {paused && (
         <Box sx={{
           position: "absolute", top: "50%", left: "50%",
           transform: "translate(-50%,-50%)",
@@ -297,7 +297,7 @@ export default function Animatedtrain({ width = TRACK_WIDTH }) {
         }}>
           ▶
         </Box>
-      )}
+      )} */}
     </Box>
   );
 }

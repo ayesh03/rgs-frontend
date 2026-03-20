@@ -1,11 +1,30 @@
-import {Table,TableBody,TableCell,TableContainer,TableHead,TableRow,Typography,Box,alpha,Chip,useTheme,} from "@mui/material";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, Box, alpha, Chip, useTheme, } from "@mui/material";
 import { motion } from "framer-motion";
+import { useState } from "react";
 import HubIcon from '@mui/icons-material/Hub';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { INTERLOCKING_COLUMNS } from "../constants/interlockingColumns";
+import {
+  Stack,
+  IconButton,
+  Popover,
+  TextField
+} from "@mui/material";
 
-export default function InterlockingTable({ rows = [], visibleKeys = [] }) {
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import FilterListIcon from "@mui/icons-material/FilterList";
+export default function InterlockingTable({
+  rows = [],
+  visibleKeys = [],
+  onSort,
+  onColumnSearch
+}) {
   const theme = useTheme();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [activeCol, setActiveCol] = useState(null);
+  const [searchVal, setSearchVal] = useState("");
+  const [sortState, setSortState] = useState({});
 
   /* ===================== STATUS COLOR LOGIC ===================== */
   const getStatusStyle = (status) => {
@@ -39,23 +58,64 @@ export default function InterlockingTable({ rows = [], visibleKeys = [] }) {
         {/* ================= HEADER ================= */}
         <TableHead>
           <TableRow>
-            {visibleKeys.map((key) => (
-              <TableCell
-                key={key}
-                sx={{
-                  bgcolor: "#0a0a0a", // Solid dark for sticky compatibility
-                  fontWeight: 800,
-                  fontSize: "0.85rem",
-                  color: "rgba(255,255,255,0.5)",
-                  borderBottom: "1px solid rgba(255,255,255,0.1)",
-                  letterSpacing: "0.8px",
-                  py: 2,
-                  textTransform: "uppercase"
-                }}
-              >
-                {INTERLOCKING_COLUMNS.find(c => c.key === key)?.label || key}
-              </TableCell>
-            ))}
+            {visibleKeys.map((key) => {
+              const col = INTERLOCKING_COLUMNS.find(c => c.key === key);
+              const sort = sortState[key];
+
+              return (
+                <TableCell
+                  key={key}
+                  sx={{
+                    bgcolor: "#0a0a0a",
+                    fontWeight: 800,
+                    fontSize: "0.85rem",
+                    color: "rgba(255,255,255,0.5)",
+                    borderBottom: "1px solid rgba(255,255,255,0.1)",
+                    letterSpacing: "0.8px",
+                    py: 2,
+                    textTransform: "uppercase"
+                  }}
+                >
+                  <Stack direction="row" alignItems="center" spacing={0.5}>
+                    <Typography sx={{ fontSize: "0.85rem", fontWeight: 800 }}>
+                      {col?.label || key}
+                    </Typography>
+
+                    {/* SORT */}
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        let next;
+                        if (!sort) next = "asc";
+                        else if (sort === "asc") next = "desc";
+                        else next = null;
+
+                        setSortState(prev => ({ ...prev, [key]: next }));
+                        onSort?.(key, next);
+                      }}
+                      sx={{ p: 0.2, color: sort ? "#5b8ffe" : "rgba(255,255,255,0.6)" }}
+                    >
+                      {sort === "desc"
+                        ? <ArrowDownwardIcon sx={{ fontSize: 13 }} />
+                        : <ArrowUpwardIcon sx={{ fontSize: 13 }} />}
+                    </IconButton>
+
+                    {/* FILTER */}
+                    <IconButton
+                      size="small"
+                      onClick={(e) => {
+                        setAnchorEl(e.currentTarget);
+                        setActiveCol(key);
+                        setSearchVal("");
+                      }}
+                      sx={{ p: 0.2 ,color: "rgba(255, 253, 253, 0.77)", "&:hover": { color: "#5b8ffe" }}}
+                    >
+                      <FilterListIcon sx={{ fontSize: 13 }} />
+                    </IconButton>
+                  </Stack>
+                </TableCell>
+              );
+            })}
           </TableRow>
         </TableHead>
 
@@ -126,6 +186,57 @@ export default function InterlockingTable({ rows = [], visibleKeys = [] }) {
           ))}
         </TableBody>
       </Table>
+      <Popover
+        open={Boolean(anchorEl)}
+        anchorEl={anchorEl}
+        onClose={() => setAnchorEl(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+        PaperProps={{
+          sx: {
+            bgcolor: "#1e2227",
+            border: "1px solid #333",
+            borderRadius: 2
+          }
+        }}
+      >
+        <Box sx={{ p: 1.5, minWidth: 180 }}>
+          <Typography sx={{ fontSize: "0.75rem", color: "#888", mb: 1 }}>
+            Filter: {activeCol}
+          </Typography>
+
+          <TextField
+            autoFocus
+            size="small"
+            fullWidth
+            placeholder="Search..."
+            value={searchVal}
+            onChange={(e) => {
+              setSearchVal(e.target.value);
+              onColumnSearch?.(activeCol, e.target.value);
+            }}
+            sx={{
+              input: { color: "#fff", fontSize: "0.85rem" },
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": { borderColor: "#444" }
+              }
+            }}
+          />
+
+          <Stack direction="row" justifyContent="flex-end" mt={1}>
+            <IconButton
+              size="small"
+              onClick={() => {
+                onColumnSearch?.(activeCol, "");
+                setSearchVal("");
+                setAnchorEl(null);
+              }}
+              sx={{ color: "#aaa" }}
+            >
+              Clear
+            </IconButton>
+          </Stack>
+        </Box>
+      </Popover>
     </TableContainer>
   );
 }

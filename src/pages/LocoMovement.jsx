@@ -53,16 +53,23 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
   }, [selectedFile]);
 
   /* ================= RESET ON TABLE SWITCH ================= */
+
   useEffect(() => {
     if (!allRows.length) return;
 
-    const filtered =
+    let filtered =
       tableType === "access"
         ? allRows.filter(r => Number(r.packet_type) === 13)
         : allRows.filter(r => Number(r.packet_type) === 10);
 
+    if (dashboardFilter) {
+      const { field, value } = dashboardFilter;
+      const values = Array.isArray(value) ? value.map(String) : [String(value)];
+      filtered = filtered.filter(r => values.includes(String(r[field])));
+    }
+
     setRows(filtered);
-    if (!location.state?.dashboardFilter) {
+    if (!dashboardFilter) {
       clearFilters();
     }
     setPage(1);
@@ -230,35 +237,53 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
               }}
             >
               <CardContent sx={{ p: 0 }}>
-                {filteredRows.length ? (
-                  <LocoMovementTable
-                    rows={paginatedRows}
-                    columns={columns}
-                    visibleKeys={visibleKeys}
-                  />
-                ) : (
-                  <Box
-                    sx={{
-                      minHeight: 300,
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: 1
-                    }}
-                  >
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        fontWeight: 700,
-                        letterSpacing: 1,
-                        color: "rgba(255,255,255,0.3)",
-                      }}
-                    >
+                <LocoMovementTable
+                  rows={paginatedRows}
+                  columns={columns}
+                  visibleKeys={visibleKeys}
+                  onColumnSearch={(key, value) => {
+                    if (value) setFilter(key, value);
+                    else setFilter(key, ""); // clear only that column's filter
+                  }}
+                  onSort={(key, direction) => {
+
+                    // RESET → ORIGINAL DATA
+                    if (!direction) {
+                      let original =
+                        tableType === "access"
+                          ? allRows.filter(r => Number(r.packet_type) === 13)
+                          : allRows.filter(r => Number(r.packet_type) === 10);
+
+                      if (dashboardFilter) {
+                        const { field, value } = dashboardFilter;
+                        const values = Array.isArray(value) ? value.map(String) : [String(value)];
+                        original = original.filter(r => values.includes(String(r[field])));
+                      }
+
+                      setRows(original);
+                      return;
+                    }
+
+                    // SORT
+                    const sorted = [...rows].sort((a, b) => {
+                      const av = a[key] ?? "";
+                      const bv = b[key] ?? "";
+                      return direction === "asc"
+                        ? String(av).localeCompare(String(bv), undefined, { numeric: true })
+                        : String(bv).localeCompare(String(av), undefined, { numeric: true });
+                    });
+
+                    setRows(sorted);
+                  }}
+                />
+                {filteredRows.length === 0 && !loading && (
+                  <Box sx={{ minHeight: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Typography variant="caption" sx={{ fontWeight: 700, letterSpacing: 1, color: "rgba(255,255,255,0.3)" }}>
                       NO MOVEMENT DATA FOUND
                     </Typography>
                   </Box>
                 )}
+
               </CardContent>
             </Card>
           </motion.div>

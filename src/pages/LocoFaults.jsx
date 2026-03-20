@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import EngineeringIcon from "@mui/icons-material/Engineering";
 import { useOutletContext } from "react-router-dom";
 import RowsPerPageControl from "../components/RowsPerPageControl";
-
+import useTableFilter from "../hooks/useFilterTable";
 import LocoFaultsTable from "../components/LocoFaultsTable";
 import PaginationControls from "../components/PaginationControls";
 import NoResult from "../components/NoResult";
@@ -90,6 +90,18 @@ const LocoFaults = forwardRef(({ originType }, ref) => {
     setPage(1);
   };
 
+  useEffect(() => {
+  if (
+    location.state?.autoGenerate &&
+    selectedFile &&
+    fromDate &&
+    toDate &&
+    isDateRangeValid
+  ) {
+    generate();
+  }
+}, [location.state?.autoGenerate]);
+
   useImperativeHandle(ref, () => ({
     generate,
     clear,
@@ -114,17 +126,23 @@ const LocoFaults = forwardRef(({ originType }, ref) => {
 
   const dashboardFilter = location.state?.dashboardFilter;
 
-  const filteredRows = rows.filter((r) => {
+  const { filteredRows, setFilter, clearFilters } = useTableFilter(rows);
+
+  // apply originType + dashboard filter ON TOP
+  const finalRows = filteredRows.filter((r) => {
     if (r.fault_origin !== originType) return false;
 
     if (!dashboardFilter) return true;
 
     const { field, value } = dashboardFilter;
-
     return String(r[field]) === String(value);
   });
-  const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
-  const paginatedRows = filteredRows.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+  const totalPages = Math.ceil(finalRows.length / rowsPerPage);
+
+const paginatedRows = finalRows.slice(
+  (page - 1) * rowsPerPage,
+  page * rowsPerPage
+);
 
   /* ===================== ANIMATION VARIANTS ===================== */
   const containerVariants = {
@@ -168,7 +186,7 @@ const LocoFaults = forwardRef(({ originType }, ref) => {
           </Box> */}
         </Stack>
 
-        {filteredRows.length > 0 && (
+        {rows.length > 0 && (
           <RowsPerPageControl
             rowsPerPage={rowsPerPage}
             setRowsPerPage={setRowsPerPage}
@@ -195,7 +213,7 @@ const LocoFaults = forwardRef(({ originType }, ref) => {
               SCANNING KAVACH FAULT REGISTERS...
             </Typography>
           </Box>
-        ) : filteredRows.length > 0 ? (
+        ) : rows.length > 0 ? (
           <Box key="data">
             <Card
               sx={{
@@ -212,6 +230,29 @@ const LocoFaults = forwardRef(({ originType }, ref) => {
                   rows={paginatedRows}
                   columns={FAULT_ALL_COLUMNS}
                   visibleKeys={visibleKeys}
+
+                  onColumnSearch={(key, value) => {
+                    if (value) setFilter(key, value);
+                    else setFilter(key, "");
+                  }}
+
+                  onSort={(key, direction) => {
+                    if (!direction) {
+                      setRows(allRows);
+                      return;
+                    }
+
+                    const sorted = [...rows].sort((a, b) => {
+                      const av = a[key] ?? "";
+                      const bv = b[key] ?? "";
+
+                      return direction === "asc"
+                        ? String(av).localeCompare(String(bv), undefined, { numeric: true })
+                        : String(bv).localeCompare(String(av), undefined, { numeric: true });
+                    });
+
+                    setRows(sorted);
+                  }}
                 />
               </CardContent>
             </Card>

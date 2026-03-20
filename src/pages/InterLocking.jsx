@@ -1,10 +1,10 @@
-import {Box,Card,CardContent,Typography,Stack,Select,MenuItem,LinearProgress,alpha,useTheme} from "@mui/material";
+import { Box, Card, CardContent, Typography, Stack, Select, MenuItem, LinearProgress, alpha, useTheme } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import { forwardRef, useImperativeHandle, useState, useEffect } from "react";
 import { useAppContext } from "../context/AppContext";
 import { useOutletContext } from "react-router-dom";
 import RowsPerPageControl from "../components/RowsPerPageControl";
-
+import useTableFilter from "../hooks/useFilterTable";
 import PaginationControls from "../components/PaginationControls";
 import NoResult from "../components/NoResult";
 import InterlockingTable from "../components/InterLockingTable";
@@ -24,6 +24,8 @@ const Interlocking = forwardRef((props, ref) => {
 
   const [allRows, setAllRows] = useState([]);
   const [rows, setRows] = useState([]);
+
+  const { filteredRows, setFilter, clearFilters } = useTableFilter(rows);
 
   const [rowsPerPage, setRowsPerPage] = useState(12);
   const [page, setPage] = useState(1);
@@ -68,7 +70,7 @@ const Interlocking = forwardRef((props, ref) => {
   const menuProps = {
     PaperProps: {
       sx: {
-        bgcolor: "#1a1a1a", 
+        bgcolor: "#1a1a1a",
         backgroundImage: "none",
         border: "1px solid rgba(255,255,255,0.1)",
         color: "#fff",
@@ -207,21 +209,28 @@ const Interlocking = forwardRef((props, ref) => {
     setRelay("");
     setStatusFilter("ALL");
     setHasGenerated(false);
+    clearFilters();
   };
 
   useImperativeHandle(ref, () => ({
     generate,
     clear,
-    getFilteredRows: () => rows,
+    setFilter,
+    clearFilters,
+    getFilteredRows: () => filteredRows,
     getAllRows: () => allRows,
     getVisibleColumns: () => INTERLOCKING_COLUMNS.filter(c => visibleKeys.includes(c.key)),
     openColumnDialog: () => setColumnDialogOpen(true),
   }));
 
-  const totalPages = Math.ceil(rows.length / rowsPerPage);
-  const paginatedRows = rows.slice((page - 1) * rowsPerPage, page * rowsPerPage);
-  const showNoResult = hasGenerated && !loading && rows.length === 0;
+  const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
 
+  const paginatedRows = filteredRows.slice(
+    (page - 1) * rowsPerPage,
+    page * rowsPerPage
+  );
+
+  const showNoResult = hasGenerated && !loading && filteredRows.length === 0;
   return (
     <Box
       p={1}
@@ -281,7 +290,7 @@ const Interlocking = forwardRef((props, ref) => {
             onChange={(e) => setStatusFilter(e.target.value)}
             sx={{ ...selectStyle, width: 180 }}
             disabled={!allRows.length}
-            MenuProps={menuProps} 
+            MenuProps={menuProps}
           >
             <MenuItem value="ALL">All Status</MenuItem>
             <MenuItem value="PICKED">Picked Up</MenuItem>
@@ -289,7 +298,7 @@ const Interlocking = forwardRef((props, ref) => {
           </Select>
         </Stack>
 
-        {rows.length > 0 && (
+        {filteredRows.length > 0 && (
           <RowsPerPageControl
             rowsPerPage={rowsPerPage}
             setRowsPerPage={setRowsPerPage}
@@ -309,7 +318,7 @@ const Interlocking = forwardRef((props, ref) => {
               </Typography>
             </Box>
           </motion.div>
-        ) : rows.length > 0 ? (
+        ) : filteredRows.length > 0 ? (
           <motion.div
             key="table"
             initial={{ opacity: 0, scale: 0.99 }}
@@ -327,7 +336,46 @@ const Interlocking = forwardRef((props, ref) => {
               }}
             >
               <CardContent sx={{ p: 0 }}>
-                <InterlockingTable rows={paginatedRows} visibleKeys={visibleKeys} />
+                <InterlockingTable
+                  rows={paginatedRows}
+                  visibleKeys={visibleKeys}
+                  onColumnSearch={(key, value) => {
+                    if (value) setFilter(key, value);
+                    else setFilter(key, "");
+                  }}
+                  onSort={(key, direction) => {
+
+                    if (!direction) {
+                      let original = [...allRows];
+
+                      if (relay !== "ALL") {
+                        original = original.filter(r => r.relayId === relay);
+                      }
+
+                      if (statusFilter !== "ALL") {
+                        original = original.filter(r => {
+                          const s = r.status?.toUpperCase() || "";
+                          return statusFilter === "PICKED"
+                            ? s.includes("PICKED")
+                            : s.includes("DROP");
+                        });
+                      }
+
+                      setRows(original);
+                      return;
+                    }
+
+                    const sorted = [...rows].sort((a, b) => {
+                      const av = a[key] ?? "";
+                      const bv = b[key] ?? "";
+                      return direction === "asc"
+                        ? String(av).localeCompare(String(bv), undefined, { numeric: true })
+                        : String(bv).localeCompare(String(av), undefined, { numeric: true });
+                    });
+
+                    setRows(sorted);
+                  }}
+                />
                 <Box
                   sx={{
                     p: 2,

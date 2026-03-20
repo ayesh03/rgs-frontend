@@ -50,8 +50,8 @@ export const decodeSubsystemType = (v) => {
 
 export const decodeSystemVersion = (v) => {
   switch (Number(v)) {
-    case 1: return "KAVACH 3.2";
-    case 2: return "KAVACH 4.0";
+    case 0: return "KAVACH 3.2";
+    case 1: return "KAVACH 4.0";
     default: return "-";
   }
 };
