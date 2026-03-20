@@ -4,6 +4,7 @@ import { useState } from "react";
 import HubIcon from '@mui/icons-material/Hub';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { INTERLOCKING_COLUMNS } from "../constants/interlockingColumns";
+import { decodeSystemVersion } from "../utils/healthFormatter";
 import {
   Stack,
   IconButton,
@@ -108,7 +109,7 @@ export default function InterlockingTable({
                         setActiveCol(key);
                         setSearchVal("");
                       }}
-                      sx={{ p: 0.2 ,color: "rgba(255, 253, 253, 0.77)", "&:hover": { color: "#5b8ffe" }}}
+                      sx={{ p: 0.2, color: "rgba(255, 253, 253, 0.77)", "&:hover": { color: "#5b8ffe" } }}
                     >
                       <FilterListIcon sx={{ fontSize: 13 }} />
                     </IconButton>
@@ -163,19 +164,24 @@ export default function InterlockingTable({
                       <Typography sx={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.4)" }}>
                         {row.time || "-"}
                       </Typography>
-                    </Box>) : key === "relay" ? (
-                      <Typography sx={{ fontSize: "0.85rem", fontWeight: 700, color: theme.palette.primary.light }}>
-                        {row[key]}
-                      </Typography>
-                    ) : hexFields.includes(key) ? (
-                      <Typography sx={{
-                        fontSize: "0.8rem",
-                        fontFamily: "'Roboto Mono', monospace",
-                        color: "rgba(255,255,255,0.5)"
-                      }}>
-                        0x{row[key]?.toString(16).toUpperCase().padStart(2, '0') || "00"}
-                      </Typography>
-                    ) : (
+                    </Box>
+                  ) : key === "system_version" ? (
+                    <Typography sx={{ fontSize: "0.85rem", fontWeight: 600, color: "#4dabf7" }}>
+                      {decodeSystemVersion(row[key])}
+                    </Typography>
+                  ) : key === "relay" ? (
+                    <Typography sx={{ fontSize: "0.85rem", fontWeight: 700, color: theme.palette.primary.light }}>
+                      {row[key]}
+                    </Typography>
+                  ) : hexFields.includes(key) ? (
+                    <Typography sx={{
+                      fontSize: "0.8rem",
+                      fontFamily: "'Roboto Mono', monospace",
+                      color: "rgba(255,255,255,0.5)"
+                    }}>
+                      0x{row[key]?.toString(16).toUpperCase().padStart(2, '0') || "00"}
+                    </Typography>
+                  ) : (
                     <Typography sx={{ fontSize: "0.85rem" }}>
                       {row[key]}
                     </Typography>
