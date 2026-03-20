@@ -39,6 +39,7 @@ const Interlocking = forwardRef((props, ref) => {
     "date",
     "frameNo",
     "station",
+    "system_version",
     "relay",
     "serial",
     "status"
