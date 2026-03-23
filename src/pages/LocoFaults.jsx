@@ -116,7 +116,7 @@ const LocoFaults = forwardRef(({ originType }, ref) => {
       }
 
       const filtered = allRows.filter(r =>
-        String(r.kavach_subsystem_id).includes(value)
+        String(r.nms_system_id).includes(value)
       );
 
       setRows(filtered);

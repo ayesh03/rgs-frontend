@@ -197,6 +197,9 @@ export const formatFaultCellValue = (row, key) => {
     case "kavach_subsystem_id":
       return decodeKavachSubsystem(v);
 
+    case "fault_code":
+      return parseInt(v, 16);
+
     default:
       return v ?? "-";
   }

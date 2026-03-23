@@ -102,7 +102,7 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
                         id: `${idx + 1}-${i}`,
                         date: dt ? dt.toISOString().slice(0, 10) : "",
                         time: dt ? dt.toTimeString().slice(0, 8) : "",
-                        system_version: versionText,   // add this
+                        system_version: versionText,   
                         event_id: ev.event_id,
                         event_name: formatted.name,
                         event_description: formatted.desc,
@@ -274,7 +274,7 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
                                 letterSpacing: 2
                             }}
                         >
-                            ANALYZING HEALTH PACKETS…
+                            DECODING HEALTH PACKETS…
                         </Typography>
                     </Box>
                 ) : (
@@ -293,6 +293,7 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
                             overflow: "hidden"
                         }}
                     >
+
                         <CardContent sx={{ p: 0 }}>
                             <LocoFaultsTable
                                 rows={paginatedRows}
@@ -351,7 +352,6 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
                     </Card>
                 )}
             </AnimatePresence>
-
             <ColumnFilterDialog
                 open={columnDialogOpen}
                 column="Table Columns"

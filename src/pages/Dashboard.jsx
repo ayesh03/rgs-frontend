@@ -317,8 +317,23 @@ const Dashboard = () => {
                                                     }}
                                                 >
                                                     {item.title === "LOCO FAULTS"
-                                                        ? `KAVACH IDS: ${item.kavachCount ?? 0}`
+                                                        ? `NMS SYSTEM IDS: ${item.kavachCount ?? 0}`
                                                         : `STATIONS: ${dashboardData?.total_station_ids ?? 0}`}
+                                                </Typography>
+
+                                                <Typography
+                                                    variant="caption"
+                                                    sx={{ color: "#f9e496", cursor: "pointer" }}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setSelectorType("nms");
+                                                        setCurrentItem(item);
+                                                        setSelectedValue("");
+                                                        setAnchorEl(e.currentTarget);
+                                                        setOpenSelector(true);
+                                                    }}
+                                                >
+                                                    NMS IDS: {dashboardData?.total_nms_ids ?? 0}
                                                 </Typography>
                                             </Stack>
                                         </Box>
@@ -362,7 +377,11 @@ const Dashboard = () => {
                             color: selectorType === "loco" ? "#4dabf7" : "#1de9b6"
                         }}
                     >
-                        {selectorType === "loco" ? "Loco IDs" : "Station IDs"}
+                        {selectorType === "loco"
+                            ? "Loco IDs"
+                            : selectorType === "nms"
+                                ? "NMS System IDs"
+                                : "Station IDs"}
                     </Typography>
 
                     <Select
@@ -379,13 +398,17 @@ const Dashboard = () => {
                     >
 
                         <MenuItem disabled value="">
-                            {selectorType === "loco" ? "Loco ID" : "Station ID"}
+                            {selectorType === "loco"
+                                ? "Loco ID"
+                                : selectorType === "nms"
+                                    ? "NMS System ID"
+                                    : "Station ID"}
                         </MenuItem>
 
                         {(selectorType === "loco"
                             ? dashboardData?.loco_ids || []
-                            : selectorType === "kavach"
-                                ? dashboardData?.loco_fault_ids || []
+                            : selectorType === "nms"
+                                ? dashboardData?.nms_system_ids || []
                                 : dashboardData?.station_ids || []
                         ).map((id) => (
 
@@ -415,8 +438,8 @@ const Dashboard = () => {
                                     filterField = "source_loco_id";
                             }
 
-                            if (selectorType === "kavach") {
-                                filterField = "kavach_subsystem_id";
+                            if (selectorType === "nms") {
+                                filterField = "nms_system_id";
                             }
 
                             if (currentItem.route === "health" && selectorType === "loco") {
