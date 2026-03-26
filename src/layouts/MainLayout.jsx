@@ -139,49 +139,51 @@ export default function MainLayout() {
     { label: "Interlocking", path: "interlocking" },
     { label: "Health", path: "health" },
     { label: "Graphs", path: "graphs" },
+    { label: "RSSI Message", path: "rssi" }
   ];
-const handleFileSelect = async () => {
-  try {
-    const [handle] = await window.showOpenFilePicker({
-      types: [{ description: "BIN Files", accept: { "application/octet-stream": [".bin"] } }],
-    });
+  const handleFileSelect = async () => {
+    try {
+      // Fallback for browsers not supporting showOpenFilePicker
+      if (!window.showOpenFilePicker) {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = ".bin";
 
-    const file = await handle.getFile();
-    fileHandleRef.current = handle;
-    lastModifiedRef.current = file.lastModified;
-    setSelectedFile(file);
+        input.onchange = (e) => {
+          const file = e.target.files[0];
+          if (file) setSelectedFile(file);
+        };
 
-    if (pollingRef.current) clearInterval(pollingRef.current);
-
-    pollingRef.current = setInterval(async () => {
-      try {
-        const updatedFile = await fileHandleRef.current.getFile();
-        if (updatedFile.lastModified !== lastModifiedRef.current) {
-          lastModifiedRef.current = updatedFile.lastModified;
-          setSelectedFile(updatedFile);
-        }
-      } catch (e) {
-        console.error("Polling error", e);
+        input.click();
+        return;
       }
-    }, 2000);
 
-  } catch (err) {
-    console.warn("File picker cancelled", err);
-  }
-};
+      const [handle] = await window.showOpenFilePicker({
+        types: [{ description: "BIN Files", accept: { "application/octet-stream": [".bin"] } }],
+      });
 
-useEffect(() => {
-  return () => {
-    if (pollingRef.current) clearInterval(pollingRef.current);
+      const file = await handle.getFile();
+      fileHandleRef.current = handle;
+      lastModifiedRef.current = file.lastModified;
+      setSelectedFile(file);
+
+    } catch (err) {
+      console.warn("File picker cancelled", err);
+    }
   };
-}, []);
+
+  useEffect(() => {
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, []);
   return (
     <Box sx={{
       display: "flex",
       flexDirection: "column",
       width: "100%",
       minHeight: "100vh",
-      background: "#0a0c10", 
+      background: "#0a0c10",
       color: "#e0e0e0"
     }}>
 
@@ -290,7 +292,12 @@ useEffect(() => {
                       value={tempFromDate}
                       onChange={(e) => setTempFromDate(e.target.value)}
                       InputLabelProps={{ shrink: true }}
-                      sx={{ input: { color: "#fff" }, label: { color: "#888" }, "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "#444" } } }}
+                      sx={{
+                        input: { color: "#fff" },
+                        label: { color: "#888" },
+                        "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "#444" } },
+                        "& .MuiOutlinedInput-adornedEnd .MuiIconButton-root": { color: "#fff" }
+                      }}
                     />
                     <TextField
                       label="Time" type="time" size="small" fullWidth
@@ -298,7 +305,12 @@ useEffect(() => {
                       onChange={(e) => setTempFromTime(e.target.value)}
                       inputProps={{ step: 1 }}
                       InputLabelProps={{ shrink: true }}
-                      sx={{ input: { color: "#fff" }, label: { color: "#888" }, "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "#444" } } }}
+                      sx={{
+                        input: { color: "#fff" },
+                        label: { color: "#888" },
+                        "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "#444" } },
+                        "& .MuiOutlinedInput-adornedEnd .MuiIconButton-root": { color: "#fff" }
+                      }}
                     />
                     <Stack direction="row" spacing={1} justifyContent="flex-end">
                       <Button size="small" onClick={handleFromClose} sx={{ color: "#aaa" }}>Cancel</Button>

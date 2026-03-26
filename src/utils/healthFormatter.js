@@ -436,8 +436,12 @@ if (eventId === 47) {
   if (eventId >= 58 && eventId <= 199)
     return { name: "Reserved", desc: "Reserved Field" };
 
-  if (eventId >= 200 && eventId <= 254)
+  if (eventId >= 200 && eventId <= 254 ){
+    if(eventId == 200){
+      return {name:"Firm Specific Event",desc:`RFID Invalid Tag ID ${value}`}
+    }
     return { name: "Firm Specific Event", desc: value };
+  }
 
   if (eventId === 255)
     return { name: "Invalid", desc: "Not to be used" };

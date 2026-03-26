@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Dashboard from "./pages/Dashboard";
 import MainLayout from "./layouts/MainLayout";
@@ -16,6 +16,7 @@ import Graph from "./pages/Graph";
 import Radio from "./modules/Radio";
 import StationaryKavachInfo from "./modules/StationaryKavachInfo";
 import Health from "./modules/StationaryHealth";
+import RSSI from "./modules/RSSI";
 
 
 import { AuthProvider } from "./auth/AuthContext";
@@ -36,51 +37,52 @@ function App() {
   if (loading) return <Splash />;
 
   return (
-    <BrowserRouter>
-  <AuthProvider>
-    <AppProvider>
-      <Routes>
+    <HashRouter>
+      <AuthProvider>
+        <AppProvider>
+          <Routes>
 
-        {/* ================= PUBLIC ================= */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="/login" element={<Login />} />
-
-        
-
-        {/* ================= PROTECTED ================= */}
-        <Route element={<PrivateRoute />}>
-          <Route path="/app" element={<MainLayout />}>
-          
-
-            {/* Default page AFTER login */}
-            <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<Dashboard />} />
-
-            <Route path="track-profile" element={<TrackProfile />} />
-            {/* <Route path="tsr" element={<TSR />} /> */}
-            <Route path="loco" element={<Loco />} />
-            <Route path="interlocking" element={<Interlocking />} />
-            <Route path="faults" element={<Faults />} />
-            <Route path="parameters" element={<Parameters />} />
-            <Route path="station" element={<Station />} />
-            <Route path="graphs" element={<Graph />} />
-            <Route path="track-profile/graph" element={<TrackProfile defaultTab="graph" />} />
-            <Route path="radio" element={<Radio />} />
-            <Route path="health" element={<Health />} />
-
-            <Route path="StationaryKavachInfo" element={<StationaryKavachInfo />} />
+            {/* ================= PUBLIC ================= */}
+            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="/login" element={<Login />} />
 
 
-          </Route>
-        </Route>
 
-        {/* ================= FALLBACK ================= */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
+            {/* ================= PROTECTED ================= */}
+            <Route element={<PrivateRoute />}>
+              <Route path="/app" element={<MainLayout />}>
 
-      </Routes>
-    </AppProvider>
-  </AuthProvider>
-</BrowserRouter>
+
+                {/* Default page AFTER login */}
+                <Route index element={<Navigate to="dashboard" replace />} />
+                <Route path="dashboard" element={<Dashboard />} />
+
+                <Route path="track-profile" element={<TrackProfile />} />
+                {/* <Route path="tsr" element={<TSR />} /> */}
+                <Route path="loco" element={<Loco />} />
+                <Route path="interlocking" element={<Interlocking />} />
+                <Route path="faults" element={<Faults />} />
+                <Route path="parameters" element={<Parameters />} />
+                <Route path="station" element={<Station />} />
+                <Route path="graphs" element={<Graph />} />
+                <Route path="track-profile/graph" element={<TrackProfile defaultTab="graph" />} />
+                <Route path="radio" element={<Radio />} />
+                <Route path="health" element={<Health />} />
+                <Route path="rssi" element={<RSSI />} />
+
+                <Route path="StationaryKavachInfo" element={<StationaryKavachInfo />} />
+
+
+              </Route>
+            </Route>
+
+            {/* ================= FALLBACK ================= */}
+            <Route path="*" element={<Navigate to="/login" replace />} />
+
+          </Routes>
+        </AppProvider>
+      </AuthProvider>
+    </HashRouter>
 
   );
 }

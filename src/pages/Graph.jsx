@@ -106,7 +106,9 @@ export default function Graph() {
     "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
       borderColor: theme.palette.primary.main,
     },
-    "& .MuiSvgIcon-root": { color: "rgba(255,255,255,0.7)" },
+    "& .MuiSvgIcon-root": { 
+      color: "rgba(255,255,255,0.7)" 
+    },
   };
 
   const menuProps = {
@@ -141,9 +143,7 @@ export default function Graph() {
   const [locoId, setLocoId] = useState("");
   const [direction, setDirection] = useState("");
   const [graphType, setGraphType] = useState("");
-
   const [graphData, setGraphData] = useState([]);
-
   const [pdfExporting, setPdfExporting] = useState(false);
   const [pdfProgress, setPdfProgress] = useState(0);
 
