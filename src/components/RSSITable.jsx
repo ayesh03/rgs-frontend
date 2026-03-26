@@ -214,34 +214,47 @@ export default function RSSITable({
             >
                 <Box sx={{ p: 1.5 }}>
                     <TextField
-  autoFocus
-  size="small"
-  fullWidth
-  placeholder="Search..."
-  value={searchVal}
-  onChange={(e) => {
-    setSearchVal(e.target.value);
-    onColumnSearch?.(activeCol, e.target.value);
-  }}
-  sx={{
-    input: {
-      color: "#fff",
-      fontSize: "0.85rem"
-    },
-    "& .MuiOutlinedInput-root": {
-      backgroundColor: "#12161c",   // 🔥 EXACT INNER DARK
-      "& fieldset": {
-        borderColor: "#444"
-      },
-      "&:hover fieldset": {
-        borderColor: "#5b8ffe"
-      },
-      "&.Mui-focused fieldset": {
-        borderColor: "#5b8ffe"
-      }
-    }
-  }}
-/>
+                        autoFocus
+                        size="small"
+                        fullWidth
+                        placeholder="Search..."
+                        value={searchVal}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            setSearchVal(val);
+
+                            if (!val) {
+                                setFilteredRows(rows); // reset
+                                return;
+                            }
+
+                            const filtered = rows.filter(r =>
+                                String(r[activeCol] ?? "")
+                                    .toLowerCase()
+                                    .includes(val.toLowerCase())
+                            );
+
+                            setFilteredRows(filtered);
+                        }}
+                        sx={{
+                            input: {
+                                color: "#fff",
+                                fontSize: "0.85rem"
+                            },
+                            "& .MuiOutlinedInput-root": {
+                                backgroundColor: "#12161c",   // 🔥 EXACT INNER DARK
+                                "& fieldset": {
+                                    borderColor: "#444"
+                                },
+                                "&:hover fieldset": {
+                                    borderColor: "#5b8ffe"
+                                },
+                                "&.Mui-focused fieldset": {
+                                    borderColor: "#5b8ffe"
+                                }
+                            }
+                        }}
+                    />
                 </Box>
             </Popover>
         </Box>

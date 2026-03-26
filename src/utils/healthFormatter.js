@@ -438,7 +438,7 @@ if (eventId === 47) {
 
   if (eventId >= 200 && eventId <= 254 ){
     if(eventId == 200){
-      return {name:"Firm Specific Event",desc:`RFID Invalid Tag ID ${value}`}
+      return {name:"Firm Specific Event",desc:`RFID Invalid Tag - ${value}`}
     }
     return { name: "Firm Specific Event", desc: value };
   }
