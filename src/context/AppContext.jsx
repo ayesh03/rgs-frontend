@@ -12,6 +12,7 @@ export function AppProvider({ children }) {
   const [globalSearch, setGlobalSearch] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [dashboardData, setDashboardData] = useState(null);
+  const [fileModifiedTime, setFileModifiedTime] = useState(null);
 
   // Helper to clear all filters when switching RGS projects
   const resetFilters = useCallback(() => {
@@ -41,7 +42,10 @@ export function AppProvider({ children }) {
     setIsSidebarOpen,
     resetFilters,
     dashboardData,
-    setDashboardData
+    setDashboardData,
+
+    fileModifiedTime,
+  setFileModifiedTime,
   };
 
   return (

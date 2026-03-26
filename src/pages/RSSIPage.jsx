@@ -137,6 +137,13 @@ const RSSIPage = forwardRef(({ type }, ref) => {
         setPage(1);
     }, [filteredRows.length]);
 
+    // Auto-refresh when file changes
+useEffect(() => {
+  if (selectedFile && fromDate && toDate && rows.length > 0) {
+    generate();
+  }
+}, [selectedFile]);
+
     /* ================= UI ================= */
 
     return (

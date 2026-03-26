@@ -215,6 +215,45 @@ export default function Graph() {
     setError("");
   }, [locoId, direction, graphType]);
 
+  // Auto-refresh metadata when file changes
+useEffect(() => {
+  if (fromDate && toDate && isDateRangeValid && selectedFile && meta.locos.length > 0) {
+    // Reload meta data
+    const loadMeta = async () => {
+      try {
+        setMetaLoading(true);
+        const from = fromDate.length === 16 ? `${fromDate}:00` : fromDate;
+        const to = toDate.length === 16 ? `${toDate}:00` : toDate;
+        
+        const fileBuffer = await selectedFile.arrayBuffer();
+
+        const res = await fetch(
+          `${API_BASE}/api/graph/meta?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+          {
+            method: "POST",
+            body: fileBuffer,
+            headers: { "Content-Type": "application/octet-stream" },
+          }
+        );
+        const json = await res.json();
+        if (json.success) {
+          setMeta({
+            locos: json.locos || [],
+            directions: json.directions || [],
+            graphTypes: json.graphTypes || [],
+          });
+        }
+      } catch (e) {
+        console.error("[GRAPH META ON UPDATE]", e);
+      } finally {
+        setMetaLoading(false);
+      }
+    };
+    
+    loadMeta();
+  }
+}, [selectedFile]);
+
   /* ================= GENERATE ================= */
   const handleGenerate = async () => {
     setError("");

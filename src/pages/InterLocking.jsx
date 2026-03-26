@@ -116,7 +116,15 @@ const Interlocking = forwardRef((props, ref) => {
   useEffect(() => {
     fetchStations();
   }, [fromDate, toDate, selectedFile]);
-
+// Auto-refresh station list when file changes
+useEffect(() => {
+  if (selectedFile && fromDate && toDate && isDateRangeValid) {
+    fetchStations();
+    setRows([]);
+    setAllRows([]);
+    setHasGenerated(false);
+  }
+}, [selectedFile]);
   /* ===================== FETCH RELAYS ===================== */
   useEffect(() => {
     if (!station || !fromDate || !toDate || !selectedFile) return;

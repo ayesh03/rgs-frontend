@@ -192,6 +192,18 @@ const StationaryHealth = forwardRef(({ healthType }, ref) => {
         }
         return col;
     });
+    // Auto-refresh when file changes
+useEffect(() => {
+  if (
+    selectedFile &&
+    fromDate &&
+    toDate &&
+    isDateRangeValid &&
+    rows.length > 0 // Only refresh if already loaded
+  ) {
+    generate();
+  }
+}, [selectedFile]);
 
     return (
         <Box sx={{ width: "100%", p: { xs: 1, md: 0.5 } }}>

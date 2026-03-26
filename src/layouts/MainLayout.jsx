@@ -33,6 +33,38 @@ export default function MainLayout() {
   const fileHandleRef = useRef(null);
   const lastModifiedRef = useRef(null);
   const pollingRef = useRef(null);
+  const [fileLastModified, setFileLastModified] = useState(null);
+
+  const startFilePolling = async () => {
+    if (pollingRef.current) clearInterval(pollingRef.current);
+
+    pollingRef.current = setInterval(async () => {
+      if (!selectedFile || !fileHandleRef.current) return;
+
+      try {
+        // Get fresh file reference to check modification time
+        const latestFile = await fileHandleRef.current.getFile();
+
+        if (lastModifiedRef.current && latestFile.lastModified > lastModifiedRef.current) {
+          // File has changed! Update the ref and trigger all pages to refresh
+          lastModifiedRef.current = latestFile.lastModified;
+          setSelectedFile(latestFile); // This will trigger useEffect in all pages
+        }
+      } catch (err) {
+        console.warn("File polling error:", err);
+      }
+    }, 5000); 
+  };
+
+  useEffect(() => {
+    if (selectedFile && fileHandleRef.current) {
+      startFilePolling();
+    }
+
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, [selectedFile, fileHandleRef.current]);
 
   useEffect(() => {
     if (tempFromDate) {
@@ -172,11 +204,11 @@ export default function MainLayout() {
     }
   };
 
-  useEffect(() => {
-    return () => {
-      if (pollingRef.current) clearInterval(pollingRef.current);
-    };
-  }, []);
+  // useEffect(() => {
+  //   return () => {
+  //     if (pollingRef.current) clearInterval(pollingRef.current);
+  //   };
+  // }, []);
   return (
     <Box sx={{
       display: "flex",

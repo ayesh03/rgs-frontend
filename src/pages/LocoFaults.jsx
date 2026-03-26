@@ -123,6 +123,17 @@ const LocoFaults = forwardRef(({ originType }, ref) => {
       setPage(1);
     },
   }));
+  useEffect(() => {
+  if (
+    location.state?.autoGenerate &&
+    selectedFile &&
+    fromDate &&
+    toDate &&
+    isDateRangeValid
+  ) {
+    generate();
+  }
+}, [location.state?.autoGenerate]);
 
   const dashboardFilter = location.state?.dashboardFilter;
 
