@@ -438,7 +438,7 @@ if (eventId === 47) {
 
   if (eventId >= 200 && eventId <= 254 ){
     if(eventId == 200){
-      return {name:"Firm Specific Event",desc:`Invalid Tag - ${value}`}
+      return {name:"Invalid Tag",desc:`${value}`}
     }
     return { name: "Firm Specific Event", desc: value };
   }

@@ -5,7 +5,7 @@ import ReportHeader from "../components/ReportHeader";
 import useExport from "../hooks/useExport";
 import { useLocation } from "react-router-dom";
 
-
+import { RSSI_EXPORT_COLUMNS } from "../constants/rssiColumns";
 import RSSIPage from "../pages/RSSIPage";
 
 export default function RSSI() {
@@ -70,7 +70,7 @@ export default function RSSI() {
             ? currentRef?.getAllRows?.()
             : currentRef?.getFilteredRows?.();
 
-        const cols = currentRef?.getVisibleColumns?.();
+        const cols = RSSI_EXPORT_COLUMNS;
 
         const fileName =
             tab === 0 ? "rssi_loco" : "rssi_stationary";

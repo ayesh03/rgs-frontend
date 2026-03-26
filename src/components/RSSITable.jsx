@@ -267,6 +267,9 @@ function SampleTable({ samples = [] }) {
 
     const [sortState, setSortState] = useState({});
     const [data, setData] = useState(samples);
+        const [anchorEl, setAnchorEl] = useState(null);
+    const [activeCol, setActiveCol] = useState(null);
+    const [searchVal, setSearchVal] = useState("");
 
     const handleSort = (key, direction) => {
         if (!direction) {
@@ -285,6 +288,20 @@ function SampleTable({ samples = [] }) {
 
         setData(sorted);
     };
+    const handleSearch = (val) => {
+  if (!val) {
+    setData(samples);
+    return;
+  }
+
+  const filtered = samples.filter(s =>
+    String(s[activeCol] ?? "")
+      .toLowerCase()
+      .includes(val.toLowerCase())
+  );
+
+  setData(filtered);
+};
 
     const renderHeader = (label, key) => {
         const sort = sortState[key];
@@ -320,7 +337,15 @@ function SampleTable({ samples = [] }) {
                             : <ArrowUpwardIcon sx={{ fontSize: 12 }} />}
                     </IconButton>
 
-                    <IconButton size="small" sx={{ p: 0.2, color: "#100f0f" }}>
+                    <IconButton
+                        size="small"
+                        onClick={(e) => {
+                            setAnchorEl(e.currentTarget);
+                            setActiveCol(key);
+                            setSearchVal("");
+                        }}
+                        sx={{ p: 0.2, color: "rgba(255,255,255,0.7)" }}
+                    >
                         <FilterListIcon sx={{ fontSize: 12 }} />
                     </IconButton>
                 </Stack>
@@ -371,6 +396,56 @@ function SampleTable({ samples = [] }) {
                         </TableCell>
                     </TableRow>
                 ))}
+                <Popover
+  open={Boolean(anchorEl)}
+  anchorEl={anchorEl}
+  onClose={() => setAnchorEl(null)}
+  anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+  PaperProps={{
+    sx: {
+      bgcolor: "#1e2227",
+      border: "1px solid #333",
+      borderRadius: 2
+    }
+  }}
+>
+  <Box sx={{ p: 1.5, minWidth: 160 }}>
+    <TextField
+      autoFocus
+      size="small"
+      fullWidth
+      placeholder="Search..."
+      value={searchVal}
+      onChange={(e) => {
+        const val = e.target.value;
+        setSearchVal(val);
+        handleSearch(val);
+      }}
+      sx={{
+        input: { color: "#fff", fontSize: "0.8rem" },
+        "& .MuiOutlinedInput-root": {
+          backgroundColor: "#12161c",
+          "& fieldset": { borderColor: "#444" }
+        }
+      }}
+    />
+
+    {/* CLEAR */}
+    <Stack direction="row" justifyContent="flex-end" mt={1}>
+      <IconButton
+        size="small"
+        onClick={() => {
+          setSearchVal("");
+          setData(samples);
+          setAnchorEl(null);
+        }}
+        sx={{ color: "#aaa" }}
+      >
+        Clear
+      </IconButton>
+    </Stack>
+  </Box>
+</Popover>
             </TableBody>
         </Table>
     );

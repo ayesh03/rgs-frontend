@@ -70,6 +70,10 @@ export default function useExport() {
     if (reportType === "health_stationary") return "HLTH_STN";
     if (reportType === "health_onboard") return "HLTH_OB";
 
+    // ---------------- RSSI ----------------
+    if (reportType === "rssi_loco") return "RSSI_LOCO";
+    if (reportType === "rssi_stationary") return "RSSI_STN";
+
 
 
     return "REPORT";
@@ -104,6 +108,10 @@ export default function useExport() {
     if (reportType === "health_stationary") return "STATIONARY HEALTH REPORT";
     if (reportType === "health_onboard") return "ONBOARD HEALTH REPORT";
 
+    // ---------------- RSSI ----------------
+    if (reportType === "rssi_loco") return "LOCO RSSI REPORT";
+    if (reportType === "rssi_stationary") return "STATIONARY RSSI REPORT";
+
     return "KAVACH REPORT";
   };
 
@@ -119,11 +127,13 @@ export default function useExport() {
           col.label,
           reportType === "onboard" || reportType === "access"
             ? formatCellValue(row, col.key)
-            : reportType === "interlocking" && col.key === "date"
-              ? `${row.date || ""} ${row.time || ""}`
-              : reportType === "health_stationary" || reportType === "health_onboard"
-                ? row[col.key] ?? "-"
-                : formatFaultCellValue(row, col.key)
+            : reportType === "rssi_loco" || reportType === "rssi_stationary"
+              ? row[col.key] ?? "-"
+              : reportType === "interlocking" && col.key === "date"
+                ? `${row.date || ""} ${row.time || ""}`
+                : reportType === "health_stationary" || reportType === "health_onboard"
+                  ? row[col.key] ?? "-"
+                  : formatFaultCellValue(row, col.key)
         ])
       )
     );
@@ -167,9 +177,11 @@ export default function useExport() {
         columns.map((col) =>
           reportType === "fault_station" || reportType === "fault_loco"
             ? formatFaultCellValue(row, col.key)
-            : reportType === "health_stationary" || reportType === "health_onboard"
+            : reportType === "rssi_loco" || reportType === "rssi_stationary"
               ? row[col.key] ?? "-"
-              : formatCellValue(row, col.key)
+              : reportType === "health_stationary" || reportType === "health_onboard"
+                ? row[col.key] ?? "-"
+                : formatCellValue(row, col.key)
         )
       ),
       styles: isStation
