@@ -53,21 +53,27 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
   }, [selectedFile]);
 
   /* ================= RESET ON TABLE SWITCH ================= */
-// Auto-refresh when file changes
-useEffect(() => {
-  if (fileBuffer && location.state?.autoGenerate && selectedFile) {
-    // Reset and regenerate with new file
-    setRows([]);
-    setAllRows([]);
-    clearFilters();
+  // Auto-refresh when file changes
+  useEffect(() => {
+    if (fileBuffer && location.state?.autoGenerate && selectedFile) {
+      // Reset and regenerate with new file
+      setRows([]);
+      setAllRows([]);
+      clearFilters();
+      setPage(1);
+
+      // Small delay to ensure file buffer is ready
+      setTimeout(() => {
+        generate();
+      }, 300);
+    }
+  }, [fileBuffer]); // Dependency: when fileBuffer updates, trigger refresh
+  useEffect(() => {
+    if (!selectedFile || rows.length === 0) return;
+    // console.log("🔄 New packets - refreshing loco movement...");
     setPage(1);
-    
-    // Small delay to ensure file buffer is ready
-    setTimeout(() => {
-      generate();
-    }, 300);
-  }
-}, [fileBuffer]); // Dependency: when fileBuffer updates, trigger refresh
+    generate();
+  }, [selectedFile]);
   useEffect(() => {
     if (!allRows.length) return;
 

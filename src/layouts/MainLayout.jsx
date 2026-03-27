@@ -42,18 +42,32 @@ export default function MainLayout() {
       if (!selectedFile || !fileHandleRef.current) return;
 
       try {
-        // Get fresh file reference to check modification time
         const latestFile = await fileHandleRef.current.getFile();
+        const currentSize = latestFile.size;
+        const lastSize = lastModifiedRef.lastSize || 0;
 
-        if (lastModifiedRef.current && latestFile.lastModified > lastModifiedRef.current) {
-          // File has changed! Update the ref and trigger all pages to refresh
+        // Compare file SIZE - new packets = larger file
+        if (currentSize > lastSize) {
+          // console.log(`📡 NEW PACKETS! ${lastSize} bytes → ${currentSize} bytes`);
+
+          // Update refs
           lastModifiedRef.current = latestFile.lastModified;
-          setSelectedFile(latestFile); // This will trigger useEffect in all pages
+          lastModifiedRef.lastSize = currentSize;
+
+          // CRITICAL: Create new File object reference
+          // This forces React to see it as "changed"
+          const newFileRef = new File([latestFile], latestFile.name, {
+            type: latestFile.type,
+            lastModified: latestFile.lastModified,
+          });
+
+          setSelectedFile(newFileRef);
+          // console.log("File updated - triggering all page refreshes");
         }
       } catch (err) {
         console.warn("File polling error:", err);
       }
-    }, 5000); 
+    }, 2000); // Poll every 2 seconds (aggressive!)
   };
 
   useEffect(() => {
@@ -197,18 +211,16 @@ export default function MainLayout() {
       const file = await handle.getFile();
       fileHandleRef.current = handle;
       lastModifiedRef.current = file.lastModified;
+      lastModifiedRef.lastSize = file.size; //  Track size
       setSelectedFile(file);
+      // console.log(` File selected: ${file.name} (${file.size} bytes)`);
 
     } catch (err) {
       console.warn("File picker cancelled", err);
     }
   };
 
-  // useEffect(() => {
-  //   return () => {
-  //     if (pollingRef.current) clearInterval(pollingRef.current);
-  //   };
-  // }, []);
+
   return (
     <Box sx={{
       display: "flex",

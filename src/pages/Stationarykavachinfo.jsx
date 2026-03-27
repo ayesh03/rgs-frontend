@@ -778,6 +778,14 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
     setVisibleKeys(columns.map((c) => c.key));
   }, [subPacket, tableType]);
 
+  // Auto-refresh when file changes
+  useEffect(() => {
+    if (!selectedFile || allRows.length === 0) return;
+    console.log("🔄 New packets - refreshing stationary kavach...");
+    setPage(1);
+    generate();
+  }, [selectedFile]);
+
 
   /* ================= DATA FETCH (TEMP) ================= */
   const generate = async () => {
