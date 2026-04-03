@@ -17,7 +17,8 @@ import Radio from "./modules/Radio";
 import StationaryKavachInfo from "./modules/StationaryKavachInfo";
 import Health from "./modules/StationaryHealth";
 import RSSI from "./modules/RSSI";
-
+import TSRMS from "./modules/TSRMS";
+import AdjacentKavachInfo from "./modules/AdjacentKavachInfo";
 
 import { AuthProvider } from "./auth/AuthContext";
 import PrivateRoute from "./auth/PrivateRoute";
@@ -69,6 +70,8 @@ function App() {
                 <Route path="radio" element={<Radio />} />
                 <Route path="health" element={<Health />} />
                 <Route path="rssi" element={<RSSI />} />
+                <Route path="tsrms" element={<TSRMS />} />
+                <Route path="adjacent-kavach" element={<AdjacentKavachInfo />} />
 
                 <Route path="StationaryKavachInfo" element={<StationaryKavachInfo />} />
 

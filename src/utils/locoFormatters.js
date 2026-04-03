@@ -140,11 +140,17 @@ export const decodeTrainIntegrity = (v) => {
 
 /* ================= BRAKE APPLIED ================= */
 export const decodeBrakeApplied = (v) => {
-    switch (Number(v)) {
-        case 0: return "NO BRAKE";
-        case 1: return "NORMAL SERVICE";
-        case 2: return "FULL SERVICE";
-        case 3: return "EMERGENCY BRAKE";
+    const val = Number(v);
+
+    switch (val) {
+        case 0: return "NO OVERSPEED, NO BRAKE";
+        case 1: return "OVERSPEED, NO BRAKE";
+
+        case 2: return "NORMAL SERVICE BRAKE";   
+        case 3: return "FULL SERVICE BRAKE";     
+
+        case 4: return "EMERGENCY BRAKE";        
+
         default: return "-";
     }
 };

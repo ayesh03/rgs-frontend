@@ -653,8 +653,11 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
 
 
 
-  /* ================= FILTER ON TYPE CHANGE ================= */
-  useEffect(() => {
+  /* ================= FILTER ON TYPE CHANGE UPDATED One 31/03/2026================= */
+
+
+
+useEffect(() => {
     if (!allRows.length) {
       setRows([]);
       return;
@@ -773,6 +776,8 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
     clearFilters();
 
   }, [subPacket, allRows, tableType]);
+
+
 
   useEffect(() => {
     setVisibleKeys(columns.map((c) => c.key));
@@ -1093,19 +1098,19 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
                       allRows.forEach((packet) => {
                         const header = buildCommonHeader(packet);
 
-                        if (subPacket === "ssp" && packet.static_speed_profile?.length) {
+                        if (subPacket === "ssp" && packet.static_speed_profile) {
                           packet.static_speed_profile.forEach((ssp) => {
                             flattened.push({ ...header, ...ssp });
                           });
                         }
 
-                        if (subPacket === "gradient" && packet.gradient_profile?.length) {
+                        if (subPacket === "gradient" && packet.gradient_profile) {
                           packet.gradient_profile.forEach((g) => {
                             flattened.push({ ...header, ...g });
                           });
                         }
 
-                        if (subPacket === "lc" && packet.lc_gate_profile?.length) {
+                        if (subPacket === "lc" && packet.lc_gate_profile) {
                           packet.lc_gate_profile.forEach((lc) => {
                             flattened.push({ ...header, ...lc });
                           });
@@ -1123,13 +1128,13 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
                           });
                         }
 
-                        if (subPacket === "track" && packet.track_conditions?.length) {
+                        if (subPacket === "track" && packet.track_conditions){
                           packet.track_conditions.forEach((tc) => {
                             flattened.push({ ...header, ...tc });
                           });
                         }
 
-                        if (subPacket === "tsr" && packet.tsr_list?.length) {
+                        if (subPacket === "tsr" && packet.tsr_list) {
                           packet.tsr_list.forEach((tsr) => {
                             flattened.push({ ...header, ...tsr });
                           });

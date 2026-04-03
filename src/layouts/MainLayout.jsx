@@ -185,7 +185,9 @@ export default function MainLayout() {
     { label: "Interlocking", path: "interlocking" },
     { label: "Health", path: "health" },
     { label: "Graphs", path: "graphs" },
-    { label: "RSSI Message", path: "rssi" }
+    { label: "RSSI Message", path: "rssi" },
+    { label: "Adjacent Kavach Info", path: "adjacent-kavach" },
+    { label: "TSRMS", path: "tsrms" },
   ];
   const handleFileSelect = async () => {
     try {
@@ -213,7 +215,7 @@ export default function MainLayout() {
       lastModifiedRef.current = file.lastModified;
       lastModifiedRef.lastSize = file.size; //  Track size
       setSelectedFile(file);
-      // console.log(` File selected: ${file.name} (${file.size} bytes)`);
+      
 
     } catch (err) {
       console.warn("File picker cancelled", err);

@@ -1,4 +1,4 @@
-import {Box,Button,Stack,TextField,alpha,Paper,InputAdornment,Select,MenuItem,} from "@mui/material";
+import { Box, Button, Stack, TextField, alpha, Paper, InputAdornment, Select, MenuItem, } from "@mui/material";
 import { motion } from "framer-motion";
 import SearchIcon from "@mui/icons-material/Search";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
@@ -22,6 +22,7 @@ export default function ReportHeader({
   showSaveAll = true,
   showColumns = true,
   showTableType = true,
+  rightContent,
 }) {
   const isEngine = stage === "ENGINE";
   const isPreview = stage === "PREVIEW";
@@ -59,7 +60,7 @@ export default function ReportHeader({
                 color: "#fff",
                 fontSize: "0.85rem",
                 borderRadius: "10px",
-            py: 0.4,
+                py: 0.4,
                 "& fieldset": { borderColor: "rgba(255,255,255,0.1)" },
                 "&:hover fieldset": { borderColor: "#4dabf7" },
               }
@@ -85,7 +86,7 @@ export default function ReportHeader({
               color: "#fff",
               borderRadius: "6px",
               fontSize: "0.85rem",
-            py: 0.4,
+              py: 0.4,
               "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.1)" },
               "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#4dabf7" },
               "& .MuiSvgIcon-root": { color: "rgb(255, 255, 255)" }
@@ -95,7 +96,13 @@ export default function ReportHeader({
             <MenuItem value="access">Access</MenuItem>
           </Select>
         )}
-        
+
+        {rightContent && (
+          <Box sx={{ ml: 1 }}>
+            {rightContent}
+          </Box>
+        )}
+
 
         <Button
           variant="contained"
@@ -121,6 +128,7 @@ export default function ReportHeader({
 
         <Box sx={{ flexGrow: 1 }} />
 
+        
         <Stack direction="row" spacing={1}>
           <Button
             variant="outlined"
