@@ -177,7 +177,6 @@ const TSRMSPage = forwardRef(({ tableType }, ref) => {
 
             if (tableType === "tsr_diagnostic") endpoint = "tsr-diagnostic";
             if (tableType === "tsr_fault") endpoint = "tsr-fault";
-
             if (tableType === "pdi_version") endpoint = "pdi-version";
             if (tableType === "all_tsr_info") endpoint = "all-tsr-info";
             if (tableType === "get_tsr_info") endpoint = "get-tsr-info";

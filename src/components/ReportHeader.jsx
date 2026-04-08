@@ -23,6 +23,7 @@ export default function ReportHeader({
   showColumns = true,
   showTableType = true,
   rightContent,
+  onAdvancedSearch,
 }) {
   const isEngine = stage === "ENGINE";
   const isPreview = stage === "PREVIEW";
@@ -126,9 +127,28 @@ export default function ReportHeader({
           {isEngine ? "Generating..." : "Generate"}
         </Button>
 
+        {onAdvancedSearch && (
+          <Button
+            variant="outlined"
+            onClick={onAdvancedSearch}
+            sx={{
+              px: 2,
+              py: 1,
+              fontSize: "0.85rem",
+              borderColor: "rgba(255,255,255,0.1)",
+              color: "#eee",
+              borderRadius: "10px",
+              textTransform: "none",
+              "&:hover": { borderColor: "#fff", bgcolor: "rgba(255,255,255,0.05)" }
+            }}
+          >
+            Advanced Search
+          </Button>
+        )}
+
         <Box sx={{ flexGrow: 1 }} />
 
-        
+
         <Stack direction="row" spacing={1}>
           <Button
             variant="outlined"

@@ -2,7 +2,7 @@ import { useState, useRef, forwardRef, useEffect } from "react";
 import { Box, Paper, Tabs, Tab, alpha } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "react-router-dom";
-
+import AdvancedSearchDialog from "../components/AdvancedSearchDialog";
 import ReportHeader from "../components/ReportHeader";
 import useExport from "../hooks/useExport";
 import Stationarykavachinfo from "../pages/Stationarykavachinfo";
@@ -29,6 +29,8 @@ export default function StationaryKavachInfo() {
   const accessRef = useRef();
   const emergencyRef = useRef();
   const location = useLocation();
+
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   const tabRefs = {
     0: regularRef,
@@ -102,6 +104,22 @@ export default function StationaryKavachInfo() {
     }
   };
 
+  const currentRef = tabRefs[tab]?.current;
+
+  const stationList = ((currentRef && currentRef.getAllRows?.()) || [])
+    .map(r => r.stationary_kavach_id)
+    .filter(v => v !== null && v !== undefined && v !== "")
+    .map(v => String(v));
+
+  const uniqueStations = [...new Set(stationList)];
+
+  const stationOptions = {
+    isStation: true,
+    list: uniqueStations,
+  };
+
+  const subPacket = tabRefs[tab]?.current?.getSubPacket?.();
+
   return (
     <Box
       component={motion.div}
@@ -116,11 +134,12 @@ export default function StationaryKavachInfo() {
         onClear={handleClear}
         onColumns={() => getCurrentRef()?.openColumnDialog?.()}
         onSave={() => processExport(exportExcel)}
+        onAdvancedSearch={() => setAdvancedOpen(true)}
         onSaveAll={() => processExport(exportExcel, "all")}
         onPrint={() => processExport(exportPDF)}
         onSearch={(value) =>
-  getCurrentRef()?.searchByStation?.(value)
-}
+          getCurrentRef()?.searchByStation?.(value)
+        }
       />
 
       <Paper
@@ -185,6 +204,23 @@ export default function StationaryKavachInfo() {
           </motion.div>
         </AnimatePresence>
       </Box>
+
+      <AdvancedSearchDialog
+        open={advancedOpen}
+        onClose={() => setAdvancedOpen(false)}
+        onApply={(data) => {
+          const ref = tabRefs[tab]?.current;
+          if (!ref) return;
+
+
+          ref.applyAdvancedFilters(data);
+        }}
+        locoOptions={{
+          ...stationOptions,
+          subPacket,
+          tableType: getTableType(),
+        }}
+      />
     </Box>
   );
 }

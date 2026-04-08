@@ -657,7 +657,7 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
 
 
 
-useEffect(() => {
+  useEffect(() => {
     if (!allRows.length) {
       setRows([]);
       return;
@@ -902,8 +902,54 @@ useEffect(() => {
     },
 
     openColumnDialog: () => setColumnDialogOpen(true),
-    searchByStation: (value) =>
-      setFilter("stationary_kavach_id", value),
+    searchByStation: (value) => {
+      if (Array.isArray(value)) {
+        setFilter("stationary_kavach_id", value);
+      } else {
+        setFilter("stationary_kavach_id", [value]);
+      }
+    },
+
+    applyAdvancedFilters: (data) => {
+      clearFilters();
+
+      if (data.locos?.length) {
+        setFilter("stationary_kavach_id", data.locos);
+      }
+      if (data.dynamicEvents?.length) {
+        setFilter("dynamic_or_filter", (val, row) => {
+
+          const idx = rows.findIndex(r => r.id === row.id);
+          if (idx <= 0) return true;
+
+          const prev = rows[idx - 1];
+
+          return data.dynamicEvents.some(field => {
+
+            const currVal = row[field];
+            const prevVal = prev[field];
+
+            if (currVal === undefined || prevVal === undefined) return false;
+
+            return String(currVal) !== String(prevVal);
+          });
+        });
+      }
+
+      if (data.staticEvents) {
+        Object.entries(data.staticEvents).forEach(([key, values]) => {
+          if (values?.length) {
+
+            const exists = rows.some(r => r[key] !== undefined);
+
+            if (exists) {
+              setFilter(key, [...values]);
+            }
+          }
+        });
+      }
+
+    },
   }));
 
 
@@ -1128,7 +1174,7 @@ useEffect(() => {
                           });
                         }
 
-                        if (subPacket === "track" && packet.track_conditions){
+                        if (subPacket === "track" && packet.track_conditions) {
                           packet.track_conditions.forEach((tc) => {
                             flattened.push({ ...header, ...tc });
                           });

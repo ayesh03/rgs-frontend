@@ -5,6 +5,9 @@ import ReportHeader from "../components/ReportHeader";
 import LocoMovement from "../pages/LocoMovement";
 import ExceptionReport from "../pages/ExceptionReport";
 import useExport from "../hooks/useExport";
+
+import AdvancedSearchDialog from "../components/AdvancedSearchDialog";
+
 import {
   ONBOARD_COLUMNS,
   ACCESS_COLUMNS,
@@ -19,6 +22,9 @@ export default function Loco() {
   const exceptionRef = useRef();
   const [tableType, setTableType] = useState("onboard");
   const location = useLocation();
+
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [advancedFilters, setAdvancedFilters] = useState(null);
 
 
   const activeTabContext = useMemo(() => {
@@ -97,6 +103,13 @@ export default function Loco() {
     setStage("FILTER");
   };
 
+  const locoList = (locoRef.current?.getAllRows?.() || [])
+  .map(r => r.source_loco_id)
+  .filter(v => v != null && v !== "")
+  .map(String);
+
+const uniqueLocos = [...new Set(locoList)];
+
   return (
     <Box sx={{ p: 0.5 }}>
       <ReportHeader
@@ -107,6 +120,7 @@ export default function Loco() {
         showException
         onGenerate={handleGenerate}
         onClear={handleClear}
+        onAdvancedSearch={() => setAdvancedOpen(true)}
         onColumns={() => activeTabContext.ref.current?.openColumnDialog()}
         onSearch={(value) =>
           activeTabContext.ref.current?.searchByLoco?.(value)
@@ -160,6 +174,16 @@ export default function Loco() {
         <LocoMovement ref={locoRef} tableType={tableType} />
         {tab === 1 && <ExceptionReport ref={exceptionRef} />}
       </Box>
+
+      <AdvancedSearchDialog
+        open={advancedOpen}
+        onClose={() => setAdvancedOpen(false)}
+        onApply={(filters) => {
+          setAdvancedFilters(filters);
+          locoRef.current?.applyAdvancedFilters?.(filters);
+        }}
+        locoOptions={uniqueLocos}  
+      />
     </Box>
   );
 }

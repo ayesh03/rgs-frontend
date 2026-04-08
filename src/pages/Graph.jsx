@@ -13,6 +13,8 @@ import { useAppContext } from "../context/AppContext";
 import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
 import areaLogo from "../assets/arecaLogo.png";
+import GraphPropertiesPopup from "../components/GraphPropertiesPopup";
+import SettingsIcon from "@mui/icons-material/Settings";
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 /* =====================================================
    Frame → Time (DESKTOP PARITY)
@@ -106,8 +108,8 @@ export default function Graph() {
     "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
       borderColor: theme.palette.primary.main,
     },
-    "& .MuiSvgIcon-root": { 
-      color: "rgba(255,255,255,0.7)" 
+    "& .MuiSvgIcon-root": {
+      color: "rgba(255,255,255,0.7)"
     },
   };
 
@@ -147,6 +149,8 @@ export default function Graph() {
   const [pdfExporting, setPdfExporting] = useState(false);
   const [pdfProgress, setPdfProgress] = useState(0);
 
+  const [locDiv, setLocDiv] = useState(600);
+
   // ===== REQUIREMENT STATES =====
   const [zoom, setZoom] = useState(1);
   const [showGrid, setShowGrid] = useState(true);
@@ -162,6 +166,26 @@ export default function Graph() {
     directions: [],
     graphTypes: [],
   });
+
+  const [openProps, setOpenProps] = useState(false);
+
+  const graphConfig = {
+    lineWidth,
+    nominalColor,
+    reverseColor,
+    bgColor,
+    fgColor,
+    showGrid
+  };
+
+  const handleApplyProps = (cfg) => {
+    setLineWidth(cfg.lineWidth);
+    setNominalColor(cfg.nominalColor);
+    setReverseColor(cfg.reverseColor);
+    setBgColor(cfg.bgColor);
+    setFgColor(cfg.fgColor);
+    setShowGrid(cfg.showGrid);
+  };
 
   const stage =
     graphData.length > 0 ? "PREVIEW" : loading ? "ENGINE" : "FILTER";
@@ -216,43 +240,43 @@ export default function Graph() {
   }, [locoId, direction, graphType]);
 
   // Auto-refresh metadata when file changes
-useEffect(() => {
-  if (fromDate && toDate && isDateRangeValid && selectedFile && meta.locos.length > 0) {
-    // Reload meta data
-    const loadMeta = async () => {
-      try {
-        setMetaLoading(true);
-        const from = fromDate.length === 16 ? `${fromDate}:00` : fromDate;
-        const to = toDate.length === 16 ? `${toDate}:00` : toDate;
-        
-        const fileBuffer = await selectedFile.arrayBuffer();
+  useEffect(() => {
+    if (fromDate && toDate && isDateRangeValid && selectedFile && meta.locos.length > 0) {
+      // Reload meta data
+      const loadMeta = async () => {
+        try {
+          setMetaLoading(true);
+          const from = fromDate.length === 16 ? `${fromDate}:00` : fromDate;
+          const to = toDate.length === 16 ? `${toDate}:00` : toDate;
 
-        const res = await fetch(
-          `${API_BASE}/api/graph/meta?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
-          {
-            method: "POST",
-            body: fileBuffer,
-            headers: { "Content-Type": "application/octet-stream" },
+          const fileBuffer = await selectedFile.arrayBuffer();
+
+          const res = await fetch(
+            `${API_BASE}/api/graph/meta?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+            {
+              method: "POST",
+              body: fileBuffer,
+              headers: { "Content-Type": "application/octet-stream" },
+            }
+          );
+          const json = await res.json();
+          if (json.success) {
+            setMeta({
+              locos: json.locos || [],
+              directions: json.directions || [],
+              graphTypes: json.graphTypes || [],
+            });
           }
-        );
-        const json = await res.json();
-        if (json.success) {
-          setMeta({
-            locos: json.locos || [],
-            directions: json.directions || [],
-            graphTypes: json.graphTypes || [],
-          });
+        } catch (e) {
+          console.error("[GRAPH META ON UPDATE]", e);
+        } finally {
+          setMetaLoading(false);
         }
-      } catch (e) {
-        console.error("[GRAPH META ON UPDATE]", e);
-      } finally {
-        setMetaLoading(false);
-      }
-    };
-    
-    loadMeta();
-  }
-}, [selectedFile]);
+      };
+
+      loadMeta();
+    }
+  }, [selectedFile]);
 
   /* ================= GENERATE ================= */
   const handleGenerate = async () => {
@@ -581,6 +605,12 @@ useEffect(() => {
   };
   /* ================= UI ================= */
   const isModeGraph = graphType.includes("Mode");
+
+
+  const locDivOptions = [
+    100, 200, 400, 600, 800, 1000,
+    ...Array.from({ length: (10000 - 1000) / 500 }, (_, i) => 1500 + i * 500)
+  ];
   return (
     <Box
       sx={{ width: "100%", p: { xs: 1, md: 0.5 } }}
@@ -627,6 +657,7 @@ useEffect(() => {
         showSaveAll={false}
         showColumns={false}
       />
+
       {/* CONFIG */}
       <Card
         sx={{
@@ -680,6 +711,8 @@ useEffect(() => {
               ))}
             </Select>
           </Grid>
+
+
           <Grid item xs={12} sm={4}>
             <Select
               fullWidth
@@ -696,6 +729,33 @@ useEffect(() => {
               ))}
             </Select>
           </Grid>
+
+          <Chip
+
+            label="Graph Properties"
+            onClick={() => setOpenProps(true)}
+            sx={{
+              height: 38,
+              fontSize: "0.85rem",
+
+              bgcolor: "rgba(255, 255, 255, 0.05)",
+              backdropFilter: "blur(10px)",
+              borderRadius: "8px",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              color: "#fff",
+
+              "&:hover": {
+                borderColor: theme.palette.primary.main,
+                bgcolor: "rgba(255,255,255,0.08)"
+              },
+
+              "& .MuiChip-icon": {
+                color: "rgba(255,255,255,0.7)"
+              }
+            }}
+          />
+
+
           <Grid item xs={12} sm={4}>
 
             <Select
@@ -729,6 +789,7 @@ useEffect(() => {
             />
           </Grid>
 
+
           <Grid item xs={12} sm={4}>
             <input
               type="time"
@@ -742,9 +803,8 @@ useEffect(() => {
               }}
             />
           </Grid>
+
         </Grid>
-
-
 
         {error && <Typography color="error" mt={0.5}>{error}</Typography>}
         {noData && <Typography color="warning.main" mt={0.5}>No graph data available.</Typography>}
@@ -770,6 +830,8 @@ useEffect(() => {
           sx={{ color: "#fff" }}
         />
       </Stack>
+
+
 
 
       {(loading || metaLoading) && (
@@ -804,7 +866,8 @@ useEffect(() => {
           animate={{ opacity: 1, scale: 1 }}
           sx={{
             borderRadius: "20px",
-            bgcolor: "rgba(18, 18, 18, 0.6)", // Darker for better graph contrast
+            bgcolor: bgColor,
+            color: fgColor,
             backdropFilter: "blur(20px)",
             border: "1px solid rgba(255, 255, 255, 0.1)",
             backgroundImage: "none",
@@ -857,8 +920,8 @@ useEffect(() => {
                   >
                     <defs>
                       <linearGradient id="speedGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#3949ab" stopOpacity={0.4} />
-                        <stop offset="95%" stopColor="#3949ab" stopOpacity={0} />
+                        <stop offset="5%" stopColor={nominalColor} stopOpacity={0.4} />
+                        <stop offset="95%" stopColor={nominalColor} stopOpacity={0} />
                       </linearGradient>
                     </defs>
 
@@ -866,15 +929,15 @@ useEffect(() => {
                       <CartesianGrid
                         strokeDasharray="3 3"
                         vertical={false}
-                        stroke="#e0e0e0"
+                        stroke={fgColor}
                       />
                     )}
 
                     <XAxis
-                      dataKey="x"
+                      dataKey={(d) => Math.floor(d.x / locDiv) * locDiv}
                       tickLine={false}
-                      axisLine={{ stroke: '#ccd1d9' }}
-                      tick={{ fontSize: 12, fill: '#666' }}
+                      axisLine={{ stroke: fgColor }}
+                      tick={{ fontSize: 12, fill: fgColor }}
                       minTickGap={30}
                     >
                       <Label value="Location" position="bottom" offset={20} />
@@ -885,7 +948,7 @@ useEffect(() => {
                     <YAxis
                       tickLine={false}
                       axisLine={false}
-                      tick={{ fontSize: 12, fill: '#ffffff' }}
+                      tick={{ fontSize: 12, fill: fgColor }}
                       domain={[
                         0,
                         Math.ceil(Math.max(...graphData.map((d) => d.y)) / 10) * 10 + 10,
@@ -914,7 +977,7 @@ useEffect(() => {
                     <Area
                       type="monotone"
                       dataKey="y"
-                      stroke="#3949ab"
+                      stroke={nominalColor}
                       strokeWidth={lineWidth}
                       fill="transparent"
                       dot={false}
@@ -948,8 +1011,8 @@ useEffect(() => {
                     <Area
                       type="monotone"
                       dataKey="y"
-                      stroke="#00897b"
-                      fill="#2e7d32"
+                      stroke={direction === "Nominal" ? nominalColor : reverseColor}
+                      fill={direction === "Nominal" ? nominalColor : reverseColor}
                       fillOpacity={0.3}
                     // stroke={direction === "Nominal" ? nominalColor : reverseColor}
                     // fill={direction === "Nominal" ? nominalColor : reverseColor}
@@ -965,20 +1028,20 @@ useEffect(() => {
                     data={getFilteredByTime()}
                     margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
                   >
-                    {showGrid && <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />}
+                    {showGrid && <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={fgColor} />}
 
                     <defs>
                       <linearGradient id="colorY" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#8e24aa" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#8e24aa" stopOpacity={0} />
+                        <stop offset="5%" stopColor={nominalColor} stopOpacity={0.3} />
+                        <stop offset="95%" stopColor={nominalColor} stopOpacity={0} />
                       </linearGradient>
                     </defs>
 
                     <XAxis
-                      dataKey="x"
-                      tick={{ fill: '#666', fontSize: 12 }}
+                      dataKey={(d) => Math.floor(d.x / locDiv) * locDiv}
+                      tick={{ fill: fgColor, fontSize: 12 }}
                       tickLine={false}
-                      axisLine={{ stroke: '#ccc' }}
+                      axisLine={{ stroke: fgColor }}
                     >
                       <Label value="Location" position="bottom" offset={20} />
                     </XAxis>
@@ -989,7 +1052,7 @@ useEffect(() => {
                       domain={[0, 12]}
                       ticks={Object.keys(MODE_LEGEND).map(Number)}
                       tickFormatter={(value) => MODE_LEGEND[value] || value}
-                      tick={{ fill: '#666', fontSize: 11 }}
+                      tick={{ fill: fgColor, fontSize: 11 }}
                       tickLine={false}
                       axisLine={false}
                     >
@@ -1015,7 +1078,7 @@ useEffect(() => {
                     <Line
                       type="monotone"
                       dataKey="y"
-                      stroke="#6a1b9a"
+                      stroke={nominalColor}
                       strokeWidth={4}
                       dot={false}
                       activeDot={{ r: 8, strokeWidth: 0 }}
@@ -1032,8 +1095,8 @@ useEffect(() => {
                     <defs>
                       {/* A soft, premium indigo-to-transparent wash */}
                       <linearGradient id="premiumWash" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#6366f1" stopOpacity={0.15} />
-                        <stop offset="100%" stopColor="#6366f1" stopOpacity={0} />
+                        <stop offset="0%" stopColor={nominalColor} stopOpacity={0.15} />
+                        <stop offset="100%" stopColor={nominalColor} stopOpacity={0} />
                       </linearGradient>
                     </defs>
 
@@ -1041,7 +1104,7 @@ useEffect(() => {
                     {showGrid && (
                       <CartesianGrid
                         vertical={false}
-                        stroke="#f1f5f9"
+                        stroke={nominalColor}
                         strokeDasharray="0"
                       />
                     )}
@@ -1050,7 +1113,7 @@ useEffect(() => {
                       dataKey="x"
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 600 }}
+                      tick={{ fill: fgColor, fontSize: 11, fontWeight: 600 }}
                       dy={15}
                     >
                       <Label value="Time" position="bottom" offset={20} />
@@ -1063,7 +1126,7 @@ useEffect(() => {
                       tickFormatter={(value) => MODE_LEGEND[value] || value}
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fill: '#94a3b8', fontSize: 11 }}
+                      tick={{ fill: fgColor, fontSize: 11 }}
                       dx={-10}
                     >
                       <Label value="Mode" angle={-90} position="insideLeft" />
@@ -1088,7 +1151,7 @@ useEffect(() => {
                     <Line
                       type="stepAfter"
                       dataKey="y"
-                      stroke="#cbd5e1"
+                      stroke={nominalColor}
                       strokeWidth={1}
                       dot={false}
                       activeDot={false}
@@ -1103,9 +1166,9 @@ useEffect(() => {
                         return (
                           <g>
                             {/* The outer ring for depth */}
-                            <circle cx={cx} cy={cy} r={5} fill="#fff" stroke="#6366f1" strokeWidth={1} />
+                            <circle cx={cx} cy={cy} r={5} fill="#fff" stroke={nominalColor} strokeWidth={1} />
                             {/* The inner solid core */}
-                            <circle cx={cx} cy={cy} r={2.5} fill="#4f46e5" />
+                            <circle cx={cx} cy={cy} r={2.5} fill={nominalColor} />
                           </g>
                         );
                       }}
@@ -1115,7 +1178,7 @@ useEffect(() => {
                     <Line
                       type="stepAfter"
                       dataKey="y"
-                      stroke="#4f46e5"
+                      stroke={nominalColor}
                       strokeWidth={3}
                       strokeLinecap="round"
                       dot={false}
@@ -1123,6 +1186,8 @@ useEffect(() => {
                     />
                   </ComposedChart>
                 )}
+
+
               </Box>
             </Box>
           </CardContent>
@@ -1175,6 +1240,13 @@ useEffect(() => {
           </Box>
         </Box>
       )}
+
+      <GraphPropertiesPopup
+        open={openProps}
+        onClose={() => setOpenProps(false)}
+        current={graphConfig}
+        onApply={handleApplyProps}
+      />
     </Box>
   );
 }

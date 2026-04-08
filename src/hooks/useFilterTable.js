@@ -13,8 +13,13 @@ export default function useTableFilter(rows = []) {
         if (!filterValue || (Array.isArray(filterValue) && filterValue.length === 0))
           return true;
 
-        // always get BOTH
         const rawValue = row[key];
+
+        if (typeof filterValue === "function") {
+          return filterValue(rawValue, row);
+        }
+
+
         // ALWAYS take both formatters
         const locoFormatted = formatCellValue(row, key);
         const faultFormatted = formatFaultCellValue(row, key);
@@ -32,9 +37,20 @@ export default function useTableFilter(rows = []) {
             (max === undefined || val <= max);
         }
 
-        // Array inclusion
         if (Array.isArray(filterValue)) {
-          return filterValue.map(String).includes(String(rawValue ?? ""));
+          const values = filterValue.map(v => String(v).toLowerCase());
+
+          const compareValues = [
+            String(rawValue ?? "").toLowerCase(),
+            String(locoFormatted ?? "").toLowerCase(),
+            String(faultFormatted ?? "").toLowerCase(),
+          ];
+
+          if (compareValues.every(v => v === "")) return true;
+
+          return compareValues.some(val =>
+            values.some(v => val.includes(v))
+          );
         }
 
         // Exact match (IMPORTANT FIX)

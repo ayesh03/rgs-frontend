@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import MovingIcon from "@mui/icons-material/Moving";
 import { useOutletContext } from "react-router-dom";
 import RowsPerPageControl from "../components/RowsPerPageControl";
-
+import { formatCellValue } from "../utils/locoFormatters";
 import LocoMovementTable from "../components/LocoMovementTable";
 import PaginationControls from "../components/PaginationControls";
 import ColumnFilterDialog from "../components/ColumnFilterDialog";
@@ -45,6 +45,52 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
   const columns = tableType === "access" ? ACCESS_COLUMNS : ONBOARD_COLUMNS;
   const [visibleKeys, setVisibleKeys] = useState(columns.map(c => c.key));
 
+  const FIELD_MAP = {
+    loco_id: "source_loco_id",
+
+    // BASIC
+    date: "date",
+    time: "time",
+    packet_type: "packet_type",
+
+    // FRAME
+    frame_number: "frame_number",
+
+    // LOCATION
+    absolute_location: "absolute_loco_location",
+
+    // TRAIN
+    train_length: "train_length_m",
+    speed: "train_speed_kmph",
+
+    // MOVEMENT
+    loco_direction: "movement_direction",
+    loco_mode: "loco_mode",
+    emergency_status: "emergency_status",
+
+    // RFID
+    rfid: "last_rfid_tag_id",
+
+    // TIN
+    tin: "tin",
+
+    // BRAKE
+    brake_mode: "brake_applied_status",
+
+    // SIGNAL
+    signal_type: "sig_type",
+    current_signal_aspect: "cur_signal_aspect",
+    next_signal_aspect: "next_signal_aspect",
+
+    // EXTRA IMPORTANT (NEW)
+    loco_random_number: "loco_random_number",
+    signal_override: "signal_override_status",
+    source_loco_version: "source_loco_version",
+
+    // HEALTH / FAULT
+    faults: "loco_health_status",
+  };
+
   useEffect(() => {
     if (!selectedFile) return;
     selectedFile.arrayBuffer().then(buf => {
@@ -70,7 +116,7 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
   }, [fileBuffer]); // Dependency: when fileBuffer updates, trigger refresh
   useEffect(() => {
     if (!selectedFile || rows.length === 0) return;
-    // console.log("🔄 New packets - refreshing loco movement...");
+    // console.log(" New packets - refreshing loco movement...");
     setPage(1);
     generate();
   }, [selectedFile]);
@@ -182,6 +228,119 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
     getVisibleColumns: () => columns.filter(c => visibleKeys.includes(c.key)),
     openColumnDialog: () => setColumnDialogOpen(true),
     searchByLoco: (value) => setFilter("source_loco_id", value),
+    applyAdvancedFilters: (filters) => {
+      if (!filters) return;
+
+      clearFilters();
+
+      /* ================= LOCO FILTER ================= */
+      if (filters.locos?.length) {
+        setFilter("source_loco_id", (val) =>
+          filters.locos.includes(String(val))
+        );
+      }
+
+      /* ================= DYNAMIC EVENTS ================= */
+      if (filters.eventType === "dynamic" && filters.dynamicEvents?.length) {
+
+        setFilter("dynamic_or_filter", (val, row) => {
+
+          const idx = allRows.findIndex(r => r.id === row.id);
+          if (idx <= 0) return true;
+
+          const prev = allRows[idx - 1];
+
+          return filters.dynamicEvents.some(field => {
+
+            const backendField = FIELD_MAP[field] || field;
+
+            const currVal = row[backendField];
+            const prevVal = prev[backendField];
+
+            if (currVal === undefined || prevVal === undefined) return false;
+
+            return String(currVal) !== String(prevVal);
+
+          });
+
+        });
+
+      }
+
+      /* ================= STATIC EVENTS ================= */
+      if (filters.eventType === "static" && filters.staticEvents) {
+
+        const VALUE_MAP = {
+          loco_direction: {
+            "Nominal": "1",
+            "Reverse": "2"
+          },
+          emergency_general_sos: {
+            "No SOS": "0",
+            "SOS": "1"
+          },
+          emergency_loco_sos: {
+            "No SOS": "0",
+            "SOS": "1"
+          }
+        };
+
+        Object.entries(filters.staticEvents).forEach(([field, values]) => {
+          if (!values.length) return;
+
+          const backendField = FIELD_MAP[field] || field;
+
+          if (backendField === "loco_health_status") {
+            setFilter(backendField, (val, row) => {
+              const formatted = String(formatCellValue(row, backendField) ?? "").toLowerCase();
+
+              return values.some(v =>
+                formatted.includes(String(v).toLowerCase())
+              );
+            });
+            return;
+          }
+
+          const mappedValues = values.map(v =>
+            VALUE_MAP[field]?.[v] ?? v
+          );
+
+          setFilter(backendField, (val, row) => {
+            const raw = String(row[backendField] ?? "").toLowerCase();
+            const formatted = String(formatCellValue(row, backendField) ?? "").toLowerCase();
+
+            const match = mappedValues.some(v =>
+              raw.includes(String(v).toLowerCase()) ||
+              formatted.includes(String(v).toLowerCase())
+            );
+
+            // IMPORTANT: fallback (prevents full table wipe)
+            return match || mappedValues.length === 0;
+          });
+        });
+      }
+
+      /* ================= COMMUNICATION ================= */
+      if (filters.bothComm) {
+        setFilter("packet_type", (val, row) => {
+
+          const hasLoco = allRows.some(r =>
+            r.source_loco_id === row.source_loco_id &&
+            r.packet_type === 10 &&
+            r.event_time === row.event_time
+          );
+
+          const hasStation = allRows.some(r =>
+            r.source_loco_id === row.source_loco_id &&
+            r.packet_type === 13 &&
+            r.event_time === row.event_time
+          );
+
+          return hasLoco && hasStation;
+        });
+
+      }
+    },
   }));
 
   const totalPages = Math.ceil(filteredRows.length / rowsPerPage);

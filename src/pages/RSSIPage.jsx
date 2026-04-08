@@ -11,6 +11,8 @@ import PaginationControls from "../components/PaginationControls";
 import RowsPerPageControl from "../components/RowsPerPageControl";
 import ColumnFilterDialog from "../components/ColumnFilterDialog";
 import useTableFilter from "../hooks/useFilterTable";
+import { decodeSystemVersion } from "../constants/rssiColumns";
+
 const RSSIPage = forwardRef(({ type }, ref) => {
 
     const { selectedFile } = useOutletContext();
@@ -26,14 +28,6 @@ const RSSIPage = forwardRef(({ type }, ref) => {
 
     const columns = RSSI_COLUMNS;
     const [visibleKeys, setVisibleKeys] = useState(columns.map(c => c.key));
-
-
-    const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
-
-    const paginatedRows = filteredRows.slice(
-        (page - 1) * rowsPerPage,
-        page * rowsPerPage
-    );
 
     /* ================= FETCH ================= */
 
@@ -92,7 +86,9 @@ const RSSIPage = forwardRef(({ type }, ref) => {
                 stationary_kavach_id: r.stationary_kavach_id,
                 nms_system_id: r.nms_system_id,
 
-                // ✅ ADD THESE (you missed this)
+                frequency_channel: r.frequency_channel,
+                system_version: decodeSystemVersion(r.system_version),
+
                 rssi1_sample_count: r.rssi1_sample_count,
                 rssi2_sample_count: r.rssi2_sample_count,
             };
@@ -103,6 +99,7 @@ const RSSIPage = forwardRef(({ type }, ref) => {
                     radio: "R1",
                     rfid: s.rfid,
                     abs_location: s.abs_location,
+                    d_ref_rfid: s.d_ref_rfid,
                     rssi_dbm: s.rssi_dbm
                 });
             });
@@ -113,6 +110,7 @@ const RSSIPage = forwardRef(({ type }, ref) => {
                     radio: "R2",
                     rfid: s.rfid,
                     abs_location: s.abs_location,
+                    d_ref_rfid: s.d_ref_rfid,
                     rssi_dbm: s.rssi_dbm
                 });
             });
@@ -120,6 +118,15 @@ const RSSIPage = forwardRef(({ type }, ref) => {
 
         return flat;
     };
+
+    const flatRows = flattenRows(filteredRows);
+
+    const totalPages = Math.ceil(flatRows.length / rowsPerPage);
+
+    const paginatedRows = flatRows.slice(
+        (page - 1) * rowsPerPage,
+        page * rowsPerPage
+    );
 
     useImperativeHandle(ref, () => ({
         generate,
@@ -138,11 +145,11 @@ const RSSIPage = forwardRef(({ type }, ref) => {
     }, [filteredRows.length]);
 
     // Auto-refresh when file changes
-useEffect(() => {
-  if (selectedFile && fromDate && toDate && rows.length > 0) {
-    generate();
-  }
-}, [selectedFile]);
+    useEffect(() => {
+        if (selectedFile && fromDate && toDate && rows.length > 0) {
+            generate();
+        }
+    }, [selectedFile]);
 
     /* ================= UI ================= */
 
@@ -179,7 +186,7 @@ useEffect(() => {
 
                     {/* <CardContent sx={{ p: 0 }}> */}
                     <RSSITable
-                        rows={paginatedRows}
+                        rows={filteredRows}
                         columns={columns}
                         visibleKeys={visibleKeys}
                         onColumnSearch={(key, value) => {
@@ -188,7 +195,7 @@ useEffect(() => {
                         }}
                         onSort={(key, direction) => {
                             if (!direction) {
-                                setRows([...rows]); // reset
+                                setRows([...rows]); 
                                 return;
                             }
 
@@ -203,7 +210,6 @@ useEffect(() => {
                             setRows(sorted);
                         }}
                     />
-
                     {filteredRows.length > 0 && (
                         <Box
                             sx={{

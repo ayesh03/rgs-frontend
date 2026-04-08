@@ -188,6 +188,7 @@ export default function MainLayout() {
     { label: "RSSI Message", path: "rssi" },
     { label: "Adjacent Kavach Info", path: "adjacent-kavach" },
     { label: "TSRMS", path: "tsrms" },
+    { label: "DMI Events", path: "dmi" },
   ];
   const handleFileSelect = async () => {
     try {
@@ -438,7 +439,7 @@ export default function MainLayout() {
         </Toolbar>
 
         {/* NAVIGATION LINKS */}
-        <Box sx={{ px: 2, pb: 1, display: 'flex', gap: 1, overflowX: "auto" }}>
+        <Box sx={{ px: 2, pb: 1, display: 'flex', gap: 0.5, overflowX: "auto" }}>
           {navItems.map((item) => {
             const isActive = location.pathname.includes(item.path);
             return (
@@ -447,7 +448,7 @@ export default function MainLayout() {
                 component={Link}
                 to={item.path}
                 sx={{
-                  px: 1.5, py: 0.5, textTransform: "none", fontSize: "1.4rem",
+                  px: 1, py: 0.5, textTransform: "none", fontSize: "1.2rem",
                   fontWeight: isActive ? 700 : 500,
                   color: isActive ? "#fff" : "#888",
                   bgcolor: isActive ? "#0b4dbb" : "transparent",
