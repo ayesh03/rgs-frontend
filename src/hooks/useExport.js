@@ -28,9 +28,24 @@ export default function useExport() {
   /* ================= REPORT CODE ================= */
   const getReportCode = (reportType, subPacket) => {
 
-    // ---------------- ONBOARD ----------------
+    if (reportType === "exception") {
+
+      const map = {
+        "Emergency Brake": "EB",
+        "Loco SOS": "LSOS",
+        "Override Mode": "OVR",
+        "Trip Mode": "TRP",
+      };
+
+      const suffix = map[subPacket] || "GEN";
+
+      return `LVK_EX_${suffix}`;
+    }
+
     if (reportType === "onboard") return "LVK_OR";
     if (reportType === "access") return "LVK_AR";
+
+    if (reportType === "route_rfid") return "ROUTE_RFID";
 
     // ---------------- STATIONARY REGULAR ----------------
     if (reportType === "station_regular") {
@@ -83,6 +98,19 @@ export default function useExport() {
     if (reportType === "onboard") return "ONBOARD REGULAR REPORT";
     if (reportType === "access") return "ONBOARD ACCESS REPORT";
 
+    if (reportType === "route_rfid") return "ROUTE RFID REPORT";
+
+    if (reportType === "exception") {
+      const map = {
+        "Emergency Brake": "EMERGENCY BRAKE REPORT",
+        "Loco SOS": "LOCO SOS REPORT",
+        "Override Mode": "OVERRIDE MODE REPORT",
+        "Trip Mode": "TRIP MODE REPORT",
+      };
+
+      return map[subPacket] || "LOCO EXCEPTION REPORT";
+    }
+
     if (reportType === "station_regular") {
       const map = {
         ma: "MOVEMENT AUTHORITY REPORT",
@@ -125,7 +153,7 @@ export default function useExport() {
       Object.fromEntries(
         columns.map(col => [
           col.label,
-          reportType === "onboard" || reportType === "access"
+          reportType === "onboard" || reportType === "access" || reportType === "route_rfid"
             ? formatCellValue(row, col.key)
             : reportType === "rssi_loco" || reportType === "rssi_stationary"
               ? row[col.key] ?? "-"
@@ -156,7 +184,11 @@ export default function useExport() {
     const timestamp = getDateTimeStamp();
     const reportCode = getReportCode(reportType, subPacket);
 
-    saveAs(blob, `${reportCode}_${timestamp}.xlsx`);
+    if (reportType === "route_rfid") {
+      saveAs(blob, `route_rfid_report_${timestamp}.xlsx`);
+    } else {
+      saveAs(blob, `${reportCode}_${timestamp}.xlsx`);
+    }
   };
 
   /* ================= PDF EXPORT ================= */
@@ -181,7 +213,9 @@ export default function useExport() {
               ? row[col.key] ?? "-"
               : reportType === "health_stationary" || reportType === "health_onboard"
                 ? row[col.key] ?? "-"
-                : formatCellValue(row, col.key)
+                : reportType === "route_rfid"
+                  ? row[col.key] ?? "-"
+                  : formatCellValue(row, col.key)
         )
       ),
       styles: isStation
@@ -228,7 +262,11 @@ export default function useExport() {
       },
     });
 
-    doc.save(`${reportCode}_${timestamp}.pdf`);
+    if (reportType === "route_rfid") {
+      doc.save(`route_rfid_report_${timestamp}.pdf`);
+    } else {
+      doc.save(`${reportCode}_${timestamp}.pdf`);
+    }
   };
   return {
     exportExcel,

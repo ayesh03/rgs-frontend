@@ -215,60 +215,60 @@ export default function LocoFaultsTable({
         </TableBody>
       </Table>
       <Popover
-  open={Boolean(anchorEl)}
-  anchorEl={anchorEl}
-  onClose={() => setAnchorEl(null)}
-  anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-  PaperProps={{
-    sx: {
-      bgcolor: "#1e2227",
-      border: "1px solid #333",
-      borderRadius: 2
-    }
-  }}
->
-  <Box sx={{ p: 1.5, minWidth: 180 }}>
-    <Typography sx={{ fontSize: "0.75rem", color: "#888", mb: 1 }}>
-      Filter: {activeCol}
-    </Typography>
-
-    <TextField
-      autoFocus
-      size="small"
-      fullWidth
-      placeholder="Search..."
-      value={searchVal}
-      onChange={(e) => {
-        setSearchVal(e.target.value);
-        onColumnSearch?.(activeCol, e.target.value);
-      }}
-      onKeyDown={(e) => {
-        if (e.key === "Escape") setAnchorEl(null);
-      }}
-      sx={{
-        input: { color: "#fff", fontSize: "0.85rem" },
-        "& .MuiOutlinedInput-root": {
-          "& fieldset": { borderColor: "#444" }
-        }
-      }}
-    />
-
-    <Stack direction="row" justifyContent="flex-end" mt={1}>
-      <IconButton
-        size="small"
-        onClick={() => {
-          onColumnSearch?.(activeCol, "");
-          setSearchVal("");
-          setAnchorEl(null);
+        open={Boolean(anchorEl)}
+        anchorEl={anchorEl}
+        onClose={() => setAnchorEl(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+        PaperProps={{
+          sx: {
+            bgcolor: "#1e2227",
+            border: "1px solid #333",
+            borderRadius: 2
+          }
         }}
-        sx={{ color: "#aaa", fontSize: "0.75rem" }}
       >
-        Clear
-      </IconButton>
-    </Stack>
-  </Box>
-</Popover>
+        <Box sx={{ p: 1.5, minWidth: 180 }}>
+          <Typography sx={{ fontSize: "0.75rem", color: "#888", mb: 1 }}>
+            Filter: {activeCol}
+          </Typography>
+
+          <TextField
+            autoFocus
+            size="small"
+            fullWidth
+            placeholder="Search..."
+            value={searchVal}
+            onChange={(e) => {
+              setSearchVal(e.target.value);
+              onColumnSearch?.(activeCol, e.target.value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") setAnchorEl(null);
+            }}
+            sx={{
+              input: { color: "#fff", fontSize: "0.85rem" },
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": { borderColor: "#444" }
+              }
+            }}
+          />
+
+          <Stack direction="row" justifyContent="flex-end" mt={1}>
+            <IconButton
+              size="small"
+              onClick={() => {
+                onColumnSearch?.(activeCol, "");
+                setSearchVal("");
+                setAnchorEl(null);
+              }}
+              sx={{ color: "#aaa", fontSize: "0.75rem" }}
+            >
+              Clear
+            </IconButton>
+          </Stack>
+        </Box>
+      </Popover>
     </TableContainer>
-    
+
   );
 }

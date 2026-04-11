@@ -256,7 +256,6 @@ const RSSIPage = forwardRef(({ type }, ref) => {
                     setColumnDialogOpen(false);
                 }}
             />
-
         </Box>
     );
 });

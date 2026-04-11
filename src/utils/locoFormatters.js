@@ -223,6 +223,16 @@ export const decodeRfidDuplicate = (v) => {
 };
 
 
+export const formatRFID = (val) => {
+    if (val === null || val === undefined || val === "") return "-";
+
+    const num = Number(val);
+    if (isNaN(num)) return val;
+
+    return `R-${num}`;
+};
+
+
 
 export const formatCellValue = (row, key) => {
     switch (key) {

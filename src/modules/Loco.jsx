@@ -11,6 +11,7 @@ import AdvancedSearchDialog from "../components/AdvancedSearchDialog";
 import {
   ONBOARD_COLUMNS,
   ACCESS_COLUMNS,
+  ROUTE_RFID_COLUMNS,
 } from "../constants/locoColumns";
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
@@ -25,6 +26,7 @@ export default function Loco() {
 
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [advancedFilters, setAdvancedFilters] = useState(null);
+  const [exceptionType, setExceptionType] = useState("Emergency Brake");
 
 
   const activeTabContext = useMemo(() => {
@@ -104,11 +106,11 @@ export default function Loco() {
   };
 
   const locoList = (locoRef.current?.getAllRows?.() || [])
-  .map(r => r.source_loco_id)
-  .filter(v => v != null && v !== "")
-  .map(String);
+    .map(r => r.source_loco_id)
+    .filter(v => v != null && v !== "")
+    .map(String);
 
-const uniqueLocos = [...new Set(locoList)];
+  const uniqueLocos = [...new Set(locoList)];
 
   return (
     <Box sx={{ p: 0.5 }}>
@@ -117,7 +119,6 @@ const uniqueLocos = [...new Set(locoList)];
         tableType={tableType}
         showTableType={true}
         onTableTypeChange={setTableType}
-        showException
         onGenerate={handleGenerate}
         onClear={handleClear}
         onAdvancedSearch={() => setAdvancedOpen(true)}
@@ -125,54 +126,123 @@ const uniqueLocos = [...new Set(locoList)];
         onSearch={(value) =>
           activeTabContext.ref.current?.searchByLoco?.(value)
         }
+        exceptionTab={tab === 1}
+        exceptionType={exceptionType}
+        onExceptionTypeChange={(type) => {
+          setExceptionType(type);
+          exceptionRef.current?.setType?.(type);
+
+
+          setTimeout(() => {
+            exceptionRef.current?.generate?.();
+          }, 0);
+        }}
         onSave={() => {
           const rows = activeTabContext.ref.current?.getFilteredRows();
           const cols = activeTabContext.ref.current?.getVisibleColumns?.();
+
+          const reportTypeFinal = tab === 1 ? "exception" : tableType;
+
           if (rows && cols)
-            exportExcel(rows, cols, tableType);
+            exportExcel(rows, cols, reportTypeFinal, exceptionType);
         }}
 
         onSaveAll={() => {
           const rows = activeTabContext.ref.current?.getFilteredRows();
+
           const cols =
             tableType === "access"
               ? ACCESS_COLUMNS
-              : ONBOARD_COLUMNS;
+              : tableType === "route_rfid"
+                ? ROUTE_RFID_COLUMNS
+                : ONBOARD_COLUMNS;
+
+          const reportTypeFinal = tab === 1 ? "exception" : tableType;
 
           if (rows && cols) {
-            exportExcel(rows, cols, tableType);
+            exportExcel(rows, cols, reportTypeFinal, exceptionType);
           }
         }}
 
         onPrint={() => {
           const rows = activeTabContext.ref.current?.getFilteredRows();
           const cols = activeTabContext.ref.current?.getVisibleColumns?.();
+
+          const reportTypeFinal = tab === 1 ? "exception" : tableType;
+
           if (rows && cols)
-            exportPDF(rows, cols, tableType);
+            exportPDF(rows, cols, reportTypeFinal, exceptionType);
         }}
 
 
       />
 
-      {/* ===== TAB NAVIGATION ===== */}
-      {/* <Paper elevation={0} sx={{ borderBottom: 1, borderColor: "divider" }}> */}
-      {/* <Tabs */}
-      {/* value={tab} */}
-      {/* onChange={(e, v) => { */}
-      {/* setTab(v); */}
-      {/* setStage("FILTER"); */}
-      {/* }} */}
-      {/* > */}
+      <Paper
+        elevation={0}
+        sx={{
+          borderRadius: "16px",
+          border: "1px solid rgba(255,255,255,0.08)",
+          background: "rgba(255,255,255,0.03)",
+          backdropFilter: "blur(12px)",
+          mb: 0.5,
+        }}
+      >
+        <Tabs
+          value={tab}
+          onChange={(e, v) => {
+            setTab(v);
+            setStage("FILTER");
+          }}
+          sx={{
+            minHeight: "36px",
 
-      {/* <Tab label="Loco Movement" /> */}
-      {/* <Tab label="Exception Report" /> */}
-      {/* </Tabs> */}
-      {/* </Paper> */}
+            "& .MuiTabs-indicator": {
+              backgroundColor: "#4dabf7",
+              height: 3,
+              borderRadius: 2,
+            },
+          }}
+        >
+          <Tab
+            label="Loco Movement"
+            sx={{
+              textTransform: "none",
+              fontSize: "0.9rem",
+              minHeight: "36px",
+              color: "rgba(255,255,255,0.6)",
+              "&.Mui-selected": {
+                color: "#fff",
+                fontWeight: 600,
+              },
+            }}
+          />
+
+          <Tab
+            label="Exception Report"
+            sx={{
+              textTransform: "none",
+              fontSize: "0.9rem",
+              minHeight: "36px",
+              color: "rgba(255,255,255,0.6)",
+              "&.Mui-selected": {
+                color: "#fff",
+                fontWeight: 600,
+              },
+            }}
+          />
+        </Tabs>
+      </Paper>
 
       {/* ===== CONTENT ===== */}
       <Box sx={{ mt: 0.5 }}>
         <LocoMovement ref={locoRef} tableType={tableType} />
-        {tab === 1 && <ExceptionReport ref={exceptionRef} />}
+
+        {tab === 1 && (
+          <ExceptionReport
+            ref={exceptionRef}
+            innerRef={locoRef}
+          />
+        )}
       </Box>
 
       <AdvancedSearchDialog
@@ -182,7 +252,7 @@ const uniqueLocos = [...new Set(locoList)];
           setAdvancedFilters(filters);
           locoRef.current?.applyAdvancedFilters?.(filters);
         }}
-        locoOptions={uniqueLocos}  
+        locoOptions={uniqueLocos}
       />
     </Box>
   );

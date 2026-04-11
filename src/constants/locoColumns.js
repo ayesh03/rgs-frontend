@@ -62,3 +62,13 @@ export const ACCESS_COLUMNS = [
   { key: "latitude", label: "Latitude" },
   { key: "loco_random_number", label: "Loco Random No" },
 ];
+/* ===================== ROUTE RFID ===================== */
+
+export const ROUTE_RFID_COLUMNS = [
+  { key: "event_time", label: "Event Time" },
+  { key: "loco_id", label: "Loco ID" },
+  { key: "current_rfid", label: "Current RFID" },
+  { key: "rfid_count", label: "RFID Count" },
+  { key: "expected_rfids", label: "Expected RFIDs" },
+  { key: "condition", label: "Condition" },
+];

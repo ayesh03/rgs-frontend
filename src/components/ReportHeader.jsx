@@ -9,6 +9,9 @@ import ViewColumnIcon from "@mui/icons-material/ViewColumn";
 
 export default function ReportHeader({
   tableType,
+  exceptionTab,
+  exceptionType,
+  onExceptionTypeChange,
   onTableTypeChange,
   stage = "FILTER", // FILTER | ENGINE | PREVIEW
   onGenerate,
@@ -28,6 +31,8 @@ export default function ReportHeader({
   const isEngine = stage === "ENGINE";
   const isPreview = stage === "PREVIEW";
   const canExport = isPreview || isEngine;
+
+
 
   return (
     <Paper
@@ -95,6 +100,7 @@ export default function ReportHeader({
           >
             <MenuItem value="onboard">Onboard</MenuItem>
             <MenuItem value="access">Access</MenuItem>
+            <MenuItem value="route_rfid">Route RFID</MenuItem>
           </Select>
         )}
 
@@ -103,7 +109,29 @@ export default function ReportHeader({
             {rightContent}
           </Box>
         )}
-
+        {exceptionTab && (
+          <Select
+            size="small"
+            value={exceptionType}
+            onChange={(e) => onExceptionTypeChange?.(e.target.value)}
+            sx={{
+              width: 180,
+              bgcolor: "rgba(255, 255, 255, 0.05)",
+              color: "#fff",
+              borderRadius: "6px",
+              fontSize: "0.85rem",
+              py: 0.4,
+              "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.1)" },
+              "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#4dabf7" },
+              "& .MuiSvgIcon-root": { color: "#fff" }
+            }}
+          >
+            <MenuItem value="Emergency Brake">Emergency Brake</MenuItem>
+            <MenuItem value="Loco SOS">Loco SOS</MenuItem>
+            <MenuItem value="Override Mode">Override Mode</MenuItem>
+            <MenuItem value="Trip Mode">Trip Mode</MenuItem>
+          </Select>
+        )}
 
         <Button
           variant="contained"

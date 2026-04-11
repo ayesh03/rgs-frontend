@@ -1,6 +1,16 @@
 import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { useLocation } from "react-router-dom";
-import { Box, Card, CardContent, Typography, LinearProgress, Stack, useTheme, useMediaQuery, alpha, } from "@mui/material";
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  LinearProgress,
+  Stack,
+  useTheme,
+  useMediaQuery,
+  alpha,
+} from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import MovingIcon from "@mui/icons-material/Moving";
 import { useOutletContext } from "react-router-dom";
@@ -16,6 +26,7 @@ import { useAppContext } from "../context/AppContext";
 import {
   ONBOARD_COLUMNS,
   ACCESS_COLUMNS,
+  ROUTE_RFID_COLUMNS,
 } from "../constants/locoColumns";
 
 const LocoMovement = forwardRef(({ tableType }, ref) => {
@@ -23,7 +34,9 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { selectedFile } = useOutletContext();
   const location = useLocation();
-  const [dashboardFilter, setDashboardFilter] = useState(location.state?.dashboardFilter || null);
+  const [dashboardFilter, setDashboardFilter] = useState(
+    location.state?.dashboardFilter || null,
+  );
 
   /* ================= STATE ================= */
   const [loading, setLoading] = useState(false);
@@ -35,15 +48,36 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
 
   /* ================= CONTEXT ================= */
   const { fromDate, toDate, isDateRangeValid } = useAppContext();
-  const { filteredRows, setFilter, clearFilters } = useTableFilter(rows);
+  const filterHook = useTableFilter(rows);
+
+  const filteredRows = filterHook.filteredRows;
+
+  const setFilter = filterHook.setFilter;
+  const clearFilters = filterHook.clearFilters;
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
     setRowsPerPage(isMobile ? 6 : 10);
   }, [isMobile]);
 
-  const columns = tableType === "access" ? ACCESS_COLUMNS : ONBOARD_COLUMNS;
-  const [visibleKeys, setVisibleKeys] = useState(columns.map(c => c.key));
+  const columns =
+    tableType === "route_rfid"
+      ? ROUTE_RFID_COLUMNS
+      : tableType === "access"
+        ? ACCESS_COLUMNS
+        : ONBOARD_COLUMNS;
+  const [visibleKeys, setVisibleKeys] = useState(columns.map((c) => c.key));
+
+  useEffect(() => {
+    setVisibleKeys(columns.map((c) => c.key));
+  }, [tableType]);
+
+  useEffect(() => {
+    setRows([]);
+    setAllRows([]);
+    clearFilters();
+    setPage(1);
+  }, [tableType]);
 
   const FIELD_MAP = {
     loco_id: "source_loco_id",
@@ -82,24 +116,22 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
     current_signal_aspect: "cur_signal_aspect",
     next_signal_aspect: "next_signal_aspect",
 
-    // EXTRA IMPORTANT (NEW)
     loco_random_number: "loco_random_number",
     signal_override: "signal_override_status",
     source_loco_version: "source_loco_version",
 
-    // HEALTH / FAULT
     faults: "loco_health_status",
   };
 
   useEffect(() => {
     if (!selectedFile) return;
-    selectedFile.arrayBuffer().then(buf => {
+    selectedFile.arrayBuffer().then((buf) => {
       setFileBuffer(buf);
     });
   }, [selectedFile]);
 
   /* ================= RESET ON TABLE SWITCH ================= */
-  // Auto-refresh when file changes
+
   useEffect(() => {
     if (fileBuffer && location.state?.autoGenerate && selectedFile) {
       // Reset and regenerate with new file
@@ -113,31 +145,30 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
         generate();
       }, 300);
     }
-  }, [fileBuffer]); // Dependency: when fileBuffer updates, trigger refresh
+  }, [fileBuffer]);
   useEffect(() => {
     if (!selectedFile || rows.length === 0) return;
-    // console.log(" New packets - refreshing loco movement...");
+
     setPage(1);
     generate();
   }, [selectedFile]);
   useEffect(() => {
     if (!allRows.length) return;
 
+    if (tableType === "route_rfid") return;
+
     let filtered =
       tableType === "access"
-        ? allRows.filter(r => Number(r.packet_type) === 13)
-        : allRows.filter(r => Number(r.packet_type) === 10);
+        ? allRows.filter((r) => Number(r.packet_type) === 13)
+        : allRows.filter((r) => Number(r.packet_type) === 10);
 
     if (dashboardFilter) {
       const { field, value } = dashboardFilter;
       const values = Array.isArray(value) ? value.map(String) : [String(value)];
-      filtered = filtered.filter(r => values.includes(String(r[field])));
+      filtered = filtered.filter((r) => values.includes(String(r[field])));
     }
 
     setRows(filtered);
-    if (!dashboardFilter) {
-      clearFilters();
-    }
     setPage(1);
   }, [tableType, allRows]);
 
@@ -159,7 +190,7 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
     // setDashboardFilter(null);
 
     try {
-      const normalizeDate = (v) => v && v.length === 16 ? `${v}:00` : v;
+      const normalizeDate = (v) => (v && v.length === 16 ? `${v}:00` : v);
       const encodedFrom = encodeURIComponent(normalizeDate(fromDate));
       const encodedTo = encodeURIComponent(normalizeDate(toDate));
       const API_BASE = import.meta.env.VITE_API_BASE_URL;
@@ -170,13 +201,96 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
         setFileBuffer(buffer);
       }
 
+      if (tableType === "route_rfid") {
+        const normalizeDate = (v) => (v && v.length === 16 ? `${v}:00` : v);
+
+        const encodedFrom = encodeURIComponent(normalizeDate(fromDate));
+        const encodedTo = encodeURIComponent(normalizeDate(toDate));
+        const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+        let buffer = fileBuffer;
+        if (!buffer) {
+          buffer = await selectedFile.setFileBuffer(buffer);
+        }
+
+        const res = await fetch(
+          `${API_BASE}/api/route-rfid/by-date?from=${encodedFrom}&to=${encodedTo}`,
+          {
+            method: "POST",
+            body: buffer,
+            headers: { "Content-Type": "application/octet-stream" },
+          },
+        );
+
+        const json = await res.json();
+
+        if (json.success === false) {
+          throw new Error(json.error || "Backend error");
+        }
+
+        let segmentExpected = [];
+        let segmentSeen = new Set();
+
+        const mappedRows = [];
+
+        json.data.forEach((r, idx) => {
+          if (r.expected_rfids?.length && segmentExpected.length === 0) {
+            segmentExpected = r.expected_rfids;
+          }
+
+          if (r.current_rfid != null) {
+            segmentSeen.add(Number(r.current_rfid));
+          }
+
+          const rowData = {
+            id: idx + 1,
+            event_time: r.event_time,
+            loco_id: r.loco_id,
+            current_rfid: r.current_rfid,
+            rfid_count: r.rfid_count ?? (r.expected_rfids?.length || 0),
+            expected_rfids: (r.expected_rfids || []).join(", "),
+            missing_rfids: [],
+            condition:
+              r.status === "ERROR"
+                ? "RFID Mismatch"
+                : r.route_changed
+                  ? "Route Changed"
+                  : "Same Route",
+          };
+
+          mappedRows.push(rowData);
+
+          if (
+            r.route_changed &&
+            segmentExpected.length &&
+            mappedRows.length > 1
+          ) {
+            const missing = segmentExpected.filter(
+              (tag) => !segmentSeen.has(tag),
+            );
+
+            mappedRows[mappedRows.length - 2].missing_rfids = missing;
+
+            segmentExpected = r.expected_rfids || [];
+            segmentSeen = new Set();
+          }
+        });
+
+        setAllRows(mappedRows);
+        setRows(mappedRows);
+        filterHook.setData?.(mappedRows);
+        setPage(1);
+
+        return mappedRows;
+      }
+
       const res = await fetch(
         `${API_BASE}/api/loco-movement/by-date?from=${encodedFrom}&to=${encodedTo}`,
         {
           method: "POST",
           body: buffer,
           headers: { "Content-Type": "application/octet-stream" },
-        }
+        },
       );
 
       const json = await res.json();
@@ -197,7 +311,9 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
 
       if (dashboardFilter) {
         const { field, value } = dashboardFilter;
-        finalRows = mappedRows.filter(r => String(r[field]) === String(value));
+        finalRows = mappedRows.filter(
+          (r) => String(r[field]) === String(value),
+        );
       }
 
       setAllRows(mappedRows);
@@ -225,7 +341,7 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
     clearFilters,
     getFilteredRows: () => filteredRows,
     getAllRows: () => allRows,
-    getVisibleColumns: () => columns.filter(c => visibleKeys.includes(c.key)),
+    getVisibleColumns: () => columns.filter((c) => visibleKeys.includes(c.key)),
     openColumnDialog: () => setColumnDialogOpen(true),
     searchByLoco: (value) => setFilter("source_loco_id", value),
     applyAdvancedFilters: (filters) => {
@@ -236,22 +352,19 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
       /* ================= LOCO FILTER ================= */
       if (filters.locos?.length) {
         setFilter("source_loco_id", (val) =>
-          filters.locos.includes(String(val))
+          filters.locos.includes(String(val)),
         );
       }
 
       /* ================= DYNAMIC EVENTS ================= */
       if (filters.eventType === "dynamic" && filters.dynamicEvents?.length) {
-
         setFilter("dynamic_or_filter", (val, row) => {
-
-          const idx = allRows.findIndex(r => r.id === row.id);
+          const idx = allRows.findIndex((r) => r.id === row.id);
           if (idx <= 0) return true;
 
           const prev = allRows[idx - 1];
 
-          return filters.dynamicEvents.some(field => {
-
+          return filters.dynamicEvents.some((field) => {
             const backendField = FIELD_MAP[field] || field;
 
             const currVal = row[backendField];
@@ -260,29 +373,25 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
             if (currVal === undefined || prevVal === undefined) return false;
 
             return String(currVal) !== String(prevVal);
-
           });
-
         });
-
       }
 
       /* ================= STATIC EVENTS ================= */
       if (filters.eventType === "static" && filters.staticEvents) {
-
         const VALUE_MAP = {
           loco_direction: {
-            "Nominal": "1",
-            "Reverse": "2"
+            Nominal: "1",
+            Reverse: "2",
           },
           emergency_general_sos: {
             "No SOS": "0",
-            "SOS": "1"
+            SOS: "1",
           },
           emergency_loco_sos: {
             "No SOS": "0",
-            "SOS": "1"
-          }
+            SOS: "1",
+          },
         };
 
         Object.entries(filters.staticEvents).forEach(([field, values]) => {
@@ -292,29 +401,31 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
 
           if (backendField === "loco_health_status") {
             setFilter(backendField, (val, row) => {
-              const formatted = String(formatCellValue(row, backendField) ?? "").toLowerCase();
+              const formatted = String(
+                formatCellValue(row, backendField) ?? "",
+              ).toLowerCase();
 
-              return values.some(v =>
-                formatted.includes(String(v).toLowerCase())
+              return values.some((v) =>
+                formatted.includes(String(v).toLowerCase()),
               );
             });
             return;
           }
 
-          const mappedValues = values.map(v =>
-            VALUE_MAP[field]?.[v] ?? v
-          );
+          const mappedValues = values.map((v) => VALUE_MAP[field]?.[v] ?? v);
 
           setFilter(backendField, (val, row) => {
             const raw = String(row[backendField] ?? "").toLowerCase();
-            const formatted = String(formatCellValue(row, backendField) ?? "").toLowerCase();
+            const formatted = String(
+              formatCellValue(row, backendField) ?? "",
+            ).toLowerCase();
 
-            const match = mappedValues.some(v =>
-              raw.includes(String(v).toLowerCase()) ||
-              formatted.includes(String(v).toLowerCase())
+            const match = mappedValues.some(
+              (v) =>
+                raw.includes(String(v).toLowerCase()) ||
+                formatted.includes(String(v).toLowerCase()),
             );
 
-            // IMPORTANT: fallback (prevents full table wipe)
             return match || mappedValues.length === 0;
           });
         });
@@ -323,22 +434,22 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
       /* ================= COMMUNICATION ================= */
       if (filters.bothComm) {
         setFilter("packet_type", (val, row) => {
-
-          const hasLoco = allRows.some(r =>
-            r.source_loco_id === row.source_loco_id &&
-            r.packet_type === 10 &&
-            r.event_time === row.event_time
+          const hasLoco = allRows.some(
+            (r) =>
+              r.source_loco_id === row.source_loco_id &&
+              r.packet_type === 10 &&
+              r.event_time === row.event_time,
           );
 
-          const hasStation = allRows.some(r =>
-            r.source_loco_id === row.source_loco_id &&
-            r.packet_type === 13 &&
-            r.event_time === row.event_time
+          const hasStation = allRows.some(
+            (r) =>
+              r.source_loco_id === row.source_loco_id &&
+              r.packet_type === 13 &&
+              r.event_time === row.event_time,
           );
 
           return hasLoco && hasStation;
         });
-
       }
     },
   }));
@@ -346,7 +457,7 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
   const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
   const paginatedRows = filteredRows.slice(
     (page - 1) * rowsPerPage,
-    page * rowsPerPage
+    page * rowsPerPage,
   );
 
   //   useEffect(() => {
@@ -368,10 +479,19 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
       animate={{ opacity: 1, y: 0 }}
       sx={{ color: "#fff" }}
     >
-      <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 0.5 }}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        sx={{ mb: 0.5 }}
+      >
         <Stack direction="row" spacing={1} alignItems="center">
           <MovingIcon sx={{ color: "#4dabf7", fontSize: "1rem" }} />
-          <Typography fontWeight={800} fontSize="1.2rem" sx={{ letterSpacing: 1, color: "#eee" }}>
+          <Typography
+            fontWeight={800}
+            fontSize="1.2rem"
+            sx={{ letterSpacing: 1, color: "#eee" }}
+          >
             LOCO MOVEMENT
           </Typography>
         </Stack>
@@ -387,15 +507,15 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
 
       <AnimatePresence mode="wait">
         {loading ? (
-          <Box key="loader" sx={{ width: '100%', mb: 1 }}>
+          <Box key="loader" sx={{ width: "100%", mb: 1 }}>
             <LinearProgress
               sx={{
                 height: 3,
                 borderRadius: 5,
                 bgcolor: alpha("#4dabf7", 0.1),
                 "& .MuiLinearProgress-bar": {
-                  background: `linear-gradient(90deg, #0b4dbb, #4dabf7)`
-                }
+                  background: `linear-gradient(90deg, #0b4dbb, #4dabf7)`,
+                },
               }}
             />
           </Box>
@@ -412,7 +532,7 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
                 bgcolor: "rgba(255, 255, 255, 0.02)",
                 borderColor: "rgba(255, 255, 255, 0.08)",
                 borderRadius: 3,
-                backdropFilter: "blur(10px)"
+                backdropFilter: "blur(10px)",
               }}
             >
               <CardContent sx={{ p: 0 }}>
@@ -422,21 +542,28 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
                   visibleKeys={visibleKeys}
                   onColumnSearch={(key, value) => {
                     if (value) setFilter(key, value);
-                    else setFilter(key, ""); // clear only that column's filter
+                    else setFilter(key, "");
                   }}
                   onSort={(key, direction) => {
-
-                    // RESET → ORIGINAL DATA
                     if (!direction) {
+                      if (tableType === "route_rfid") {
+                        setRows(allRows);
+                        return;
+                      }
+
                       let original =
                         tableType === "access"
-                          ? allRows.filter(r => Number(r.packet_type) === 13)
-                          : allRows.filter(r => Number(r.packet_type) === 10);
+                          ? allRows.filter((r) => Number(r.packet_type) === 13)
+                          : allRows.filter((r) => Number(r.packet_type) === 10);
 
                       if (dashboardFilter) {
                         const { field, value } = dashboardFilter;
-                        const values = Array.isArray(value) ? value.map(String) : [String(value)];
-                        original = original.filter(r => values.includes(String(r[field])));
+                        const values = Array.isArray(value)
+                          ? value.map(String)
+                          : [String(value)];
+                        original = original.filter((r) =>
+                          values.includes(String(r[field])),
+                        );
                       }
 
                       setRows(original);
@@ -448,21 +575,40 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
                       const av = a[key] ?? "";
                       const bv = b[key] ?? "";
                       return direction === "asc"
-                        ? String(av).localeCompare(String(bv), undefined, { numeric: true })
-                        : String(bv).localeCompare(String(av), undefined, { numeric: true });
+                        ? String(av).localeCompare(String(bv), undefined, {
+                            numeric: true,
+                          })
+                        : String(bv).localeCompare(String(av), undefined, {
+                            numeric: true,
+                          });
                     });
 
                     setRows(sorted);
                   }}
                 />
                 {filteredRows.length === 0 && !loading && (
-                  <Box sx={{ minHeight: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Typography variant="caption" sx={{ fontWeight: 700, letterSpacing: 1, color: "rgba(255,255,255,0.3)" }}>
-                      NO MOVEMENT DATA FOUND
+                  <Box
+                    sx={{
+                      minHeight: 200,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontWeight: 700,
+                        letterSpacing: 1,
+                        color: "rgba(255,255,255,0.3)",
+                      }}
+                    >
+                      {tableType === "route_rfid"
+                        ? "NO ROUTE RFID DATA FOUND"
+                        : "NO MOVEMENT DATA FOUND"}
                     </Typography>
                   </Box>
                 )}
-
               </CardContent>
             </Card>
           </motion.div>
@@ -478,7 +624,7 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
             mt: 1,
             p: 1,
             bgcolor: "rgba(255,255,255,0.02)",
-            borderRadius: 2
+            borderRadius: 2,
           }}
         >
           <PaginationControls
@@ -493,16 +639,14 @@ const LocoMovement = forwardRef(({ tableType }, ref) => {
       <ColumnFilterDialog
         open={columnDialogOpen}
         column="Columns"
-        values={columns.map(c => c.label)}
+        values={columns.map((c) => c.label)}
         selectedValues={visibleKeys.map(
-          key => columns.find(c => c.key === key)?.label
+          (key) => columns.find((c) => c.key === key)?.label,
         )}
         onClose={() => setColumnDialogOpen(false)}
         onApply={(labels) => {
           setVisibleKeys(
-            columns
-              .filter(c => labels.includes(c.label))
-              .map(c => c.key)
+            columns.filter((c) => labels.includes(c.label)).map((c) => c.key),
           );
           setColumnDialogOpen(false);
         }}

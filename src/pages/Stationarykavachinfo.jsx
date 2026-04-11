@@ -58,15 +58,10 @@ import {
   SUB_PKT_TYPE_LC_MAP,
   ABS_LOC_RESET_MAP,
   ADJ_LOCO_DIR_MAP,
-  TSR_WHISTLE_MAP,
   KAVACH_VERSION_MAP,
 } from "../utils/stationaryKavachFormatter";
 
 const COMMON_HEADER_COLUMNS = [
-  // { key: "sof", label: "SOF" },
-  // { key: "msg_type", label: "Message Type" },
-  // { key: "msg_length", label: "Message Length" },
-  // { key: "msg_sequence", label: "Message Sequence" },
   { key: "stationary_kavach_id", label: "Stationary Kavach ID" },
   { key: "nms_system_id", label: "NMS System ID" },
   { key: "source_version", label: "System Version" },
@@ -93,7 +88,6 @@ const MA_COLUMNS = [
   { key: "sub_pkt_type_ma", label: "Sub Packet Type" },
   { key: "sub_pkt_length_ma", label: "Sub Packet Length" },
 
-  // { key: "frame_number", label: "Frame No" },
 
   { key: "ma_frame_offset", label: "Frame Offset" },
   { key: "dest_loco_sos", label: "Dest Loco SOS" },
@@ -114,8 +108,6 @@ const MA_COLUMNS = [
   { key: "next_station_comm", label: "Next Station Comm" },
   { key: "approaching_station_id", label: "Approaching Station ID" },
 
-
-  //CUR_SIG_ASP decoded 6 fields
   { key: "sig_stop", label: "Signal Stop" },
   { key: "sig_override", label: "Signal Override" },
   { key: "sig_type", label: "Signal Type" },
@@ -128,7 +120,6 @@ const SSP_COLUMNS = [
   { key: "sub_pkt_len_ssp", label: "Sub Packet Length" },
   { key: "lm_speed_info_cnt", label: "Speed Info Count" },
 
-  // { key: "frame_number", label: "Frame No" },
 
   { key: "distance_m", label: "Static Speed Distance " },
   { key: "speed_class", label: "Speed Class" },
@@ -161,7 +152,6 @@ const LC_COLUMNS = [
   { key: "sub_pkt_len_lc", label: "Sub Packet Length" },
   { key: "lm_lc_info_cnt", label: "LC Info Count" },
 
-  // { key: "frame_number", label: "Frame No" },
 
   // =============================
   // Annexure Raw Fields
@@ -194,14 +184,7 @@ const TURNOUT_COLUMNS = [
   { key: "sub_pkt_len_to", label: "Sub Packet Length" },
   { key: "to_cnt", label: "TO Count" },
 
-  // { key: "frame_number", label: "Frame No" },
 
-  // // =============================
-  // // Annexure Raw Fields
-  // // =============================
-  // { key: "lm_to_speed_raw", label: "LM TO Speed (Raw)" },
-  // { key: "lm_diff_dist_to", label: "LM Diff Dist TO (Raw)" },
-  // { key: "lm_to_speed_rel_dist", label: "LM TO Speed Rel Dist (Raw)" },
 
   // =============================
   // Simplified UI Fields
@@ -233,7 +216,6 @@ const TAG_COLUMNS = [
 const TRACK_COLUMNS = [
   { key: "sub_pkt_type_track", label: "Sub Packet Type" },
   { key: "sub_pkt_len_track", label: "Sub Packet Length" },
-  // { key: "frame_number", label: "Frame No" },
   { key: "track_condition_count", label: "Track Condition Count" },
   { key: "track_condition_type", label: "Type" },
   { key: "start_dist_m", label: "Start Dist" },
@@ -264,7 +246,6 @@ const TSR_COLUMNS = [
 const ACCESS_COLUMNS = [
   { key: "pkt_type", label: "Packet Type" },
   { key: "pkt_length", label: "Packet Length" },
-  // { key: "frame_number", label: "Frame No" },
   { key: "source_stn_id", label: "Source Station ID" },
   { key: "source_version", label: "Version" },
   { key: "stn_location_m", label: "Station Location " },
@@ -274,19 +255,15 @@ const ACCESS_COLUMNS = [
   { key: "tdma_timeslot", label: "TDMA Timeslot" },
   { key: "stn_random_rs", label: "Station Random RS" },
   { key: "stn_tdma", label: "Station TDMA" },
-  // { key: "mac_code", label: "MAC Code" },
-  // { key: "pkt_crc", label: "Packet CRC" },
 ];
 
 const EMERGENCY_COLUMNS = [
   { key: "pkt_type", label: "Packet Type" },
   { key: "pkt_length", label: "Packet Length" },
-  // { key: "frame_number", label: "Frame No" },
   { key: "source_stn_id", label: "Source Station ID" },
   { key: "source_version", label: "Version" },
   { key: "stn_location_m", label: "Station Location " },
   { key: "gen_sos_call", label: "General SOS Call" },
-  // { key: "pkt_crc", label: "Packet CRC" },
 ];
 
 export const formatMovementAuthorityRow = (row) => {
@@ -438,7 +415,7 @@ export const formatMovementAuthorityRow = (row) => {
     const decoded = decode(ABS_LOC_RESET_MAP, r.abs_loc_reset);
     r.abs_loc_reset = decoded;
 
-    // If no reset → mark dependent fields as Not Applicable
+
     if (r.abs_loc_reset === "No Reset") {
       r.loc_reset_start_dist_m = "NA";
       r.adj_loco_dir = "NA";
@@ -538,13 +515,11 @@ export const formatMovementAuthorityRow = (row) => {
 };
 
 
-
-
 const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  /* ================= STATE ================= */
+
   const [loading, setLoading] = useState(false);
   const [subPacket, setSubPacket] = useState("ma");
 
@@ -559,7 +534,6 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
   );
 
 
-  /* ================= CONTEXT ================= */
   const { fromDate, toDate, isDateRangeValid } = useAppContext();
   const { selectedFile } = useOutletContext();
 
@@ -580,7 +554,7 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
     setFilter(field, value);
 
   }, [rows.length, location.state, setFilter]);
-  /* ================= COLUMN SELECTION ================= */
+
   const getColumns = () => {
 
     if (tableType === "station_access")
@@ -627,10 +601,7 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
   const columns = getColumns();
 
   const buildCommonHeader = (packet) => ({
-    // Annexure-G Header
-    // msg_type: packet.msg_type,
-    // msg_length: packet.msg_length,
-    // msg_sequence: packet.msg_sequence,
+
     stationary_kavach_id: packet.stationary_kavach_id,
     nms_system_id: packet.nms_system_id,
     system_version: packet.system_version,
@@ -638,7 +609,6 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
     time: packet.time,
     station_active_radio_desc: packet.station_active_radio_desc,
 
-    // RADIO HEADER (NEW)
     pkt_type: packet.pkt_type,
     pkt_length: packet.pkt_length,
     frame_number: packet.frame_number,
@@ -650,10 +620,6 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
     dist_pkt_start_m: packet.dist_pkt_start_m,
     pkt_direction: packet.pkt_direction,
   });
-
-
-
-  /* ================= FILTER ON TYPE CHANGE UPDATED One 31/03/2026================= */
 
 
 
@@ -786,7 +752,6 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
   // Auto-refresh when file changes
   useEffect(() => {
     if (!selectedFile || allRows.length === 0) return;
-    console.log("🔄 New packets - refreshing stationary kavach...");
     setPage(1);
     generate();
   }, [selectedFile]);
@@ -878,7 +843,6 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
       return filteredRows.map((row) => {
         const formatted = formatMovementAuthorityRow(row);
 
-        // remove packet type & length from export
         const { pkt_type, pkt_length, ...rest } = formatted;
         return rest;
       });
@@ -888,14 +852,13 @@ const StationaryKavachInfo = forwardRef(({ tableType }, ref) => {
       return rows.map((row) => {
         const formatted = formatMovementAuthorityRow(row);
 
-        // remove packet type & length from export
+
         const { pkt_type, pkt_length, ...rest } = formatted;
         return rest;
       });
     },
     getSubPacket: () => subPacket,
     getVisibleColumns: () => {
-      // remove packet type & length columns
       return columns.filter(
         (c) => c.key !== "pkt_type" && c.key !== "pkt_length"
       );

@@ -89,6 +89,18 @@ const LocoFaults = forwardRef(({ originType }, ref) => {
     setRows([]);
     setPage(1);
   };
+  // Auto-refresh when selectedFile changes (new packets detected)
+useEffect(() => {
+  if (
+    selectedFile &&
+    fromDate &&
+    toDate &&
+    isDateRangeValid &&
+    rows.length > 0 // Only auto-refresh if data already exists
+  ) {
+    generate();
+  }
+}, [selectedFile]);
 
   useEffect(() => {
   if (
@@ -123,17 +135,7 @@ const LocoFaults = forwardRef(({ originType }, ref) => {
       setPage(1);
     },
   }));
-  useEffect(() => {
-  if (
-    location.state?.autoGenerate &&
-    selectedFile &&
-    fromDate &&
-    toDate &&
-    isDateRangeValid
-  ) {
-    generate();
-  }
-}, [location.state?.autoGenerate]);
+  
 
   const dashboardFilter = location.state?.dashboardFilter;
 
