@@ -1,4 +1,14 @@
-import { Box, Card, CardContent, Typography, LinearProgress, Stack, alpha, useTheme, useMediaQuery, } from "@mui/material";
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  LinearProgress,
+  Stack,
+  alpha,
+  useTheme,
+  useMediaQuery,
+} from "@mui/material";
 import { useState, forwardRef, useImperativeHandle, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import EngineeringIcon from "@mui/icons-material/Engineering";
@@ -27,7 +37,7 @@ const LocoFaults = forwardRef(({ originType }, ref) => {
   const [rowsPerPage, setRowsPerPage] = useState(isMobile ? 6 : 12);
   const [columnDialogOpen, setColumnDialogOpen] = useState(false);
   const [visibleKeys, setVisibleKeys] = useState(
-    FAULT_ALL_COLUMNS.map((c) => c.key)
+    FAULT_ALL_COLUMNS.map((c) => c.key),
   );
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
@@ -58,11 +68,12 @@ const LocoFaults = forwardRef(({ originType }, ref) => {
           method: "POST",
           body: fileBuffer,
           headers: { "Content-Type": "application/octet-stream" },
-        }
+        },
       );
 
       const json = await res.json();
-      if (json.success === false) throw new Error(json.error || "Backend error");
+      if (json.success === false)
+        throw new Error(json.error || "Backend error");
 
       const mappedRows = (json.data || []).map((r, idx) => {
         const dt = new Date(r.event_time);
@@ -90,52 +101,52 @@ const LocoFaults = forwardRef(({ originType }, ref) => {
     setPage(1);
   };
   // Auto-refresh when selectedFile changes (new packets detected)
-useEffect(() => {
-  if (
-    selectedFile &&
-    fromDate &&
-    toDate &&
-    isDateRangeValid &&
-    rows.length > 0 // Only auto-refresh if data already exists
-  ) {
-    generate();
-  }
-}, [selectedFile]);
+  useEffect(() => {
+    if (
+      selectedFile &&
+      fromDate &&
+      toDate &&
+      isDateRangeValid &&
+      rows.length > 0 // Only auto-refresh if data already exists
+    ) {
+      generate();
+    }
+  }, [selectedFile]);
 
   useEffect(() => {
-  if (
-    location.state?.autoGenerate &&
-    selectedFile &&
-    fromDate &&
-    toDate &&
-    isDateRangeValid
-  ) {
-    generate();
-  }
-}, [location.state?.autoGenerate]);
+    if (
+      location.state?.autoGenerate &&
+      selectedFile &&
+      fromDate &&
+      toDate &&
+      isDateRangeValid
+    ) {
+      generate();
+    }
+  }, [location.state?.autoGenerate]);
 
   useImperativeHandle(ref, () => ({
     generate,
     clear,
     getFilteredRows: () => filteredRows,
     getAllRows: () => rows,
-    getVisibleColumns: () => FAULT_ALL_COLUMNS.filter((c) => visibleKeys.includes(c.key)),
+    getVisibleColumns: () =>
+      FAULT_ALL_COLUMNS.filter((c) => visibleKeys.includes(c.key)),
     openColumnDialog: () => setColumnDialogOpen(true),
-    searchByFault: (value) => {
+    searchBySubsystemId: (value) => {
       if (!value) {
         setRows(allRows);
         return;
       }
 
-      const filtered = allRows.filter(r =>
-        String(r.nms_system_id).includes(value)
+      const filtered = allRows.filter((r) =>
+        String(r.kavach_subsystem_id || "").includes(value),
       );
 
       setRows(filtered);
       setPage(1);
     },
   }));
-  
 
   const dashboardFilter = location.state?.dashboardFilter;
 
@@ -152,15 +163,19 @@ useEffect(() => {
   });
   const totalPages = Math.ceil(finalRows.length / rowsPerPage);
 
-const paginatedRows = finalRows.slice(
-  (page - 1) * rowsPerPage,
-  page * rowsPerPage
-);
+  const paginatedRows = finalRows.slice(
+    (page - 1) * rowsPerPage,
+    page * rowsPerPage,
+  );
 
   /* ===================== ANIMATION VARIANTS ===================== */
   const containerVariants = {
     hidden: { opacity: 0, y: 15 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5, staggerChildren: 0.1 } },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, staggerChildren: 0.1 },
+    },
   };
 
   return (
@@ -219,10 +234,20 @@ const paginatedRows = finalRows.slice(
                 height: 4,
                 borderRadius: 2,
                 bgcolor: "rgba(255,255,255,0.05)",
-                "& .MuiLinearProgress-bar": { borderRadius: 2, bgcolor: theme.palette.primary.main },
+                "& .MuiLinearProgress-bar": {
+                  borderRadius: 2,
+                  bgcolor: theme.palette.primary.main,
+                },
               }}
             />
-            <Typography sx={{ mt: 2, color: "rgba(255,255,255,0.5)", fontSize: "0.75rem", letterSpacing: 2 }}>
+            <Typography
+              sx={{
+                mt: 2,
+                color: "rgba(255,255,255,0.5)",
+                fontSize: "0.75rem",
+                letterSpacing: 2,
+              }}
+            >
               SCANNING KAVACH FAULT REGISTERS...
             </Typography>
           </Box>
@@ -243,12 +268,10 @@ const paginatedRows = finalRows.slice(
                   rows={paginatedRows}
                   columns={FAULT_ALL_COLUMNS}
                   visibleKeys={visibleKeys}
-
                   onColumnSearch={(key, value) => {
                     if (value) setFilter(key, value);
                     else setFilter(key, "");
                   }}
-
                   onSort={(key, direction) => {
                     if (!direction) {
                       setRows(allRows);
@@ -260,8 +283,12 @@ const paginatedRows = finalRows.slice(
                       const bv = b[key] ?? "";
 
                       return direction === "asc"
-                        ? String(av).localeCompare(String(bv), undefined, { numeric: true })
-                        : String(bv).localeCompare(String(av), undefined, { numeric: true });
+                        ? String(av).localeCompare(String(bv), undefined, {
+                            numeric: true,
+                          })
+                        : String(bv).localeCompare(String(av), undefined, {
+                            numeric: true,
+                          });
                     });
 
                     setRows(sorted);
@@ -287,7 +314,11 @@ const paginatedRows = finalRows.slice(
                 },
               }}
             >
-              <PaginationControls page={page} setPage={setPage} totalPages={totalPages} />
+              <PaginationControls
+                page={page}
+                setPage={setPage}
+                totalPages={totalPages}
+              />
             </Stack>
           </Box>
         ) : (
@@ -302,10 +333,14 @@ const paginatedRows = finalRows.slice(
         open={columnDialogOpen}
         column="Fault Columns"
         values={FAULT_ALL_COLUMNS.map((c) => c.label)}
-        selectedValues={visibleKeys.map((key) => FAULT_ALL_COLUMNS.find((c) => c.key === key)?.label)}
+        selectedValues={visibleKeys.map(
+          (key) => FAULT_ALL_COLUMNS.find((c) => c.key === key)?.label,
+        )}
         onClose={() => setColumnDialogOpen(false)}
         onApply={(labels) => {
-          const keys = FAULT_ALL_COLUMNS.filter((c) => labels.includes(c.label)).map((c) => c.key);
+          const keys = FAULT_ALL_COLUMNS.filter((c) =>
+            labels.includes(c.label),
+          ).map((c) => c.key);
           setVisibleKeys(keys);
           setColumnDialogOpen(false);
         }}

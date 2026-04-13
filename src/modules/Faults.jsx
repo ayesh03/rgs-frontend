@@ -50,27 +50,32 @@ export default function Faults() {
   }, [location.state]);
 
   /* ===================== ACTION HANDLER ===================== */
-  const handleAction = useCallback(async (actionType) => {
-    const currentRef = tabRefs[tab]?.current;
-    if (!currentRef) return;
+  const handleAction = useCallback(
+    async (actionType) => {
+      const currentRef = tabRefs[tab]?.current;
+      if (!currentRef) return;
 
-    if (actionType === "generate") {
-      setStage("ENGINE");
-      await currentRef.generate();
-      setStage("PREVIEW");
-    }
+      if (actionType === "generate") {
+        setStage("ENGINE");
+        await currentRef.generate();
+        setStage("PREVIEW");
+      }
 
-    if (actionType === "clear") {
-      currentRef.clear();
-      setStage("FILTER");
-    }
-  }, [tab]);
+      if (actionType === "clear") {
+        currentRef.clear();
+        setStage("FILTER");
+      }
+    },
+    [tab],
+  );
 
   const handleExport = (type, isAll = false) => {
     const currentRef = tabRefs[tab]?.current;
     if (!currentRef) return;
 
-    const rows = isAll ? currentRef.getAllRows?.() : currentRef.getFilteredRows?.();
+    const rows = isAll
+      ? currentRef.getAllRows?.()
+      : currentRef.getFilteredRows?.();
     const cols = currentRef.getVisibleColumns?.();
     const filename = tab === 0 ? "fault_station" : "fault_loco";
 
@@ -94,7 +99,7 @@ export default function Faults() {
         onSaveAll={() => handleExport("excel", true)}
         onPrint={() => handleExport("pdf", false)}
         onSearch={(value) =>
-          tabRefs[tab]?.current?.searchByFault?.(value)
+          tabRefs[tab]?.current?.searchBySubsystemId?.(value)
         }
       />
 
@@ -156,12 +161,8 @@ export default function Faults() {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
           >
-            {tab === 0 && (
-              <LocoFaults ref={stationRef} originType="STATION" />
-            )}
-            {tab === 1 && (
-              <LocoFaults ref={locoRef} originType="LOCO" />
-            )}
+            {tab === 0 && <LocoFaults ref={stationRef} originType="STATION" />}
+            {tab === 1 && <LocoFaults ref={locoRef} originType="LOCO" />}
             {/* {tab === 2 && (
               <Box sx={{ p: 2 }}>
                 <FaultSummary />
