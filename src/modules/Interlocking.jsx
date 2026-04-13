@@ -1,5 +1,5 @@
 import { Box, Paper, alpha, Typography, Stack, useTheme } from "@mui/material";
-import HubIcon from '@mui/icons-material/Hub';
+import HubIcon from "@mui/icons-material/Hub";
 import { motion, AnimatePresence } from "framer-motion";
 import ReportHeader from "../components/ReportHeader";
 import InterlockingReport from "../pages/InterLocking";
@@ -29,7 +29,6 @@ export default function Interlocking() {
   };
 
   const handleExport = (type, isAll = false) => {
-
     const rows = isAll
       ? interlockingRef.current?.getAllRows?.()
       : interlockingRef.current?.getFilteredRows?.();
@@ -48,12 +47,11 @@ export default function Interlocking() {
   };
 
   return (
-    <Box sx={{ p: { xs: 1, md: 0.5 }, minHeight: '100vh' }}>
-
+    <Box sx={{ p: { xs: 1, md: 0.5 }, minHeight: "100vh" }}>
       {/* ===== HEADER SECTION ===== */}
       <ReportHeader
         stage={stage}
-        showAdvancedSearch={false}
+        showAdvancedSearch={true}
         showException
         showTableType={false}
         onGenerate={handleGenerate}
@@ -62,6 +60,9 @@ export default function Interlocking() {
         onSave={() => handleExport("excel", false)}
         onSaveAll={() => handleExport("excel", true)}
         onPrint={() => handleExport("pdf", false)}
+        onSearch={(value) =>
+          interlockingRef.current?.setFilter?.("station", value)
+        }
       />
 
       {/* ===== BREADCRUMB / STATUS AREA ===== */}
@@ -114,7 +115,7 @@ export default function Interlocking() {
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.99 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
-          sx={{ minHeight: '60vh' }}
+          sx={{ minHeight: "60vh" }}
         >
           {tab === 0 && <InterlockingReport ref={interlockingRef} />}
         </Box>
