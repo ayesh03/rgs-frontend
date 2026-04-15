@@ -55,7 +55,7 @@ const RFCOMFaults = forwardRef((props, ref) => {
   try {
     const normalizeDate = (v) => {
       if (!v) return "";
-      return v.length === 16 ? `${v}:00` : v; // add seconds if missing
+      return v.length === 16 ? `${v}:00` : v; 
     };
 
     const from = normalizeDate(fromDate);
