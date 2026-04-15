@@ -1,13 +1,30 @@
 import areaLogo from "../assets/arecaLogo.png";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import React, { useState, useEffect, useRef } from "react";
-import { AppBar, Toolbar, Button, Box, Typography, TextField, Paper, IconButton, Divider, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Stack, Popover, } from "@mui/material";
-import Animatedtrain from "./AnimatedTrain"
+import {
+  AppBar,
+  Toolbar,
+  Button,
+  Box,
+  Typography,
+  TextField,
+  Paper,
+  IconButton,
+  Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Stack,
+  Popover,
+} from "@mui/material";
+import Animatedtrain from "./AnimatedTrain";
 import { motion, AnimatePresence } from "framer-motion";
-import SettingsIcon from '@mui/icons-material/Settings';
+import SettingsIcon from "@mui/icons-material/Settings";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
-import LogoutIcon from '@mui/icons-material/Logout';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import LogoutIcon from "@mui/icons-material/Logout";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import { useAppContext } from "../context/AppContext";
 import { useAuth } from "../auth/AuthContext";
 import AboutDialog from "../components/AboutDialog";
@@ -83,16 +100,30 @@ export default function MainLayout() {
   useEffect(() => {
     if (tempFromDate) {
       setTempToDate(tempFromDate);
+      setTempToTime("23:59:59");
     }
   }, [tempFromDate]);
 
-  const {
-    fromDate,
-    toDate,
-    setFromDate,
-    setToDate,
-    resetFilters,
-  } = useAppContext();
+  useEffect(() => {
+    if (!fromDate && !toDate) {
+      const now = new Date();
+
+      const format = (d) => {
+        const pad = (n) => String(n).padStart(2, "0");
+
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+      };
+
+      const todayEnd = new Date();
+      todayEnd.setHours(23, 59, 59, 0);
+
+      setFromDate(format(now));
+      setToDate(format(todayEnd));
+    }
+  }, []);
+
+  const { fromDate, toDate, setFromDate, setToDate, resetFilters } =
+    useAppContext();
 
   const handleLogoutClick = () => setLogoutConfirmOpen(true);
   const handleConfirmLogout = () => {
@@ -105,14 +136,14 @@ export default function MainLayout() {
   const formatDateTimeForDisplay = (datetimeLocal) => {
     if (!datetimeLocal) return "Select Date & Time";
     const date = new Date(datetimeLocal);
-    return date.toLocaleString('en-IN', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
+    return date.toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
     });
   };
 
@@ -190,6 +221,19 @@ export default function MainLayout() {
     { label: "TSRMS", path: "tsrms" },
     { label: "DMI Events", path: "dmi" },
   ];
+
+  const extractDateTimeFromFileName = (fileName) => {
+    // Example formats handled: 20260415_131616 or 2026-04-15_13-16-16
+    const match = fileName.match(
+      /(\d{4})[-]?(\d{2})[-]?(\d{2})[_]?(\d{2})?[-]?(\d{2})?[-]?(\d{2})?/,
+    );
+
+    if (!match) return null;
+
+    const [, year, month, day, hh = "00", mm = "00", ss = "00"] = match;
+
+    return `${year}-${month}-${day}T${hh}:${mm}:${ss}`;
+  };
   const handleFileSelect = async () => {
     try {
       // Fallback for browsers not supporting showOpenFilePicker
@@ -200,7 +244,26 @@ export default function MainLayout() {
 
         input.onchange = (e) => {
           const file = e.target.files[0];
-          if (file) setSelectedFile(file);
+          if (!file) return;
+
+          setSelectedFile(file);
+
+          const detected = extractDateTimeFromFileName(file.name);
+          if (detected) {
+            const dateOnly = detected.split("T")[0];
+            setFromDate("");
+            setToDate("");
+
+            setTimeout(() => {
+              setFromDate("");
+setToDate("");
+
+setTimeout(() => {
+  setFromDate(detected);
+  setToDate(`${dateOnly}T23:59:59`);
+}, 0);
+            }, 0);
+          }
         };
 
         input.click();
@@ -208,7 +271,12 @@ export default function MainLayout() {
       }
 
       const [handle] = await window.showOpenFilePicker({
-        types: [{ description: "BIN Files", accept: { "application/octet-stream": [".bin"] } }],
+        types: [
+          {
+            description: "BIN Files",
+            accept: { "application/octet-stream": [".bin"] },
+          },
+        ],
       });
 
       const file = await handle.getFile();
@@ -216,24 +284,30 @@ export default function MainLayout() {
       lastModifiedRef.current = file.lastModified;
       lastModifiedRef.lastSize = file.size; //  Track size
       setSelectedFile(file);
-      
 
+      const detected = extractDateTimeFromFileName(file.name);
+
+      if (detected) {
+        const dateOnly = detected.split("T")[0];
+        setFromDate(detected);
+        setToDate(`${dateOnly}T23:59:59`);
+      }
     } catch (err) {
       console.warn("File picker cancelled", err);
     }
   };
 
-
   return (
-    <Box sx={{
-      display: "flex",
-      flexDirection: "column",
-      width: "100%",
-      minHeight: "100vh",
-      background: "#0a0c10",
-      color: "#e0e0e0"
-    }}>
-
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        width: "100%",
+        minHeight: "100vh",
+        background: "#0a0c10",
+        color: "#e0e0e0",
+      }}
+    >
       <AppBar
         position="sticky"
         elevation={0}
@@ -241,14 +315,33 @@ export default function MainLayout() {
           background: "rgba(18, 22, 28, 0.9)",
           backdropFilter: "blur(20px)",
           color: "#fff",
-          borderBottom: "1px solid rgba(255, 255, 255, 0.08)"
+          borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
         }}
       >
-        <Toolbar sx={{ justifyContent: "space-between", minHeight: "56px !important", px: 2 }}>
+        <Toolbar
+          sx={{
+            justifyContent: "space-between",
+            minHeight: "56px !important",
+            px: 2,
+          }}
+        >
           {/* LOGO SECTION */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <a href="https://www.areca.in/" target="_blank" rel="noopener noreferrer">
-              <Box component="img" src={areaLogo} alt="Logo" sx={{ height: 38, cursor: "pointer", filter: "brightness(0) invert(1)" }} />
+            <a
+              href="https://www.areca.in/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Box
+                component="img"
+                src={areaLogo}
+                alt="Logo"
+                sx={{
+                  height: 38,
+                  cursor: "pointer",
+                  filter: "brightness(0) invert(1)",
+                }}
+              />
             </a>
 
             <Typography
@@ -258,7 +351,7 @@ export default function MainLayout() {
               transition={{ duration: 0.6, ease: "easeOut" }}
               sx={{
                 mt: 0.5,
-                mb: 0.,
+                mb: 0,
                 fontWeight: 800,
                 fontSize: "2.125rem",
                 letterSpacing: -1,
@@ -266,7 +359,6 @@ export default function MainLayout() {
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 textShadow: "0 0 10px rgba(77,171,247,0.4)",
-
               }}
             >
               <motion.span
@@ -285,41 +377,56 @@ export default function MainLayout() {
                   background: "none",
                   textShadow: "none",
                   fontSize: "2.125rem",
-                  lineHeight: 1
+                  lineHeight: 1,
                 }}
               >
                 REPORT GENERATION SYSTEM
               </Box>
             </Typography>
-            <Box component="span" sx={{ display: "inline-flex", verticalAlign: "middle", mx: 0.5 }}>
+            <Box
+              component="span"
+              sx={{ display: "inline-flex", verticalAlign: "middle", mx: 0.5 }}
+            >
               <Animatedtrain width={320} />
             </Box>
           </Box>
 
-
           {/* FILTER BAR SECTION */}
-          <Box sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-            p: 0.5,
-            px: 0.5,
-            borderRadius: 2,
-            bgcolor: "rgba(255,255,255,0.05)",
-            border: "1px solid rgba(255,255,255,0.1)"
-          }}>
-
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              p: 0.5,
+              px: 0.5,
+              borderRadius: 2,
+              bgcolor: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.1)",
+            }}
+          >
             {/* FROM PICKER */}
             <Stack direction="row" alignItems="center" spacing={1}>
-              <Typography variant="caption" sx={{ fontWeight: 700, color: "#888" }}>From:</Typography>
+              <Typography
+                variant="caption"
+                sx={{ fontWeight: 700, color: "#888" }}
+              >
+                From:
+              </Typography>
               <Button
-                size="small" variant="outlined"
+                size="small"
+                variant="outlined"
                 onClick={handleFromOpen}
                 startIcon={<CalendarTodayIcon sx={{ fontSize: 14 }} />}
                 sx={{
-                  textTransform: "none", fontSize: "0.75rem", minWidth: 160,
-                  color: "#eee", borderColor: "rgba(255,255,255,0.2)",
-                  "&:hover": { borderColor: "rgba(255,255,255,0.4)", bgcolor: "rgba(255,255,255,0.05)" }
+                  textTransform: "none",
+                  fontSize: "0.75rem",
+                  minWidth: 160,
+                  color: "#eee",
+                  borderColor: "rgba(255,255,255,0.2)",
+                  "&:hover": {
+                    borderColor: "rgba(255,255,255,0.4)",
+                    bgcolor: "rgba(255,255,255,0.05)",
+                  },
                 }}
               >
                 {formatDateTimeForDisplay(fromDate)}
@@ -329,25 +436,44 @@ export default function MainLayout() {
                 anchorEl={fromAnchorEl}
                 onClose={handleFromClose}
                 anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-                PaperProps={{ sx: { bgcolor: "#1e2227", color: "#fff", border: "1px solid #333" } }}
+                PaperProps={{
+                  sx: {
+                    bgcolor: "#1e2227",
+                    color: "#fff",
+                    border: "1px solid #333",
+                  },
+                }}
               >
                 <Box sx={{ p: 2, minWidth: 250 }}>
-                  <Typography variant="subtitle2" sx={{ mb: 1.5 }}>Select Start Date/Time</Typography>
+                  <Typography variant="subtitle2" sx={{ mb: 1.5 }}>
+                    Select Start Date/Time
+                  </Typography>
                   <Stack spacing={2}>
                     <TextField
-                      label="Date" type="date" size="small" inputRef={fromDateRef} fullWidth
+                      label="Date"
+                      type="date"
+                      size="small"
+                      inputRef={fromDateRef}
+                      fullWidth
                       value={tempFromDate}
                       onChange={(e) => setTempFromDate(e.target.value)}
                       InputLabelProps={{ shrink: true }}
                       sx={{
                         input: { color: "#fff" },
                         label: { color: "#888" },
-                        "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "#444" } },
-                        "& .MuiOutlinedInput-adornedEnd .MuiIconButton-root": { color: "#fff" }
+                        "& .MuiOutlinedInput-root": {
+                          "& fieldset": { borderColor: "#444" },
+                        },
+                        "& .MuiOutlinedInput-adornedEnd .MuiIconButton-root": {
+                          color: "#fff",
+                        },
                       }}
                     />
                     <TextField
-                      label="Time" type="time" size="small" fullWidth
+                      label="Time"
+                      type="time"
+                      size="small"
+                      fullWidth
                       value={tempFromTime}
                       onChange={(e) => setTempFromTime(e.target.value)}
                       inputProps={{ step: 1 }}
@@ -355,13 +481,34 @@ export default function MainLayout() {
                       sx={{
                         input: { color: "#fff" },
                         label: { color: "#888" },
-                        "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "#444" } },
-                        "& .MuiOutlinedInput-adornedEnd .MuiIconButton-root": { color: "#fff" }
+                        "& .MuiOutlinedInput-root": {
+                          "& fieldset": { borderColor: "#444" },
+                        },
+                        "& .MuiOutlinedInput-adornedEnd .MuiIconButton-root": {
+                          color: "#fff",
+                        },
                       }}
                     />
-                    <Stack direction="row" spacing={1} justifyContent="flex-end">
-                      <Button size="small" onClick={handleFromClose} sx={{ color: "#aaa" }}>Cancel</Button>
-                      <Button size="small" variant="contained" onClick={handleFromApply} sx={{ bgcolor: "#0b4dbb" }}>Apply</Button>
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      justifyContent="flex-end"
+                    >
+                      <Button
+                        size="small"
+                        onClick={handleFromClose}
+                        sx={{ color: "#aaa" }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        onClick={handleFromApply}
+                        sx={{ bgcolor: "#0b4dbb" }}
+                      >
+                        Apply
+                      </Button>
                     </Stack>
                   </Stack>
                 </Box>
@@ -370,15 +517,27 @@ export default function MainLayout() {
 
             {/* TO PICKER */}
             <Stack direction="row" alignItems="center" spacing={1}>
-              <Typography variant="caption" sx={{ fontWeight: 700, color: "#888" }}>To:</Typography>
+              <Typography
+                variant="caption"
+                sx={{ fontWeight: 700, color: "#888" }}
+              >
+                To:
+              </Typography>
               <Button
-                size="small" variant="outlined"
+                size="small"
+                variant="outlined"
                 onClick={handleToOpen}
                 startIcon={<CalendarTodayIcon sx={{ fontSize: 14 }} />}
                 sx={{
-                  textTransform: "none", fontSize: "0.75rem", minWidth: 160,
-                  color: "#eee", borderColor: "rgba(255,255,255,0.2)",
-                  "&:hover": { borderColor: "rgba(255,255,255,0.4)", bgcolor: "rgba(255,255,255,0.05)" }
+                  textTransform: "none",
+                  fontSize: "0.75rem",
+                  minWidth: 160,
+                  color: "#eee",
+                  borderColor: "rgba(255,255,255,0.2)",
+                  "&:hover": {
+                    borderColor: "rgba(255,255,255,0.4)",
+                    bgcolor: "rgba(255,255,255,0.05)",
+                  },
                 }}
               >
                 {formatDateTimeForDisplay(toDate)}
@@ -388,23 +547,73 @@ export default function MainLayout() {
                 anchorEl={toAnchorEl}
                 onClose={handleToClose}
                 anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-                PaperProps={{ sx: { bgcolor: "#1e2227", color: "#fff", border: "1px solid #333" } }}
+                PaperProps={{
+                  sx: {
+                    bgcolor: "#1e2227",
+                    color: "#fff",
+                    border: "1px solid #333",
+                  },
+                }}
               >
                 <Box sx={{ p: 2, minWidth: 250 }}>
-                  <Typography variant="subtitle2" sx={{ mb: 1.5 }}>Select End Date/Time</Typography>
+                  <Typography variant="subtitle2" sx={{ mb: 1.5 }}>
+                    Select End Date/Time
+                  </Typography>
                   <Stack spacing={2}>
-                    <TextField label="Date" type="date" size="small" inputRef={toDateRef} fullWidth value={tempToDate} onChange={(e) => setTempToDate(e.target.value)} InputLabelProps={{ shrink: true }} sx={{ input: { color: "#fff" }, label: { color: "#888" }, "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "#444" } } }} />
                     <TextField
-                      label="Time" type="time" size="small" fullWidth
+                      label="Date"
+                      type="date"
+                      size="small"
+                      inputRef={toDateRef}
+                      fullWidth
+                      value={tempToDate}
+                      onChange={(e) => setTempToDate(e.target.value)}
+                      InputLabelProps={{ shrink: true }}
+                      sx={{
+                        input: { color: "#fff" },
+                        label: { color: "#888" },
+                        "& .MuiOutlinedInput-root": {
+                          "& fieldset": { borderColor: "#444" },
+                        },
+                      }}
+                    />
+                    <TextField
+                      label="Time"
+                      type="time"
+                      size="small"
+                      fullWidth
                       value={tempToTime}
                       onChange={(e) => setTempToTime(e.target.value)}
                       inputProps={{ step: 1 }}
                       InputLabelProps={{ shrink: true }}
-                      sx={{ input: { color: "#fff" }, label: { color: "#888" }, "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "#444" } } }}
+                      sx={{
+                        input: { color: "#fff" },
+                        label: { color: "#888" },
+                        "& .MuiOutlinedInput-root": {
+                          "& fieldset": { borderColor: "#444" },
+                        },
+                      }}
                     />
-                    <Stack direction="row" spacing={1} justifyContent="flex-end">
-                      <Button size="small" onClick={handleToClose} sx={{ color: "#aaa" }}>Cancel</Button>
-                      <Button size="small" variant="contained" onClick={handleToApply} sx={{ bgcolor: "#0b4dbb" }}>Apply</Button>
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      justifyContent="flex-end"
+                    >
+                      <Button
+                        size="small"
+                        onClick={handleToClose}
+                        sx={{ color: "#aaa" }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        onClick={handleToApply}
+                        sx={{ bgcolor: "#0b4dbb" }}
+                      >
+                        Apply
+                      </Button>
                     </Stack>
                   </Stack>
                 </Box>
@@ -413,33 +622,62 @@ export default function MainLayout() {
 
             {/* FILE UPLOAD */}
             <Stack direction="row" alignItems="center" spacing={1}>
-              <Typography variant="caption" sx={{ fontWeight: 700, color: "#888" }}>BIN:</Typography>
+              <Typography
+                variant="caption"
+                sx={{ fontWeight: 700, color: "#888" }}
+              >
+                BIN:
+              </Typography>
               <Button
                 size="small"
                 variant="outlined"
                 startIcon={<FolderOpenIcon sx={{ fontSize: 14 }} />}
                 onClick={handleFileSelect}
                 sx={{
-                  textTransform: "none", fontSize: "0.75rem",
-                  color: "#eee", borderColor: "rgba(255,255,255,0.2)"
+                  textTransform: "none",
+                  fontSize: "0.75rem",
+                  color: "#eee",
+                  borderColor: "rgba(255,255,255,0.2)",
                 }}
               >
                 {selectedFile ? selectedFile.name : "Select File"}
               </Button>
             </Stack>
 
-            <Divider orientation="vertical" flexItem sx={{ height: 24, my: 'auto', borderColor: "rgba(255,255,255,0.1)" }} />
+            <Divider
+              orientation="vertical"
+              flexItem
+              sx={{
+                height: 24,
+                my: "auto",
+                borderColor: "rgba(255,255,255,0.1)",
+              }}
+            />
 
             {/* ACTIONS */}
             <Stack direction="row" spacing={0.5}>
-              <IconButton size="small" onClick={() => setAboutOpen(true)} sx={{ color: "#aaa" }}><SettingsIcon fontSize="small" /></IconButton>
-              <IconButton size="small" onClick={handleLogoutClick} sx={{ color: "#ff5252" }}><LogoutIcon fontSize="small" /></IconButton>
+              <IconButton
+                size="small"
+                onClick={() => setAboutOpen(true)}
+                sx={{ color: "#aaa" }}
+              >
+                <SettingsIcon fontSize="small" />
+              </IconButton>
+              <IconButton
+                size="small"
+                onClick={handleLogoutClick}
+                sx={{ color: "#ff5252" }}
+              >
+                <LogoutIcon fontSize="small" />
+              </IconButton>
             </Stack>
           </Box>
         </Toolbar>
 
         {/* NAVIGATION LINKS */}
-        <Box sx={{ px: 2, pb: 1, display: 'flex', gap: 0.5, overflowX: "auto" }}>
+        <Box
+          sx={{ px: 2, pb: 1, display: "flex", gap: 0.5, overflowX: "auto" }}
+        >
           {navItems.map((item) => {
             const isActive = location.pathname.includes(item.path);
             return (
@@ -448,11 +686,16 @@ export default function MainLayout() {
                 component={Link}
                 to={item.path}
                 sx={{
-                  px: 1, py: 0.5, textTransform: "none", fontSize: "1.2rem",
+                  px: 1,
+                  py: 0.5,
+                  textTransform: "none",
+                  fontSize: "1.2rem",
                   fontWeight: isActive ? 700 : 500,
                   color: isActive ? "#fff" : "#888",
                   bgcolor: isActive ? "#0b4dbb" : "transparent",
-                  "&:hover": { bgcolor: isActive ? "#083a8d" : "rgba(255,255,255,0.05)" }
+                  "&:hover": {
+                    bgcolor: isActive ? "#083a8d" : "rgba(255,255,255,0.05)",
+                  },
                 }}
               >
                 {item.label}
@@ -465,15 +708,24 @@ export default function MainLayout() {
       {/* PAGE CONTENT */}
       <Box sx={{ flexGrow: 1, p: 0.5 }}>
         <AnimatePresence mode="wait">
-          <motion.div key={location.pathname} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-            <Paper elevation={0} sx={{
-              p: 0.1,
-              borderRadius: 2,
-              minHeight: "75vh",
-              bgcolor: "#12161c", // Dark paper background
-              border: "1px solid rgba(255,255,255,0.05)",
-              color: "#fff"
-            }}>
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Paper
+              elevation={0}
+              sx={{
+                p: 0.1,
+                borderRadius: 2,
+                minHeight: "75vh",
+                bgcolor: "#12161c", // Dark paper background
+                border: "1px solid rgba(255,255,255,0.05)",
+                color: "#fff",
+              }}
+            >
               <Outlet context={{ selectedFile }} />
             </Paper>
           </motion.div>
@@ -489,10 +741,25 @@ export default function MainLayout() {
         PaperProps={{ sx: { bgcolor: "#1e2227", color: "#fff" } }}
       >
         <DialogTitle sx={{ fontWeight: 700 }}>Logout</DialogTitle>
-        <DialogContent><DialogContentText sx={{ color: "#bbb" }}>Are you sure you want to log out?</DialogContentText></DialogContent>
+        <DialogContent>
+          <DialogContentText sx={{ color: "#bbb" }}>
+            Are you sure you want to log out?
+          </DialogContentText>
+        </DialogContent>
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setLogoutConfirmOpen(false)} sx={{ color: "#aaa" }}>Cancel</Button>
-          <Button onClick={handleConfirmLogout} variant="contained" color="error">Logout</Button>
+          <Button
+            onClick={() => setLogoutConfirmOpen(false)}
+            sx={{ color: "#aaa" }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmLogout}
+            variant="contained"
+            color="error"
+          >
+            Logout
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

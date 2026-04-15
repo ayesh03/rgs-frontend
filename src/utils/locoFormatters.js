@@ -85,6 +85,7 @@ export const decodeTIN = (tin) => {
 export const decodeLocoMode = (mode) => {
     if (mode === null || mode === undefined) return "-";
     const modes = {
+        0: "None",
         1: "STANDBY",
         2: "STAFF RESPONSIBLE",
         3: "LIMITED SUPERVISION",
@@ -99,7 +100,7 @@ export const decodeLocoMode = (mode) => {
         12: "SYSTEM FAILURE",
         13: "ISOLATION",
     };
-    return modes[Number(mode)] || "-";
+    return modes[Number(mode)] || "unknown";
 };
 
 export const formatDateTime = (row) =>
