@@ -94,9 +94,9 @@ export const decodeLocoMode = (mode) => {
         6: "ONSIGHT",
         7: "TRIP",
         8: "POST TRIP",
-        9: "NON LEADING",
-        10: "REVERSE",
-        11: "SHUNT",
+        9: "REVERSE",
+        10: "SHUNTING",
+        11: "NON LEADING",
         12: "SYSTEM FAILURE",
         13: "ISOLATION",
     };

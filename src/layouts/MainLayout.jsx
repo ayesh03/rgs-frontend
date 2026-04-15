@@ -223,15 +223,12 @@ export default function MainLayout() {
   ];
 
   const extractDateTimeFromFileName = (fileName) => {
-    // format: 12-03-26.bin (DD-MM-YY)
-
     const match = fileName.match(/(\d{2})-(\d{2})-(\d{2})/);
 
     if (!match) return null;
 
     let [, day, month, year] = match;
 
-    // convert 2-digit year → 20YY
     year = "20" + year;
 
     return `${year}-${month}-${day}T00:00:00`;
