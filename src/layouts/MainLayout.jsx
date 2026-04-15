@@ -105,14 +105,14 @@ export default function MainLayout() {
   }, [tempFromDate]);
 
   useEffect(() => {
-    if (!fromDate && !toDate) {
+    // ONLY set default if NOTHING selected AND no file
+    if (!fromDate && !toDate && !selectedFile) {
       const now = new Date();
 
-      const format = (d) => {
-        const pad = (n) => String(n).padStart(2, "0");
+      const pad = (n) => String(n).padStart(2, "0");
 
-        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-      };
+      const format = (d) =>
+        `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 
       const todayEnd = new Date();
       todayEnd.setHours(23, 59, 59, 0);
@@ -120,7 +120,7 @@ export default function MainLayout() {
       setFromDate(format(now));
       setToDate(format(todayEnd));
     }
-  }, []);
+  }, [selectedFile]);
 
   const { fromDate, toDate, setFromDate, setToDate, resetFilters } =
     useAppContext();
@@ -223,16 +223,18 @@ export default function MainLayout() {
   ];
 
   const extractDateTimeFromFileName = (fileName) => {
-    // Example formats handled: 20260415_131616 or 2026-04-15_13-16-16
-    const match = fileName.match(
-      /(\d{4})[-]?(\d{2})[-]?(\d{2})[_]?(\d{2})?[-]?(\d{2})?[-]?(\d{2})?/,
-    );
+    // format: 12-03-26.bin (DD-MM-YY)
+
+    const match = fileName.match(/(\d{2})-(\d{2})-(\d{2})/);
 
     if (!match) return null;
 
-    const [, year, month, day, hh = "00", mm = "00", ss = "00"] = match;
+    let [, day, month, year] = match;
 
-    return `${year}-${month}-${day}T${hh}:${mm}:${ss}`;
+    // convert 2-digit year → 20YY
+    year = "20" + year;
+
+    return `${year}-${month}-${day}T00:00:00`;
   };
   const handleFileSelect = async () => {
     try {
@@ -251,18 +253,8 @@ export default function MainLayout() {
           const detected = extractDateTimeFromFileName(file.name);
           if (detected) {
             const dateOnly = detected.split("T")[0];
-            setFromDate("");
-            setToDate("");
-
-            setTimeout(() => {
-              setFromDate("");
-setToDate("");
-
-setTimeout(() => {
-  setFromDate(detected);
-  setToDate(`${dateOnly}T23:59:59`);
-}, 0);
-            }, 0);
+            setFromDate(detected);
+            setToDate(`${dateOnly}T23:59:59`);
           }
         };
 
@@ -289,8 +281,11 @@ setTimeout(() => {
 
       if (detected) {
         const dateOnly = detected.split("T")[0];
-        setFromDate(detected);
-        setToDate(`${dateOnly}T23:59:59`);
+
+        requestAnimationFrame(() => {
+          setFromDate(detected);
+          setToDate(`${dateOnly}T23:59:59`);
+        });
       }
     } catch (err) {
       console.warn("File picker cancelled", err);
