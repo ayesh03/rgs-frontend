@@ -85,7 +85,7 @@ const REGION_I_MESSAGES = {
   11: "FSB will be applied in YYYS",
   12: "EB will be applied in YYYS",
   13: "BIU Isolated",
-  14: "XXXXXXX Train Type selected"
+  14: "XXXXXXX Train Type selected",
 };
 
 const LP_ACK_MESSAGES = {
@@ -100,7 +100,7 @@ const LP_ACK_MESSAGES = {
   9: "Over-Speed, Please Reduce Speed",
   10: "Brake Applied, Speed Limit Exceeded",
   11: "FSB will be applied in YYYS",
-  12: "EB will be applied in YYYS"
+  12: "EB will be applied in YYYS",
 };
 
 /* ================= EVENT NAME ================= */
@@ -158,10 +158,10 @@ export const decodeDMIEventDescription = (row) => {
     const brakeCRC = (B7 << 24) | (B6 << 16) | (B5 << 8) | B4;
 
     return `
-B0 (Train Type): ${trainTypeMap[B0] || B0}
-B1 (Coach Count): ${B1}
-B2-B3 (Train Length): ${trainLength}
-B4-B7 (Brake CRC): ${brakeCRC}
+Train Type: ${trainTypeMap[B0] || B0}
+Coach Count: ${B1}
+Train Length: ${trainLength}
+Brake CRC: ${brakeCRC}
     `.trim();
   }
 
@@ -182,17 +182,17 @@ B4-B7 (Brake CRC): ${brakeCRC}
 
   /* ================= EVENT 3 ================= */
   if (id === 3 && bytes.length >= 1) {
-  const B0 = bytes[0];
+    const B0 = bytes[0];
 
-  return `Region I: ${REGION_I_MESSAGES[B0] || "Unknown"} | Code:${B0}`;
-}
+    return `Region I: ${REGION_I_MESSAGES[B0] || "Unknown"} | Code:${B0}`;
+  }
 
   /* ================= EVENT 4 ================= */
   if (id === 4 && bytes.length >= 1) {
-  const B0 = bytes[0];
+    const B0 = bytes[0];
 
-  return `LP Ack: ${LP_ACK_MESSAGES[B0] || "Unknown"} | Code:${B0}`;
-}
+    return `LP Ack: ${LP_ACK_MESSAGES[B0] || "Unknown"} | Code:${B0}`;
+  }
 
   /* ================= RESERVED ================= */
   if (id >= 5 && id <= 254) {
@@ -215,6 +215,12 @@ export const formatDMICellValue = (row, key) => {
 
     case "system_version":
       return Number(v) === 1 ? "KAVACH 4.0" : v;
+
+    case "event_time":
+      return v === "invalid" ? "Invalid" : (v ?? "-");
+
+    case "packet_time":
+      return v === "invalid" ? "Invalid" : (v ?? "-");
 
     default:
       return v ?? "-";

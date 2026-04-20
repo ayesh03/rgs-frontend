@@ -121,7 +121,7 @@ export default function Splash() {
           </Typography>
 
           <Typography variant="caption" sx={{ opacity: 0.5 }}>
-            © Indian Railways – S&T Division
+            Areca Embedded Systems Pvt.Ltd. / Version 1.0
           </Typography>
         </Stack>
       </Stack>

@@ -85,7 +85,7 @@ export const decodeTIN = (tin) => {
 export const decodeLocoMode = (mode) => {
     if (mode === null || mode === undefined) return "-";
     const modes = {
-        0: "None",
+        0: "Blank",
         1: "STANDBY",
         2: "STAFF RESPONSIBLE",
         3: "LIMITED SUPERVISION",
@@ -158,28 +158,31 @@ export const decodeBrakeApplied = (v) => {
 
 export const decodeTagLinkInfo = (v) => {
     switch (Number(v)) {
-        case 0: return "NO LINK";
-        case 1: return "LINK OK";
-        case 2: return "LINK MISSING";
-        case 3: return "LINK MISMATCH";
-        case 4: return "LINK DUPLICATE";
+        case 0: return "NO TAG MISSING";
+        case 1: return "DUPLICATE TAG MISSING";
+        case 2: return "MAIN TAG MISSING";
+        case 3: return "BOTH TAG MISSING";
+        case 4: return "TAG POSITION INTERCHANGED";
+        case 5: return "BOTH TAGS HAVE SMAE LOCATION INFO";
+        case 6: return "INTERTAG DISTANCE LESS THAN DIST_DUP_TAG";
+        case 7: return "INTERTAG DISTANCE GREATER THAN DIST_DUP_TAG";
         default: return "-";
     }
 };
 
 export const decodeNewMAReply = (v) => {
     switch (Number(v)) {
-        case 0: return "NO";
-        case 1: return "ACCEPTED";
-        case 2: return "REJECTED";
-        case 3: return "TIMEOUT";
+        case 0: return "NO request";
+        case 1: return "Request to Shorten MA Granted";
+        case 2: return "Request to Shorten MA Rejected";
+        case 3: return "Reserved";
         default: return "-";
     }
 };
 
 /* ================= SIGNAL OVERRIDE ================= */
 export const decodeSignalOverride = (v) =>
-    Number(v) === 1 ? "ACTIVE" : "INACTIVE";
+    Number(v) === 1 ? "Signal OverrideACTIVE" : "Signal Override INACTIVE";
 
 // export const decodeLastRefProfile = (v) => {
 //     if (v === null || v === undefined) return "-";
@@ -189,10 +192,23 @@ export const decodeSignalOverride = (v) =>
 // };
 export const decodeInfoAck = (v) => {
     switch (Number(v)) {
-        case 0: return "NO";
-        case 1: return "ACK RECEIVED";
-        case 2: return "ACK PENDING";
-        case 3: return "ACK FAILED";
+        case 0: return "NO ACK";
+        case 1: return "Loco Specific SoS Ack by LP";
+        case 2: return "FS to LS Ack by LP";
+        case 3: return "LS to SR Ack by LP";
+        case 4: return "FS to SR Ack by LP";
+        case 5: return "OS to SR Ack by LP";
+        case 6: return "OV to SR Ack by LP";
+        case 7: return "Trip Ack by LP";
+        case 8: return "PTRIP to SR Ack by LP";
+        case 9: return "Auto horn Ack by LP";
+        case 10: return "TLM Start packet received Ack from Onboard KAVACH";
+        case 11: return "TLM End packet received Ack from Onboard KAVACH";
+        case 12: return "Unusual Stoppage Ack by LP ";
+        case 13: return "Manual SoS Ack by LP ";
+        case 14: return "Spare";
+        case 15: return "Spare";
+    
         default: return "-";
     }
 };

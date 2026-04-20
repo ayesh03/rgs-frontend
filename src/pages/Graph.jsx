@@ -179,13 +179,26 @@ export default function Graph() {
   };
 
   const handleApplyProps = (cfg) => {
-    setLineWidth(cfg.lineWidth);
-    setNominalColor(cfg.nominalColor);
-    setReverseColor(cfg.reverseColor);
-    setBgColor(cfg.bgColor);
-    setFgColor(cfg.fgColor);
-    setShowGrid(cfg.showGrid);
-  };
+
+  if (cfg.bgColor === cfg.fgColor) {
+    setError("Background and Foreground colors cannot be the same");
+    return;
+  }
+
+  if (cfg.lineWidth <= 0) {
+    setError("Line width must be greater than 0");
+    return;
+  }
+
+  setError(""); // clear old errors
+
+  setLineWidth(cfg.lineWidth);
+  setNominalColor(cfg.nominalColor);
+  setReverseColor(cfg.reverseColor);
+  setBgColor(cfg.bgColor);
+  setFgColor(cfg.fgColor);
+  setShowGrid(cfg.showGrid);
+};
 
   const stage =
     graphData.length > 0 ? "PREVIEW" : loading ? "ENGINE" : "FILTER";
@@ -280,6 +293,11 @@ export default function Graph() {
 
   /* ================= GENERATE ================= */
   const handleGenerate = async () => {
+
+    if (bgColor === fgColor) {
+    setError("Background and Foreground colors cannot be the same");
+    return;
+  }
     setError("");
     setNoData(false);
 
@@ -656,6 +674,7 @@ export default function Graph() {
         showAdvancedSearch={false}
         showSaveAll={false}
         showColumns={false}
+        disableGenerate={bgColor === fgColor}
       />
 
       {/* CONFIG */}
@@ -773,7 +792,7 @@ export default function Graph() {
             </Select>
           </Grid>
 
-          <Grid item xs={12} sm={4}>
+          {/* <Grid item xs={12} sm={4}>
             <input
               type="time"
               value={timeStart}
@@ -802,7 +821,7 @@ export default function Graph() {
                 color: "white", borderRadius: "8px"
               }}
             />
-          </Grid>
+          </Grid> */}
 
         </Grid>
 

@@ -5,9 +5,11 @@ import { useState, useEffect } from "react";
 import autoTable from "jspdf-autotable";
 import { formatCellValue } from "../utils/locoFormatters";
 import { formatFaultCellValue } from "../utils/faultFormatter";
+import { formatTagCellValue } from "../utils/tagFormatter";
 import areaLogo from "../assets/arecaLogo.png";
+import { TAG_ALL_COLUMNS } from "../constants/tagColumns";
+import { TAG_TYPE_COLUMNS } from "../constants/tagColumns";
 export default function useExport() {
-
   /* ================= TIMESTAMP ================= */
   const getDateTimeStamp = () => {
     const now = new Date();
@@ -22,14 +24,11 @@ export default function useExport() {
       pad(now.getMinutes()) +
       pad(now.getSeconds())
     );
-
   };
 
   /* ================= REPORT CODE ================= */
   const getReportCode = (reportType, subPacket) => {
-
     if (reportType === "exception") {
-
       const map = {
         "Emergency Brake": "EB",
         "Loco SOS": "LSOS",
@@ -49,7 +48,6 @@ export default function useExport() {
 
     // ---------------- STATIONARY REGULAR ----------------
     if (reportType === "station_regular") {
-
       const subMap = {
         ma: "MA",
         ssp: "SSP",
@@ -65,9 +63,6 @@ export default function useExport() {
 
       return `SVK_SR_${tabCode}`;
     }
-
-
-
 
     // ---------------- STATIONARY ACCESS ----------------
     if (reportType === "station_access") return "SVK_AA";
@@ -89,12 +84,11 @@ export default function useExport() {
     if (reportType === "rssi_loco") return "RSSI_LOCO";
     if (reportType === "rssi_stationary") return "RSSI_STN";
 
-
+    if (reportType === "tag_data") return "TAG_DATA";
 
     return "REPORT";
   };
   const getReportTitle = (reportType, subPacket) => {
-
     if (reportType === "onboard") return "ONBOARD REGULAR REPORT";
     if (reportType === "access") return "ONBOARD ACCESS REPORT";
 
@@ -120,13 +114,15 @@ export default function useExport() {
         turnout: "TURNOUT REPORT",
         tag: "TAG REPORT",
         track: "TRACK CONDITION REPORT",
-        tsr: "TEMPORARY SPEED RESTRICTION REPORT"
+        tsr: "TEMPORARY SPEED RESTRICTION REPORT",
       };
       return map[subPacket] || "STATIONARY REGULAR REPORT";
     }
 
-    if (reportType === "station_access") return "STATIONARY ACCESS AUTHORITY REPORT";
-    if (reportType === "station_emergency") return "STATIONARY EMERGENCY REPORT";
+    if (reportType === "station_access")
+      return "STATIONARY ACCESS AUTHORITY REPORT";
+    if (reportType === "station_emergency")
+      return "STATIONARY EMERGENCY REPORT";
 
     if (reportType === "fault_station") return "STATION FAULT REPORT";
     if (reportType === "fault_loco") return "LOCO FAULT REPORT";
@@ -140,6 +136,7 @@ export default function useExport() {
     if (reportType === "rssi_loco") return "LOCO RSSI REPORT";
     if (reportType === "rssi_stationary") return "STATIONARY RSSI REPORT";
 
+    if (reportType === "tag_data") return "TAG DATA REPORT";
     return "KAVACH REPORT";
   };
 
@@ -149,22 +146,56 @@ export default function useExport() {
 
     const isLoco = reportType === "onboard" || reportType === "access";
 
-    const data = rows.map(row =>
-      Object.fromEntries(
-        columns.map(col => [
+    const data = [];
+
+    rows.forEach((row) => {
+      // MAIN ROW (UNCHANGED LOGIC)
+      const mainRow = Object.fromEntries(
+        columns.map((col) => [
           col.label,
-          reportType === "onboard" || reportType === "access" || reportType === "route_rfid"
+          reportType === "onboard" ||
+          reportType === "access" ||
+          reportType === "route_rfid"
             ? formatCellValue(row, col.key)
             : reportType === "rssi_loco" || reportType === "rssi_stationary"
-              ? row[col.key] ?? "-"
+              ? (row[col.key] ?? "-")
               : reportType === "interlocking" && col.key === "date"
                 ? `${row.date || ""} ${row.time || ""}`
-                : reportType === "health_stationary" || reportType === "health_onboard"
-                  ? row[col.key] ?? "-"
-                  : formatFaultCellValue(row, col.key)
-        ])
-      )
-    );
+                : reportType === "health_stationary" ||
+                    reportType === "health_onboard"
+                  ? (row[col.key] ?? "-")
+                  : reportType === "tag_data"
+                    ? formatTagCellValue(row, col.key)
+                    : formatFaultCellValue(row, col.key),
+        ]),
+      );
+
+      data.push(mainRow);
+
+      if (reportType === "tag_data" && row.tags?.length) {
+        row.tags.forEach((tag) => {
+          const TYPE_MAP = {
+            9: "NORMAL",
+            10: "LC",
+            11: "ADJACENT",
+            12: "JUNCTION",
+          };
+
+          const tagType = TYPE_MAP[Number(tag.tag_type)] || "NORMAL";
+          const allowedKeys = TAG_TYPE_COLUMNS[tagType] || [];
+
+          const subRow = Object.fromEntries(
+            columns.map((col) => {
+              if (allowedKeys.includes(col.key)) {
+                return [col.label, formatTagCellValue(tag, col.key)];
+              }
+              return [col.label, ""];
+            }),
+          );
+          data.push(subRow);
+        });
+      }
+    });
 
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
@@ -197,7 +228,11 @@ export default function useExport() {
 
     const isStation = reportType === "station_regular";
     const isLoco = reportType === "onboard" || reportType === "access";
-    const doc = new jsPDF("l", "pt", isStation ? [columns.length * 80, 841.89] : "a3");
+    const doc = new jsPDF(
+      "l",
+      "pt",
+      isStation ? [columns.length * 80, 841.89] : "a3",
+    );
     const timestamp = getDateTimeStamp();
     const reportCode = getReportCode(reportType, subPacket);
 
@@ -205,19 +240,52 @@ export default function useExport() {
       startY: 60,
       margin: { top: 60, bottom: 40 },
       head: [columns.map((col) => col.label.toUpperCase())],
-      body: rows.map((row) =>
-        columns.map((col) =>
-          reportType === "fault_station" || reportType === "fault_loco"
-            ? formatFaultCellValue(row, col.key)
-            : reportType === "rssi_loco" || reportType === "rssi_stationary"
-              ? row[col.key] ?? "-"
-              : reportType === "health_stationary" || reportType === "health_onboard"
-                ? row[col.key] ?? "-"
-                : reportType === "route_rfid"
-                  ? row[col.key] ?? "-"
-                  : formatCellValue(row, col.key)
-        )
-      ),
+      body: (() => {
+        const body = [];
+
+        rows.forEach((row) => {
+          body.push(
+            columns.map((col) =>
+              reportType === "fault_station" || reportType === "fault_loco"
+                ? formatFaultCellValue(row, col.key)
+                : reportType === "rssi_loco" || reportType === "rssi_stationary"
+                  ? (row[col.key] ?? "-")
+                  : reportType === "health_stationary" ||
+                      reportType === "health_onboard"
+                    ? (row[col.key] ?? "-")
+                    : reportType === "route_rfid"
+                      ? (row[col.key] ?? "-")
+                      : reportType === "tag_data"
+                        ? formatTagCellValue(row, col.key)
+                        : formatCellValue(row, col.key),
+            ),
+          );
+
+          if (reportType === "tag_data" && row.tags?.length) {
+  row.tags.forEach((tag) => {
+    const TYPE_MAP = {
+      9: "NORMAL",
+      10: "LC",
+      11: "ADJACENT",
+      12: "JUNCTION",
+    };
+
+    const tagType = TYPE_MAP[Number(tag.tag_type)] || "NORMAL";
+    const allowedKeys = TAG_TYPE_COLUMNS[tagType] || [];
+
+    body.push(
+      columns.map((col) =>
+        allowedKeys.includes(col.key)
+          ? formatTagCellValue(tag, col.key)
+          : ""
+      )
+    );
+  });
+}
+        });
+
+        return body;
+      })(),
       styles: isStation
         ? { fontSize: 5.5, cellPadding: 2, overflow: "linebreak" }
         : isLoco
@@ -229,7 +297,11 @@ export default function useExport() {
         : isLoco
           ? { fontSize: 7 }
           : { fontSize: 10 },
-      columnStyles: isStation ? Object.fromEntries(columns.map((_, i) => [i, { cellWidth: "auto", minCellWidth: 22 }])) : {},
+      columnStyles: isStation
+        ? Object.fromEntries(
+            columns.map((_, i) => [i, { cellWidth: "auto", minCellWidth: 22 }]),
+          )
+        : {},
       didDrawPage: (data) => {
         const pageWidth = doc.internal.pageSize.width;
         const pageHeight = doc.internal.pageSize.height;
@@ -247,8 +319,9 @@ export default function useExport() {
         doc.setFontSize(7);
         doc.setTextColor(100, 100, 100);
 
-        // Confidential text 
-        const footerText = "This document is confidential. Using it any purpose without permission of Areca Embedded Systems Pvt. Ltd. is strictly prohibited.";
+        // Confidential text
+        const footerText =
+          "This document is confidential. Using it any purpose without permission of Areca Embedded Systems Pvt. Ltd. is strictly prohibited.";
         doc.text(footerText, 40, pageHeight - 20);
 
         const timeText = `Generated: ${new Date().toLocaleString()}`;

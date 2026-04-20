@@ -1,4 +1,14 @@
-import { Box, Button, Stack, TextField, alpha, Paper, InputAdornment, Select, MenuItem, } from "@mui/material";
+import {
+  Box,
+  Button,
+  Stack,
+  TextField,
+  alpha,
+  Paper,
+  InputAdornment,
+  Select,
+  MenuItem,
+} from "@mui/material";
 import { motion } from "framer-motion";
 import SearchIcon from "@mui/icons-material/Search";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
@@ -27,12 +37,11 @@ export default function ReportHeader({
   showTableType = true,
   rightContent,
   onAdvancedSearch,
+  disableGenerate = false,
 }) {
   const isEngine = stage === "ENGINE";
   const isPreview = stage === "PREVIEW";
   const canExport = isPreview || isEngine;
-
-
 
   return (
     <Paper
@@ -69,12 +78,15 @@ export default function ReportHeader({
                 py: 0.4,
                 "& fieldset": { borderColor: "rgba(255,255,255,0.1)" },
                 "&:hover fieldset": { borderColor: "#4dabf7" },
-              }
+              },
             }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchIcon fontSize="small" sx={{ color: "rgba(255,255,255,0.5)" }} />
+                  <SearchIcon
+                    fontSize="small"
+                    sx={{ color: "rgba(255,255,255,0.5)" }}
+                  />
                 </InputAdornment>
               ),
             }}
@@ -93,9 +105,13 @@ export default function ReportHeader({
               borderRadius: "6px",
               fontSize: "0.85rem",
               py: 0.4,
-              "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.1)" },
-              "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#4dabf7" },
-              "& .MuiSvgIcon-root": { color: "rgb(255, 255, 255)" }
+              "& .MuiOutlinedInput-notchedOutline": {
+                borderColor: "rgba(255,255,255,0.1)",
+              },
+              "&:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: "#4dabf7",
+              },
+              "& .MuiSvgIcon-root": { color: "rgb(255, 255, 255)" },
             }}
           >
             <MenuItem value="onboard">Onboard</MenuItem>
@@ -104,11 +120,7 @@ export default function ReportHeader({
           </Select>
         )}
 
-        {rightContent && (
-          <Box sx={{ ml: 1 }}>
-            {rightContent}
-          </Box>
-        )}
+        {rightContent && <Box sx={{ ml: 1 }}>{rightContent}</Box>}
         {exceptionTab && (
           <Select
             size="small"
@@ -121,9 +133,13 @@ export default function ReportHeader({
               borderRadius: "6px",
               fontSize: "0.85rem",
               py: 0.4,
-              "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.1)" },
-              "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#4dabf7" },
-              "& .MuiSvgIcon-root": { color: "#fff" }
+              "& .MuiOutlinedInput-notchedOutline": {
+                borderColor: "rgba(255,255,255,0.1)",
+              },
+              "&:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: "#4dabf7",
+              },
+              "& .MuiSvgIcon-root": { color: "#fff" },
             }}
           >
             <MenuItem value="Emergency Brake">Emergency Brake</MenuItem>
@@ -136,8 +152,11 @@ export default function ReportHeader({
         <Button
           variant="contained"
           startIcon={<PlayArrowIcon />}
-          onClick={onGenerate}
-          disabled={isEngine}
+          onClick={() => {
+            if (disableGenerate) return;
+            onGenerate?.();
+          }}
+          disabled={isEngine || disableGenerate}
           sx={{
             borderRadius: "6px",
             px: 4,
@@ -149,7 +168,7 @@ export default function ReportHeader({
             boxShadow: "0 4px 14px 0 rgba(11, 77, 187, 0.39)",
             "&:hover": {
               background: "linear-gradient(45deg, #093d96, #3a96e0)",
-            }
+            },
           }}
         >
           {isEngine ? "Generating..." : "Generate"}
@@ -167,7 +186,10 @@ export default function ReportHeader({
               color: "#eee",
               borderRadius: "10px",
               textTransform: "none",
-              "&:hover": { borderColor: "#fff", bgcolor: "rgba(255,255,255,0.05)" }
+              "&:hover": {
+                borderColor: "#fff",
+                bgcolor: "rgba(255,255,255,0.05)",
+              },
             }}
           >
             Advanced Search
@@ -175,7 +197,6 @@ export default function ReportHeader({
         )}
 
         <Box sx={{ flexGrow: 1 }} />
-
 
         <Stack direction="row" spacing={1}>
           <Button
@@ -191,7 +212,10 @@ export default function ReportHeader({
               color: "#eee",
               borderRadius: "10px",
               textTransform: "none",
-              "&:hover": { borderColor: "#fff", bgcolor: "rgba(255,255,255,0.05)" }
+              "&:hover": {
+                borderColor: "#fff",
+                bgcolor: "rgba(255,255,255,0.05)",
+              },
             }}
           >
             Save
@@ -210,7 +234,10 @@ export default function ReportHeader({
                 color: "#eee",
                 borderRadius: "10px",
                 textTransform: "none",
-                "&:hover": { borderColor: "#fff", bgcolor: "rgba(255,255,255,0.05)" }
+                "&:hover": {
+                  borderColor: "#fff",
+                  bgcolor: "rgba(255,255,255,0.05)",
+                },
               }}
             >
               Save All
@@ -230,7 +257,10 @@ export default function ReportHeader({
                 color: "#eee",
                 borderRadius: "10px",
                 textTransform: "none",
-                "&:hover": { borderColor: "#fff", bgcolor: "rgba(255,255,255,0.05)" }
+                "&:hover": {
+                  borderColor: "#fff",
+                  bgcolor: "rgba(255,255,255,0.05)",
+                },
               }}
             >
               Columns
@@ -250,7 +280,10 @@ export default function ReportHeader({
               color: "#eee",
               borderRadius: "10px",
               textTransform: "none",
-              "&:hover": { borderColor: "#fff", bgcolor: "rgba(255,255,255,0.05)" }
+              "&:hover": {
+                borderColor: "#fff",
+                bgcolor: "rgba(255,255,255,0.05)",
+              },
             }}
           >
             Clear
@@ -269,7 +302,10 @@ export default function ReportHeader({
               color: "#eee",
               borderRadius: "10px",
               textTransform: "none",
-              "&:hover": { borderColor: "#fff", bgcolor: "rgba(255,255,255,0.05)" }
+              "&:hover": {
+                borderColor: "#fff",
+                bgcolor: "rgba(255,255,255,0.05)",
+              },
             }}
           >
             Print

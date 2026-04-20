@@ -20,7 +20,7 @@ import RSSI from "./modules/RSSI";
 import TSRMS from "./modules/TSRMS";
 import AdjacentKavachInfo from "./modules/AdjacentKavachInfo";
 import DMI from "./modules/DMI";
-
+import TagData from "./modules/TagData";
 import { AuthProvider } from "./auth/AuthContext";
 import PrivateRoute from "./auth/PrivateRoute";
 
@@ -74,6 +74,7 @@ function App() {
                 <Route path="tsrms" element={<TSRMS />} />
                 <Route path="adjacent-kavach" element={<AdjacentKavachInfo />} />
                 <Route path="dmi" element={<DMI />} />
+                <Route path="tag-data" element={<TagData />} />
 
                 <Route path="StationaryKavachInfo" element={<StationaryKavachInfo />} />
 

@@ -100,14 +100,14 @@ const LocoFaults = forwardRef(({ originType }, ref) => {
     setRows([]);
     setPage(1);
   };
-  // Auto-refresh when selectedFile changes (new packets detected)
+  // Auto-refresh when selectedFile changes new packets detected
   useEffect(() => {
     if (
       selectedFile &&
       fromDate &&
       toDate &&
       isDateRangeValid &&
-      rows.length > 0 // Only auto-refresh if data already exists
+      rows.length > 0 
     ) {
       generate();
     }

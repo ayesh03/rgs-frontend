@@ -87,7 +87,7 @@ const Dashboard = () => {
             title: "TOTAL MOVEMENT",
             value: dashboardData?.total_movement ?? 0,
             icon: <DirectionsRailwayIcon sx={{ fontSize: 38 }} />,
-            color: "#4dabf7", // Electric Blue
+            color: "#4dabf7", 
             route: "loco",
             autoGenerate: true
         },
@@ -95,7 +95,7 @@ const Dashboard = () => {
             title: "ONBOARD EMERGENCY",
             value: dashboardData?.onboard_emergency ?? 0,
             icon: <WarningAmberIcon sx={{ fontSize: 38 }} />,
-            color: "#ff5252", // Neon Red
+            color: "#ff55e6",
             route: "loco",
             autoGenerate: true,
             filter: { field: "emergency_status", value: [1, 2, 3, 4, 5, 6] }
@@ -142,7 +142,7 @@ const Dashboard = () => {
             title: "EMERGENCY BRAKE",
             value: dashboardData?.emergency_brake ?? 0,
             icon: <SpeedIcon sx={{ fontSize: 38 }} />,
-            color: "#e040fb", // Purple Neon
+            color: "#77008d", // Purple Neon
             route: "loco",
             autoGenerate: true,
             filter: { field: "brake_applied_status", value: ["3"] }

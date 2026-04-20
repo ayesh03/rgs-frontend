@@ -44,10 +44,10 @@ export const DEST_LOCO_SOS_MAP = {
   1: "Foreign RFID",
   2: "Reserved",
   3: "Onboard Odo Error ≥120m",
-  4: "SPAD",
+  4: "Detection ofSPAD",
   5: "Rear End Collision",
   6: "Head On Collision",
-  7: "Shunting Limit Violation",
+  7: "Shunting Limit Violation in shunt mode",
   8: "Station General SoS",
 };
 
@@ -83,22 +83,22 @@ export const AUTHORITY_TYPE_MAP = {
 /* ---------------- REQUEST SHORTEN MA ---------------- */
 
 export const REQ_SHORTEN_MA_MAP = {
-  0: "No",
-  1: "Yes",
+  0: "No Request",
+  1: "New Request for shortening MA",
 };
 
 /* ---------------- TRAIN LENGTH INFO STATUS ---------------- */
 
 export const TRAIN_LEN_INFO_STATUS_MAP = {
-  0: "Not Present",
-  1: "Present",
+  0: "No Train Length Info",
+  1: "Train Length info follows",
 };
 
 /* ---------------- TRAIN LENGTH INFO TYPE ---------------- */
 
 export const TRAIN_LEN_INFO_TYPE_MAP = {
-  0: "Start Frame Reference",
-  1: "End Frame Reference",
+  0: "Start Frame and offset",
+  1: "End Frame and offset",
 };
 
 /* ---------------- NEXT STATION COMM ---------------- */
@@ -262,8 +262,8 @@ export const SPEED_VALUE_FORMAT = (v) => {
 ============================================================ */
 
 export const GRADIENT_DIR_MAP = {
-  0: "Down",
-  1: "Up",
+  0: "Downhill",
+  1: "Uphill",
 };
 
 export const GRADIENT_VALUE_FORMAT = (v) => {
@@ -277,11 +277,6 @@ export const GRADIENT_VALUE_FORMAT = (v) => {
 
   return "Reserved";
 };
-
-
-// //* ============================================================
-//    LC GATE PROFILE – FULL ANNEXURE FORMAT
-// ============================================================ */
 
 /* ---------------- SUB PACKET TYPE ---------------- */
 

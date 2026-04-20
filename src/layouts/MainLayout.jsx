@@ -220,6 +220,7 @@ export default function MainLayout() {
     { label: "Adjacent Kavach Info", path: "adjacent-kavach" },
     { label: "TSRMS", path: "tsrms" },
     { label: "DMI Events", path: "dmi" },
+    { label: "Tag Data", path: "tag-data" },
   ];
 
   const extractDateTimeFromFileName = (fileName) => {
@@ -456,9 +457,17 @@ export default function MainLayout() {
                         "& .MuiOutlinedInput-root": {
                           "& fieldset": { borderColor: "#444" },
                         },
-                        "& .MuiOutlinedInput-adornedEnd .MuiIconButton-root": {
-                          color: "#fff",
-                        },
+                        cursor: "pointer",
+                        "& input[type='date']::-webkit-calendar-picker-indicator":
+                          {
+                            filter: "invert(1)",
+                            cursor: "pointer",
+                          },
+                        "& input[type='time']::-webkit-calendar-picker-indicator":
+                          {
+                            filter: "invert(1)",
+                            cursor: "pointer",
+                          },
                       }}
                     />
                     <TextField
@@ -476,9 +485,17 @@ export default function MainLayout() {
                         "& .MuiOutlinedInput-root": {
                           "& fieldset": { borderColor: "#444" },
                         },
-                        "& .MuiOutlinedInput-adornedEnd .MuiIconButton-root": {
-                          color: "#fff",
-                        },
+                        cursor: "pointer",
+                        "& input[type='date']::-webkit-calendar-picker-indicator":
+                          {
+                            filter: "invert(1)",
+                            cursor: "pointer",
+                          },
+                        "& input[type='time']::-webkit-calendar-picker-indicator":
+                          {
+                            filter: "invert(1)",
+                            cursor: "pointer",
+                          },
                       }}
                     />
                     <Stack
@@ -564,9 +581,20 @@ export default function MainLayout() {
                       sx={{
                         input: { color: "#fff" },
                         label: { color: "#888" },
+
                         "& .MuiOutlinedInput-root": {
                           "& fieldset": { borderColor: "#444" },
                         },
+
+                        "& input": {
+                          cursor: "pointer",
+                        },
+
+                        "& input[type='date']::-webkit-calendar-picker-indicator":
+                          {
+                            filter: "invert(1)",
+                            cursor: "pointer",
+                          },
                       }}
                     />
                     <TextField
@@ -581,9 +609,20 @@ export default function MainLayout() {
                       sx={{
                         input: { color: "#fff" },
                         label: { color: "#888" },
+
                         "& .MuiOutlinedInput-root": {
                           "& fieldset": { borderColor: "#444" },
                         },
+
+                        "& input": {
+                          cursor: "pointer",
+                        },
+
+                        "& input[type='time']::-webkit-calendar-picker-indicator":
+                          {
+                            filter: "invert(1)",
+                            cursor: "pointer",
+                          },
                       }}
                     />
                     <Stack

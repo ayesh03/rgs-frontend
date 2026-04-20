@@ -1,12 +1,23 @@
-import {Button,Box,TextField,Typography,Card,InputAdornment,Stack,alpha} from "@mui/material";
+import {
+  Button,
+  Box,
+  TextField,
+  Typography,
+  Card,
+  InputAdornment,
+  Stack,
+  alpha,
+} from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import TrainIcon from '@mui/icons-material/Train';
+import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import TrainIcon from "@mui/icons-material/Train";
 import { useAuth } from "../auth/AuthContext";
-
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import IconButton from "@mui/material/IconButton";
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -14,57 +25,54 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
+  const [showPassword, setShowPassword] = useState(false);
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-const handleLogin = async () => {
-  setError("");
-  setLoading(true);
+  const handleLogin = async () => {
+    setError("");
+    setLoading(true);
 
-  try {
-    const res = await fetch(`${API_BASE}/api/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        username,
-        password
-      })
-    });
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username,
+          password,
+        }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (!data.success) {
-      setError(data.error || "Login failed");
-      setLoading(false);
-      return;
-    }
+      if (!data.success) {
+        setError(data.error || "Login failed");
+        setLoading(false);
+        return;
+      }
 
-    localStorage.setItem(
-      "user",
-      JSON.stringify({
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          username: data.username,
+          role: data.role,
+        }),
+      );
+
+      login({
         username: data.username,
-        role: data.role
-      })
-    );
+        role: data.role,
+      });
 
-    login({
-      username: data.username,
-      role: data.role
-    });
-
-    navigate("/app", { replace: true });
-
-  } catch (err) {
-    setError("Backend not reachable");
-  } finally {
-    setLoading(false);
-  }
-};
-
-
+      navigate("/app", { replace: true });
+    } catch (err) {
+      setError("Backend not reachable");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Box
@@ -76,7 +84,8 @@ const handleLogin = async () => {
         minHeight: "100vh",
         overflow: "hidden",
         // Cinematic Deep Blue Gradient
-        background: "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #020617 100%)",
+        background:
+          "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #020617 100%)",
       }}
     >
       {/* Decorative Floating Orbs */}
@@ -85,7 +94,7 @@ const handleLogin = async () => {
         animate={{
           scale: [1, 1.2, 1],
           x: [0, 50, 0],
-          y: [0, 30, 0]
+          y: [0, 30, 0],
         }}
         transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
         sx={{
@@ -95,7 +104,8 @@ const handleLogin = async () => {
           width: 300,
           height: 300,
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(37, 99, 235, 0.2) 0%, transparent 70%)",
+          background:
+            "radial-gradient(circle, rgba(37, 99, 235, 0.2) 0%, transparent 70%)",
           filter: "blur(60px)",
         }}
       />
@@ -104,7 +114,7 @@ const handleLogin = async () => {
         animate={{
           scale: [1, 1.3, 1],
           x: [0, -40, 0],
-          y: [0, -60, 0]
+          y: [0, -60, 0],
         }}
         transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
         sx={{
@@ -114,7 +124,8 @@ const handleLogin = async () => {
           width: 400,
           height: 400,
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%)",
+          background:
+            "radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%)",
           filter: "blur(80px)",
         }}
       />
@@ -127,7 +138,7 @@ const handleLogin = async () => {
         <Card
           sx={{
             p: 6,
-            width: { xs: '90vw', sm: 420 },
+            width: { xs: "90vw", sm: 420 },
             borderRadius: 8,
             position: "relative",
             zIndex: 1,
@@ -145,28 +156,37 @@ const handleLogin = async () => {
               transition={{ duration: 0.5 }}
               style={{ display: "inline-block" }}
             >
-              <Box sx={{
-                p: 2,
-                borderRadius: "20px",
-                background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
-                display: "inline-flex",
-                mb: 2,
-                boxShadow: "0 10px 20px rgba(37, 99, 235, 0.3)"
-              }}>
+              <Box
+                sx={{
+                  p: 2,
+                  borderRadius: "20px",
+                  background:
+                    "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
+                  display: "inline-flex",
+                  mb: 2,
+                  boxShadow: "0 10px 20px rgba(37, 99, 235, 0.3)",
+                }}
+              >
                 <TrainIcon sx={{ fontSize: 40, color: "#fff" }} />
               </Box>
             </motion.div>
-            
 
-            <Typography variant="h3" fontWeight="900" sx={{
-              color: "#fff",
-              letterSpacing: "-2px",
-              textShadow: "0 2px 10px rgba(0,0,0,0.2)"
-            }}>
+            <Typography
+              variant="h3"
+              fontWeight="900"
+              sx={{
+                color: "#fff",
+                letterSpacing: "-2px",
+                textShadow: "0 2px 10px rgba(0,0,0,0.2)",
+              }}
+            >
               KAVACH
             </Typography>
-            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.5)", fontWeight: 500 }}>
-              Train Control & Asset Management
+            <Typography
+              variant="body2"
+              sx={{ color: "rgba(255,255,255,0.5)", fontWeight: 300 }}
+            >
+              CENTRALIZED INTELLIGENT KAVACH NETWORK MONITORING SYSTEM(REPORT GENERATION SYSTEM)
             </Typography>
           </Box>
 
@@ -183,34 +203,34 @@ const handleLogin = async () => {
               onChange={(e) => setUsername(e.target.value)}
               fullWidth
               variant="outlined"
-
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <PersonOutlineIcon sx={{ color: "rgba(255,255,255,0.4)" }} />
+                    <PersonOutlineIcon
+                      sx={{ color: "rgba(255,255,255,0.4)" }}
+                    />
                   </InputAdornment>
                 ),
               }}
               sx={{
-                '& .MuiOutlinedInput-root': {
+                "& .MuiOutlinedInput-root": {
                   color: "#fff",
                   borderRadius: 4,
                   bgcolor: "rgba(255,255,255,0.05)",
                   transition: "all 0.3s",
-                  '& fieldset': { borderColor: "rgba(255,255,255,0.1)" },
-                  '&:hover fieldset': { borderColor: "rgba(255,255,255,0.3)" },
-                  '&.Mui-focused fieldset': { borderColor: "#3b82f6" },
-                }
+                  "& fieldset": { borderColor: "rgba(255,255,255,0.1)" },
+                  "&:hover fieldset": { borderColor: "rgba(255,255,255,0.3)" },
+                  "&.Mui-focused fieldset": { borderColor: "#3b82f6" },
+                },
               }}
             />
 
             <TextField
               placeholder="Password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               fullWidth
-
               variant="outlined"
               InputProps={{
                 startAdornment: (
@@ -218,17 +238,28 @@ const handleLogin = async () => {
                     <LockOutlinedIcon sx={{ color: "rgba(255,255,255,0.4)" }} />
                   </InputAdornment>
                 ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      edge="end"
+                      sx={{ color: "rgba(255,255,255,0.5)" }}
+                    >
+                      {showPassword ? <Visibility /> : <VisibilityOff />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
               }}
               sx={{
-                '& .MuiOutlinedInput-root': {
+                "& .MuiOutlinedInput-root": {
                   color: "#fff",
                   borderRadius: 4,
                   bgcolor: "rgba(255,255,255,0.05)",
                   transition: "all 0.3s",
-                  '& fieldset': { borderColor: "rgba(255,255,255,0.1)" },
-                  '&:hover fieldset': { borderColor: "rgba(255,255,255,0.3)" },
-                  '&.Mui-focused fieldset': { borderColor: "#3b82f6" },
-                }
+                  "& fieldset": { borderColor: "rgba(255,255,255,0.1)" },
+                  "&:hover fieldset": { borderColor: "rgba(255,255,255,0.3)" },
+                  "&.Mui-focused fieldset": { borderColor: "#3b82f6" },
+                },
               }}
             />
 
@@ -259,8 +290,11 @@ const handleLogin = async () => {
           </Stack>
 
           <Box mt={6} textAlign="center">
-            <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.3)", letterSpacing: 1 }}>
-              Areca  Embedded Systems Pvt.Ltd
+            <Typography
+              variant="caption"
+              sx={{ color: "rgba(255,255,255,0.3)", letterSpacing: 1 }}
+            >
+              Areca Embedded Systems Pvt.Ltd. / Version 1.0
             </Typography>
           </Box>
         </Card>
