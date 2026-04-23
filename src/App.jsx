@@ -23,6 +23,8 @@ import DMI from "./modules/DMI";
 import TagData from "./modules/TagData";
 import { AuthProvider } from "./auth/AuthContext";
 import PrivateRoute from "./auth/PrivateRoute";
+import OnboardRadio from "./modules/OnboardRadio";
+
 
 //  THIS WAS MISSING
 import { AppProvider } from "./context/AppContext";
@@ -75,6 +77,7 @@ function App() {
                 <Route path="adjacent-kavach" element={<AdjacentKavachInfo />} />
                 <Route path="dmi" element={<DMI />} />
                 <Route path="tag-data" element={<TagData />} />
+                <Route path="onboard-radio" element={<OnboardRadio />} />
 
                 <Route path="StationaryKavachInfo" element={<StationaryKavachInfo />} />
 

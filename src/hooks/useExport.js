@@ -85,6 +85,7 @@ export default function useExport() {
     if (reportType === "rssi_stationary") return "RSSI_STN";
 
     if (reportType === "tag_data") return "TAG_DATA";
+    if (reportType === "onboard_radio") return "LVK_OR";
 
     return "REPORT";
   };
@@ -137,6 +138,8 @@ export default function useExport() {
     if (reportType === "rssi_stationary") return "STATIONARY RSSI REPORT";
 
     if (reportType === "tag_data") return "TAG DATA REPORT";
+
+    if (reportType === "onboard_radio") return "ONBOARD RADIO REPORT";
     return "KAVACH REPORT";
   };
 
@@ -171,6 +174,29 @@ export default function useExport() {
       );
 
       data.push(mainRow);
+
+      if (reportType === "onboard_radio") {
+        row.sub_packets?.forEach((pkt) => {
+          const pktRow = Object.fromEntries(
+            columns.map((col) => [
+              col.label,
+              pkt[col.key] ?? row[col.key] ?? "",
+            ]),
+          );
+          data.push(pktRow);
+
+          // LEVEL 2 (MOVEMENT AUTHORITY etc)
+          pkt.sub_packets?.forEach((sp) => {
+            const spRow = Object.fromEntries(
+              columns.map((col) => [
+                col.label,
+                pkt[col.key] ?? row[col.key] ?? "",
+              ]),
+            );
+            data.push(spRow);
+          });
+        });
+      }
 
       if (reportType === "tag_data" && row.tags?.length) {
         row.tags.forEach((tag) => {
@@ -261,27 +287,39 @@ export default function useExport() {
             ),
           );
 
+          if (reportType === "onboard_radio") {
+            row.sub_packets?.forEach((pkt) => {
+              // LEVEL 1
+              body.push(columns.map((col) => pkt[col.key] ?? ""));
+
+              // LEVEL 2
+              pkt.sub_packets?.forEach((sp) => {
+                body.push(columns.map((col) => sp[col.key] ?? ""));
+              });
+            });
+          }
+
           if (reportType === "tag_data" && row.tags?.length) {
-  row.tags.forEach((tag) => {
-    const TYPE_MAP = {
-      9: "NORMAL",
-      10: "LC",
-      11: "ADJACENT",
-      12: "JUNCTION",
-    };
+            row.tags.forEach((tag) => {
+              const TYPE_MAP = {
+                9: "NORMAL",
+                10: "LC",
+                11: "ADJACENT",
+                12: "JUNCTION",
+              };
 
-    const tagType = TYPE_MAP[Number(tag.tag_type)] || "NORMAL";
-    const allowedKeys = TAG_TYPE_COLUMNS[tagType] || [];
+              const tagType = TYPE_MAP[Number(tag.tag_type)] || "NORMAL";
+              const allowedKeys = TAG_TYPE_COLUMNS[tagType] || [];
 
-    body.push(
-      columns.map((col) =>
-        allowedKeys.includes(col.key)
-          ? formatTagCellValue(tag, col.key)
-          : ""
-      )
-    );
-  });
-}
+              body.push(
+                columns.map((col) =>
+                  allowedKeys.includes(col.key)
+                    ? formatTagCellValue(tag, col.key)
+                    : "",
+                ),
+              );
+            });
+          }
         });
 
         return body;

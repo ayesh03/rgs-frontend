@@ -221,6 +221,7 @@ export default function MainLayout() {
     { label: "TSRMS", path: "tsrms" },
     { label: "DMI Events", path: "dmi" },
     { label: "Tag Data", path: "tag-data" },
+    { label: "Onboard Radio", path: "onboard-radio" },
   ];
 
   const extractDateTimeFromFileName = (fileName) => {

@@ -9,8 +9,8 @@ import {
   alpha,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, useAnimation } from "framer-motion";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import TrainIcon from "@mui/icons-material/Train";
@@ -18,6 +18,8 @@ import { useAuth } from "../auth/AuthContext";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import IconButton from "@mui/material/IconButton";
+import arecaLogo from "../assets/arecaLogo.png";
+
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -26,6 +28,7 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const controls = useAnimation();
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -72,6 +75,44 @@ export default function Login() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const moveRandom = async () => {
+    while (true) {
+      const x = Math.random() * window.innerWidth - window.innerWidth / 2;
+      const y = Math.random() * window.innerHeight - window.innerHeight / 2;
+
+      await controls.start({
+        x,
+        y,
+        transition: {
+          duration: 6,
+          ease: "linear",
+        },
+      });
+    }
+  };
+
+  useEffect(() => {
+    moveRandom();
+  }, []);
+
+  const jumpRandom = async () => {
+    // STOP current animation immediately
+    controls.stop();
+
+    const x = Math.random() * window.innerWidth - window.innerWidth / 2;
+    const y = Math.random() * window.innerHeight - window.innerHeight / 2;
+
+    // QUICK jump
+    await controls.start({
+      x,
+      y,
+      transition: { duration: 1.5 },
+    });
+
+    // CONTINUE movement again
+    moveRandom();
   };
 
   return (
@@ -129,8 +170,30 @@ export default function Login() {
           filter: "blur(80px)",
         }}
       />
+      <Box
+        component={motion.img}
+        src={arecaLogo}
+        alt="Areca Logo"
+        animate={controls}
+        onClick={jumpRandom}
+        sx={{
+          position: "absolute",
+          width: "70vw",
+          maxWidth: 900,
 
+          top: "50%",
+          left: "50%",
+          translate: "-50% -50%",
+
+          opacity: 0.08,
+          filter: "blur(2px)",
+
+          pointerEvents: "auto",
+          cursor: "pointer",
+        }}
+      />
       <motion.div
+        style={{ position: "relative", zIndex: 3 }}
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "circOut" }}
@@ -184,10 +247,17 @@ export default function Login() {
             </Typography>
             <Typography
               variant="body2"
-              sx={{ color: "rgba(255,255,255,0.5)", fontWeight: 300 }}
+              sx={{ color: "rgba(255, 255, 255, 0.56)", fontWeight: 300 }}
             >
-              CENTRALIZED INTELLIGENT KAVACH NETWORK MONITORING SYSTEM(REPORT GENERATION SYSTEM)
+              CENTRALIZED INTELLIGENT KAVACH NETWORK MONITORING SYSTEM
             </Typography>
+            <Typography
+            sx={{ color: "rgb(255, 255, 255)",
+             fontWeight: 600 }}
+             >
+              REPORT GENERATION SYSTEM
+              
+              </Typography>
           </Box>
 
           <Stack spacing={3}>
@@ -276,16 +346,17 @@ export default function Login() {
                   fontWeight: 800,
                   fontSize: "1rem",
                   textTransform: "none",
-                  background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
+                  background:
+                    "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
                   boxShadow: "0 10px 25px rgba(37, 99, 235, 0.4)",
                   "&:hover": {
-                    background: "linear-gradient(135deg, #60a5fa 0%, #2563eb 100%)",
-                  }
+                    background:
+                      "linear-gradient(135deg, #60a5fa 0%, #2563eb 100%)",
+                  },
                 }}
               >
                 {loading ? "Logging in..." : "Login"}
               </Button>
-
             </motion.div>
           </Stack>
 

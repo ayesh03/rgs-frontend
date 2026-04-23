@@ -40,8 +40,8 @@ export default function ColumnFilterDialog({
       fullWidth
       PaperProps={{
         sx: {
-          bgcolor: "rgba(22, 22, 22, 0.9)", // Dark background
-          backdropFilter: "blur(12px)", // Glass effect
+          bgcolor: "rgba(22, 22, 22, 0.9)", 
+          backdropFilter: "blur(12px)", 
           border: "1px solid rgba(255, 255, 255, 0.1)",
           borderRadius: "12px",
           backgroundImage: "none",
