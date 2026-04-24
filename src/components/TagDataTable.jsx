@@ -19,7 +19,7 @@ import React from "react";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import FilterListIcon from "@mui/icons-material/FilterList";
-import { Select, MenuItem } from "@mui/material";
+import { Select, MenuItem, Tooltip } from "@mui/material";
 import { formatTagCellValue } from "../utils/tagFormatter";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
@@ -186,47 +186,51 @@ export default function DMIEventsTable({
                     {col.label.toUpperCase()}
                   </Typography>
 
-                  <IconButton
-                    size="small"
-                    onClick={() => {
-                      let next;
+                  <Tooltip title="Sort column">
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        let next;
 
-                      if (!sortState[col.key]) next = "asc";
-                      else if (sortState[col.key] === "asc") next = "desc";
-                      else next = null;
+                        if (!sortState[col.key]) next = "asc";
+                        else if (sortState[col.key] === "asc") next = "desc";
+                        else next = null;
 
-                      setSortState((prev) => ({ ...prev, [col.key]: next }));
-                      onSort?.(col.key, next);
-                    }}
-                    sx={{
-                      p: 0.2,
-                      color: sortState[col.key]
-                        ? "#5b8ffe"
-                        : "rgba(255,255,255,0.6)",
-                    }}
-                  >
-                    {sortState[col.key] === "desc" ? (
-                      <ArrowDownwardIcon sx={{ fontSize: 13 }} />
-                    ) : (
-                      <ArrowUpwardIcon sx={{ fontSize: 13 }} />
-                    )}
-                  </IconButton>
+                        setSortState((prev) => ({ ...prev, [col.key]: next }));
+                        onSort?.(col.key, next);
+                      }}
+                      sx={{
+                        p: 0.2,
+                        color: sortState[col.key]
+                          ? "#5b8ffe"
+                          : "rgba(255,255,255,0.6)",
+                      }}
+                    >
+                      {sortState[col.key] === "desc" ? (
+                        <ArrowDownwardIcon sx={{ fontSize: 13 }} />
+                      ) : (
+                        <ArrowUpwardIcon sx={{ fontSize: 13 }} />
+                      )}
+                    </IconButton>
+                  </Tooltip>
 
-                  <IconButton
-                    size="small"
-                    onClick={(e) => {
-                      setAnchorEl(e.currentTarget);
-                      setActiveCol(col.key);
-                      setSearchVal("");
-                    }}
-                    sx={{
-                      p: 0.2,
-                      color: "rgba(255,255,255,0.6)",
-                      "&:hover": { color: "#5b8ffe" },
-                    }}
-                  >
-                    <FilterListIcon sx={{ fontSize: 13 }} />
-                  </IconButton>
+                  <Tooltip title="Filter column">
+                    <IconButton
+                      size="small"
+                      onClick={(e) => {
+                        setAnchorEl(e.currentTarget);
+                        setActiveCol(col.key);
+                        setSearchVal("");
+                      }}
+                      sx={{
+                        p: 0.2,
+                        color: "rgba(255,255,255,0.6)",
+                        "&:hover": { color: "#5b8ffe" },
+                      }}
+                    >
+                      <FilterListIcon sx={{ fontSize: 13 }} />
+                    </IconButton>
+                  </Tooltip>
                 </Stack>
               </TableCell>
             ))}
@@ -326,7 +330,10 @@ export default function DMIEventsTable({
                                   {type} TAG
                                 </Typography>
 
-                                <TagInnerTable tags={tags} visibleKeys={visibleKeys} />
+                                <TagInnerTable
+                                  tags={tags}
+                                  visibleKeys={visibleKeys}
+                                />
                               </Box>
                             ),
                           );

@@ -1,11 +1,20 @@
-import { Stack, Typography, TextField, MenuItem, alpha ,Box ,Divider} from "@mui/material";
+import {
+  Stack,
+  Typography,
+  TextField,
+  MenuItem,
+  alpha,
+  Box,
+  Divider,
+} from "@mui/material";
+
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-
+import Tooltip from "@mui/material/Tooltip";
 export default function RowsPerPageControl({
   rowsPerPage,
   setRowsPerPage,
-  setPage
+  setPage,
 }) {
   const presetOptions = [10, 20, 50, 100, 200, 300, 500, 1000, 5000];
   const [customValue, setCustomValue] = useState("");
@@ -61,18 +70,20 @@ export default function RowsPerPageControl({
       alignItems="center"
       justifyContent="flex-end"
     >
-      <Typography 
-        variant="caption" 
-        sx={{ 
-          fontWeight: 800, 
-          color: "rgba(255, 255, 255, 0.5)", 
-          textTransform: "uppercase",
-          letterSpacing: 1,
-          fontSize: "1rem"
-        }}
-      >
-        Rows:
-      </Typography>
+      <Tooltip title="Select number of rows per page">
+        <Typography
+          variant="caption"
+          sx={{
+            fontWeight: 800,
+            color: "rgba(255, 255, 255, 0.5)",
+            textTransform: "uppercase",
+            letterSpacing: 1,
+            fontSize: "1rem",
+          }}
+        >
+          Rows:
+        </Typography>
+      </Tooltip>
 
       <AnimatePresence mode="wait">
         {!isCustom ? (
@@ -83,42 +94,52 @@ export default function RowsPerPageControl({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -5 }}
           >
-            <TextField
-              select
-              size="small"
-              value={rowsPerPage}
-              onChange={(e) => handleChange(e.target.value)}
-              sx={inputStyles}
-              SelectProps={{
-                MenuProps: {
-                  PaperProps: {
-                    sx: {
-                      bgcolor: "#1a1f26",
-                      backgroundImage: "none",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                      "& .MuiMenuItem-root": {
-                        fontSize: "0.75rem",
-                        color: "rgba(255,255,255,0.8)",
-                        "&:hover": { bgcolor: "rgba(77, 171, 247, 0.1)" },
-                        "&.Mui-selected": { bgcolor: alpha("#4dabf7", 0.2), color: "#4dabf7" },
+            <Tooltip title="Choose rows per page or custom value">
+              <TextField
+                select
+                size="small"
+                value={rowsPerPage}
+                onChange={(e) => handleChange(e.target.value)}
+                sx={inputStyles}
+                SelectProps={{
+                  MenuProps: {
+                    PaperProps: {
+                      sx: {
+                        bgcolor: "#1a1f26",
+                        backgroundImage: "none",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        "& .MuiMenuItem-root": {
+                          fontSize: "0.75rem",
+                          color: "rgba(255,255,255,0.8)",
+                          "&:hover": { bgcolor: "rgba(77, 171, 247, 0.1)" },
+                          "&.Mui-selected": {
+                            bgcolor: alpha("#4dabf7", 0.2),
+                            color: "#4dabf7",
+                          },
+                        },
                       },
                     },
                   },
-                },
-              }}
-            >
-              {dropdownOptions
-                .sort((a, b) => a - b)
-                .map((num) => (
-                  <MenuItem key={num} value={num}>
-                    {num}
-                  </MenuItem>
-                ))}
-              <Divider sx={{ my: 0.5, borderColor: "rgba(255,255,255,0.05)" }} />
-              <MenuItem value="custom" sx={{ color: "#4dabf7 !important", fontWeight: 700 }}>
-                CUSTOM...
-              </MenuItem>
-            </TextField>
+                }}
+              >
+                {dropdownOptions
+                  .sort((a, b) => a - b)
+                  .map((num) => (
+                    <MenuItem key={num} value={num}>
+                      {num}
+                    </MenuItem>
+                  ))}
+                <Divider
+                  sx={{ my: 0.5, borderColor: "rgba(255,255,255,0.05)" }}
+                />
+                <MenuItem
+                  value="custom"
+                  sx={{ color: "#4dabf7 !important", fontWeight: 700 }}
+                >
+                  CUSTOM...
+                </MenuItem>
+              </TextField>
+            </Tooltip>
           </Box>
         ) : (
           <Box
@@ -128,16 +149,18 @@ export default function RowsPerPageControl({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
           >
-            <TextField
-              size="small"
-              autoFocus
-              placeholder="Enter..."
-              value={customValue}
-              onChange={(e) => setCustomValue(e.target.value)}
-              onKeyDown={handleCustomKeyDown}
-              onBlur={() => setIsCustom(false)}
-              sx={inputStyles}
-            />
+            <Tooltip title="Enter custom rows and press Enter">
+              <TextField
+                size="small"
+                autoFocus
+                placeholder="Enter..."
+                value={customValue}
+                onChange={(e) => setCustomValue(e.target.value)}
+                onKeyDown={handleCustomKeyDown}
+                onBlur={() => setIsCustom(false)}
+                sx={inputStyles}
+              />
+            </Tooltip>
           </Box>
         )}
       </AnimatePresence>

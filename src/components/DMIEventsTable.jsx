@@ -1,7 +1,17 @@
 import {
-  Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Typography, Box,
-  Stack, IconButton, Popover, TextField
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+  Box,
+  Stack,
+  IconButton,
+  Popover,
+  TextField,
+  Tooltip,
 } from "@mui/material";
 
 import { motion } from "framer-motion";
@@ -19,11 +29,9 @@ export default function DMIEventsTable({
   visibleKeys = [],
   formatter = formatDMICellValue,
   onColumnSearch,
-  onSort
+  onSort,
 }) {
-  const visibleColumns = columns.filter(col =>
-    visibleKeys.includes(col.key)
-  );
+  const visibleColumns = columns.filter((col) => visibleKeys.includes(col.key));
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [activeCol, setActiveCol] = useState(null);
@@ -39,16 +47,15 @@ export default function DMIEventsTable({
         "&::-webkit-scrollbar": { height: "8px" },
         "&::-webkit-scrollbar-thumb": {
           bgcolor: "rgba(255,255,255,0.1)",
-          borderRadius: "10px"
-        }
+          borderRadius: "10px",
+        },
       }}
     >
       <Table size="small" stickyHeader>
-
         {/* ================= HEADER ================= */}
         <TableHead>
           <TableRow>
-            {visibleColumns.map(col => (
+            {visibleColumns.map((col) => (
               <TableCell
                 key={col.key}
                 sx={{
@@ -58,7 +65,7 @@ export default function DMIEventsTable({
                   color: "rgba(255,255,255,0.4)",
                   borderBottom: "2px solid rgba(255,255,255,0.05)",
                   py: 2,
-                  whiteSpace: "nowrap"
+                  whiteSpace: "nowrap",
                 }}
               >
                 <Stack direction="row" alignItems="center" spacing={0.5}>
@@ -67,46 +74,52 @@ export default function DMIEventsTable({
                   </Typography>
 
                   {/* SORT */}
-                  <IconButton
-                    size="small"
-                    onClick={() => {
-                      let next;
+                  <Tooltip title="Sort column">
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        let next;
 
-                      if (!sortState[col.key]) next = "asc";
-                      else if (sortState[col.key] === "asc") next = "desc";
-                      else next = null;
+                        if (!sortState[col.key]) next = "asc";
+                        else if (sortState[col.key] === "asc") next = "desc";
+                        else next = null;
 
-                      setSortState(prev => ({ ...prev, [col.key]: next }));
-                      onSort?.(col.key, next);
-                    }}
-                    sx={{
-                      p: 0.2,
-                      color: sortState[col.key]
-                        ? "#5b8ffe"
-                        : "rgba(255,255,255,0.6)"
-                    }}
-                  >
-                    {sortState[col.key] === "desc"
-                      ? <ArrowDownwardIcon sx={{ fontSize: 13 }} />
-                      : <ArrowUpwardIcon sx={{ fontSize: 13 }} />}
-                  </IconButton>
+                        setSortState((prev) => ({ ...prev, [col.key]: next }));
+                        onSort?.(col.key, next);
+                      }}
+                      sx={{
+                        p: 0.2,
+                        color: sortState[col.key]
+                          ? "#5b8ffe"
+                          : "rgba(255,255,255,0.6)",
+                      }}
+                    >
+                      {sortState[col.key] === "desc" ? (
+                        <ArrowDownwardIcon sx={{ fontSize: 13 }} />
+                      ) : (
+                        <ArrowUpwardIcon sx={{ fontSize: 13 }} />
+                      )}
+                    </IconButton>
+                  </Tooltip>
 
                   {/* FILTER */}
-                  <IconButton
-                    size="small"
-                    onClick={(e) => {
-                      setAnchorEl(e.currentTarget);
-                      setActiveCol(col.key);
-                      setSearchVal("");
-                    }}
-                    sx={{
-                      p: 0.2,
-                      color: "rgba(255,255,255,0.6)",
-                      "&:hover": { color: "#5b8ffe" }
-                    }}
-                  >
-                    <FilterListIcon sx={{ fontSize: 13 }} />
-                  </IconButton>
+                  <Tooltip title="Filter column">
+                    <IconButton
+                      size="small"
+                      onClick={(e) => {
+                        setAnchorEl(e.currentTarget);
+                        setActiveCol(col.key);
+                        setSearchVal("");
+                      }}
+                      sx={{
+                        p: 0.2,
+                        color: "rgba(255,255,255,0.6)",
+                        "&:hover": { color: "#5b8ffe" },
+                      }}
+                    >
+                      <FilterListIcon sx={{ fontSize: 13 }} />
+                    </IconButton>
+                  </Tooltip>
                 </Stack>
               </TableCell>
             ))}
@@ -127,11 +140,11 @@ export default function DMIEventsTable({
                   "&:hover": { bgcolor: "rgba(255,255,255,0.03)" },
                   "& td": {
                     borderBottom: "1px solid rgba(255,255,255,0.05)",
-                    color: "rgba(255,255,255,0.8)"
-                  }
+                    color: "rgba(255,255,255,0.8)",
+                  },
                 }}
               >
-                {visibleColumns.map(col => (
+                {visibleColumns.map((col) => (
                   <TableCell
                     key={col.key}
                     sx={{ py: 1.6, whiteSpace: "nowrap" }}
@@ -155,7 +168,7 @@ export default function DMIEventsTable({
                   sx={{
                     color: "rgba(255,255,255,0.2)",
                     letterSpacing: 2,
-                    fontWeight: 700
+                    fontWeight: 700,
                   }}
                 >
                   NO DMI EVENTS DETECTED
@@ -176,8 +189,8 @@ export default function DMIEventsTable({
           sx: {
             bgcolor: "#1e2227",
             border: "1px solid #333",
-            borderRadius: 2
-          }
+            borderRadius: 2,
+          },
         }}
       >
         <Box sx={{ p: 1.5, minWidth: 180 }}>
@@ -198,8 +211,8 @@ export default function DMIEventsTable({
             sx={{
               input: { color: "#fff", fontSize: "0.85rem" },
               "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: "#444" }
-              }
+                "& fieldset": { borderColor: "#444" },
+              },
             }}
           />
 

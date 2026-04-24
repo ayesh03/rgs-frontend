@@ -15,6 +15,7 @@ import {
   IconButton,
   Stack,
 } from "@mui/material";
+import Tooltip from "@mui/material/Tooltip";
 import {
   decodeDirection,
   decodeLocoMode,
@@ -130,9 +131,10 @@ export default function LocoMovementTable({
                       </Typography>
 
                       {/* SORT BUTTON */}
-                      <IconButton
-                        size="small"
-                        onClick={() => {
+<Tooltip title="Sort column">
+  <IconButton
+    size="small"
+    onClick={() => {
                           let next;
 
                           if (!sort) next = "asc";
@@ -156,12 +158,14 @@ export default function LocoMovementTable({
                         ) : (
                           <ArrowUpwardIcon sx={{ fontSize: 13 }} />
                         )}
-                      </IconButton>
+                        </IconButton>
+</Tooltip>
 
                       {/* FILTER BUTTON */}
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
+<Tooltip title="Filter column">
+  <IconButton
+    size="small"
+    onClick={(e) => {
                           setAnchorEl(e.currentTarget);
                           setActiveCol(col.key);
                           setSearchVal("");
@@ -173,7 +177,8 @@ export default function LocoMovementTable({
                         }}
                       >
                         <FilterListIcon sx={{ fontSize: 13 }} />
-                      </IconButton>
+                        </IconButton>
+</Tooltip>
                     </Stack>
                   </TableCell>
                 );

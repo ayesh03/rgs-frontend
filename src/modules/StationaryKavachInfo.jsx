@@ -6,7 +6,7 @@ import AdvancedSearchDialog from "../components/AdvancedSearchDialog";
 import ReportHeader from "../components/ReportHeader";
 import useExport from "../hooks/useExport";
 import Stationarykavachinfo from "../pages/Stationarykavachinfo";
-
+import Tooltip from "@mui/material/Tooltip";
 // Styled Wrapper Components using ForwardRef
 const StationRegular = forwardRef((props, ref) => (
   <Stationarykavachinfo ref={ref} tableType="station_regular" />
@@ -92,7 +92,8 @@ export default function StationaryKavachInfo() {
     const currentRef = getCurrentRef();
     if (!currentRef) return;
 
-    const rows = type === "all" ? currentRef.getAllRows() : currentRef.getFilteredRows();
+    const rows =
+      type === "all" ? currentRef.getAllRows() : currentRef.getFilteredRows();
     let cols = currentRef.getVisibleColumns();
     const subPacket = currentRef.getSubPacket?.();
 
@@ -107,9 +108,9 @@ export default function StationaryKavachInfo() {
   const currentRef = tabRefs[tab]?.current;
 
   const stationList = ((currentRef && currentRef.getAllRows?.()) || [])
-    .map(r => r.stationary_kavach_id)
-    .filter(v => v !== null && v !== undefined && v !== "")
-    .map(v => String(v));
+    .map((r) => r.stationary_kavach_id)
+    .filter((v) => v !== null && v !== undefined && v !== "")
+    .map((v) => String(v));
 
   const uniqueStations = [...new Set(stationList)];
 
@@ -137,9 +138,7 @@ export default function StationaryKavachInfo() {
         onAdvancedSearch={() => setAdvancedOpen(true)}
         onSaveAll={() => processExport(exportExcel, "all")}
         onPrint={() => processExport(exportPDF)}
-        onSearch={(value) =>
-          getCurrentRef()?.searchByStation?.(value)
-        }
+        onSearch={(value) => getCurrentRef()?.searchByStation?.(value)}
       />
 
       <Paper
@@ -183,9 +182,27 @@ export default function StationaryKavachInfo() {
             },
           }}
         >
-          <Tab label="Station Regular" />
-          <Tab label="Access Authority" />
-          <Tab label="Additional Emergency" />
+          <Tab
+            label={
+              <Tooltip title="View station regular data">
+                <span>Station Regular</span>
+              </Tooltip>
+            }
+          />
+          <Tab
+            label={
+              <Tooltip title="View access authority data">
+                <span>Access Authority</span>
+              </Tooltip>
+            }
+          />
+          <Tab
+            label={
+              <Tooltip title="View emergency data">
+                <span>Additional Emergency</span>
+              </Tooltip>
+            }
+          />
         </Tabs>
       </Paper>
 
@@ -211,7 +228,6 @@ export default function StationaryKavachInfo() {
         onApply={(data) => {
           const ref = tabRefs[tab]?.current;
           if (!ref) return;
-
 
           ref.applyAdvancedFilters(data);
         }}

@@ -1,4 +1,16 @@
-import { Box, Card, CardContent, Typography, Stack, Select, MenuItem, LinearProgress, alpha, useTheme } from "@mui/material";
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Stack,
+  Select,
+  MenuItem,
+  LinearProgress,
+  alpha,
+  useTheme,
+  Tooltip,
+} from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import { forwardRef, useImperativeHandle, useState, useEffect } from "react";
 import { useAppContext } from "../context/AppContext";
@@ -42,7 +54,7 @@ const Interlocking = forwardRef((props, ref) => {
     "system_version",
     "relay",
     "serial",
-    "status"
+    "status",
   ];
 
   const [visibleKeys, setVisibleKeys] = useState(DEFAULT_VISIBLE);
@@ -95,13 +107,13 @@ const Interlocking = forwardRef((props, ref) => {
     if (!fromDate || !toDate || !selectedFile) return;
 
     try {
-      const normalize = v => (v.length === 16 ? `${v}:00` : v);
+      const normalize = (v) => (v.length === 16 ? `${v}:00` : v);
       const from = encodeURIComponent(normalize(fromDate));
       const to = encodeURIComponent(normalize(toDate));
 
       const res = await fetch(
         `${API_BASE}/api/interlocking/stations?from=${from}&to=${to}`,
-        { method: "POST", body: selectedFile }
+        { method: "POST", body: selectedFile },
       );
 
       const json = await res.json();
@@ -116,34 +128,34 @@ const Interlocking = forwardRef((props, ref) => {
   useEffect(() => {
     fetchStations();
   }, [fromDate, toDate, selectedFile]);
-// Auto-refresh station list when file changes
-useEffect(() => {
-  if (selectedFile && fromDate && toDate && isDateRangeValid) {
-    fetchStations();
-    setRows([]);
-    setAllRows([]);
-    setHasGenerated(false);
-  }
-}, [selectedFile]);
+  // Auto-refresh station list when file changes
+  useEffect(() => {
+    if (selectedFile && fromDate && toDate && isDateRangeValid) {
+      fetchStations();
+      setRows([]);
+      setAllRows([]);
+      setHasGenerated(false);
+    }
+  }, [selectedFile]);
   /* ===================== FETCH RELAYS ===================== */
   useEffect(() => {
     if (!station || !fromDate || !toDate || !selectedFile) return;
 
     const fetchRelays = async () => {
       try {
-        const normalize = v => (v.length === 16 ? `${v}:00` : v);
+        const normalize = (v) => (v.length === 16 ? `${v}:00` : v);
         const from = encodeURIComponent(normalize(fromDate));
         const to = encodeURIComponent(normalize(toDate));
 
         const res = await fetch(
           `${API_BASE}/api/interlocking/report?from=${from}&to=${to}&station=${station}&page=1`,
-          { method: "POST", body: selectedFile }
+          { method: "POST", body: selectedFile },
         );
 
         const json = await res.json();
         if (!json.success) return;
 
-        const relays = [...new Set((json.data || []).map(r => r.relay))];
+        const relays = [...new Set((json.data || []).map((r) => r.relay))];
         setRelayOptions(relays);
         setRelay("ALL");
         setRows([]);
@@ -164,13 +176,13 @@ useEffect(() => {
     setLoading(true);
 
     try {
-      const normalize = v => (v.length === 16 ? `${v}:00` : v);
+      const normalize = (v) => (v.length === 16 ? `${v}:00` : v);
       const from = encodeURIComponent(normalize(fromDate));
       const to = encodeURIComponent(normalize(toDate));
 
       const res = await fetch(
         `${API_BASE}/api/interlocking/report?from=${from}&to=${to}&station=${station}&page=1`,
-        { method: "POST", body: selectedFile }
+        { method: "POST", body: selectedFile },
       );
 
       const json = await res.json();
@@ -198,13 +210,15 @@ useEffect(() => {
     let filtered = [...allRows];
 
     if (relay !== "ALL") {
-      filtered = filtered.filter(r => r.relayId === relay);
+      filtered = filtered.filter((r) => r.relayId === relay);
     }
 
     if (statusFilter !== "ALL") {
-      filtered = filtered.filter(r => {
+      filtered = filtered.filter((r) => {
         const s = r.status?.toUpperCase() || "";
-        return statusFilter === "PICKED" ? s.includes("PICKED") : s.includes("DROP");
+        return statusFilter === "PICKED"
+          ? s.includes("PICKED")
+          : s.includes("DROP");
       });
     }
 
@@ -228,7 +242,8 @@ useEffect(() => {
     clearFilters,
     getFilteredRows: () => filteredRows,
     getAllRows: () => allRows,
-    getVisibleColumns: () => INTERLOCKING_COLUMNS.filter(c => visibleKeys.includes(c.key)),
+    getVisibleColumns: () =>
+      INTERLOCKING_COLUMNS.filter((c) => visibleKeys.includes(c.key)),
     openColumnDialog: () => setColumnDialogOpen(true),
   }));
 
@@ -236,7 +251,7 @@ useEffect(() => {
 
   const paginatedRows = filteredRows.slice(
     (page - 1) * rowsPerPage,
-    page * rowsPerPage
+    page * rowsPerPage,
   );
 
   const showNoResult = hasGenerated && !loading && filteredRows.length === 0;
@@ -260,42 +275,57 @@ useEffect(() => {
           bgcolor: "rgba(255, 255, 255, 0.03)",
           border: "1px solid rgba(255, 255, 255, 0.08)",
           borderRadius: "10px",
-          gap: 1
+          gap: 1,
         }}
       >
         <Stack direction="row" spacing={1.5} alignItems="center">
-          <Select
-            size="small"
-            value={station}
-            onChange={(e) => setStation(e.target.value)}
-            displayEmpty
-            sx={{ ...selectStyle, width: 220 }}
-            MenuProps={menuProps}
-          >
-            <MenuItem value="" disabled sx={{ color: "rgba(255,255,255,0.3)" }}>Select Station</MenuItem>
-            {stations.map((s) => (
-              <MenuItem key={s} value={s}>{s}</MenuItem>
-            ))}
-          </Select>
+          <Tooltip title="Select Station automatically fetch from packet">
+            <Select
+              size="small"
+              value={station}
+              onChange={(e) => setStation(e.target.value)}
+              displayEmpty
+              sx={{ ...selectStyle, width: 220 }}
+              MenuProps={menuProps}
+            >
+              <MenuItem
+                value=""
+                disabled
+                sx={{ color: "rgba(255,255,255,0.3)" }}
+              >
+                Select Station
+              </MenuItem>
+              {stations.map((s) => (
+                <MenuItem key={s} value={s}>
+                  {s}
+                </MenuItem>
+              ))}
+            </Select>
+          </Tooltip>
 
-          <Select
-            size="small"
-            value={relay}
-            onChange={(e) => setRelay(e.target.value)}
-            displayEmpty
-            sx={{ ...selectStyle, width: 220 }}
-            disabled={!station || !relayOptions.length}
-            MenuProps={menuProps}
-          >
-            <MenuItem value="ALL">All Relays</MenuItem>
-            {relayOptions.map((r) => (
-              <MenuItem key={r} value={r}>{r}</MenuItem>
-            ))}
-          </Select>
+          <Tooltip title="Select Relay">
+            <Select
+              size="small"
+              value={relay}
+              onChange={(e) => setRelay(e.target.value)}
+              displayEmpty
+              sx={{ ...selectStyle, width: 220 }}
+              disabled={!station || !relayOptions.length}
+              MenuProps={menuProps}
+            >
+              <MenuItem value="ALL">All Relays</MenuItem>
+              {relayOptions.map((r) => (
+                <MenuItem key={r} value={r}>
+                  {r}
+                </MenuItem>
+              ))}
+            </Select>
+          </Tooltip>
 
-          <Select
-            size="small"
-            value={statusFilter}
+          <Tooltip title="Filter by Status">
+  <Select
+    size="small"
+    value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             sx={{ ...selectStyle, width: 180 }}
             disabled={!allRows.length}
@@ -304,7 +334,8 @@ useEffect(() => {
             <MenuItem value="ALL">All Status</MenuItem>
             <MenuItem value="PICKED">Picked Up</MenuItem>
             <MenuItem value="DROPPED">Dropped Down</MenuItem>
-          </Select>
+            </Select>
+</Tooltip>
         </Stack>
 
         {filteredRows.length > 0 && (
@@ -319,10 +350,29 @@ useEffect(() => {
       {/* ===== RESULT AREA ===== */}
       <AnimatePresence mode="wait">
         {loading ? (
-          <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <Box sx={{ py: 4, textAlign: 'center' }}>
-              <LinearProgress sx={{ height: 4, borderRadius: 2, bgcolor: alpha(theme.palette.primary.main, 0.1) }} />
-              <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.4)", mt: 1, display: 'block', letterSpacing: 1 }}>
+          <motion.div
+            key="loading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <Box sx={{ py: 4, textAlign: "center" }}>
+              <LinearProgress
+                sx={{
+                  height: 4,
+                  borderRadius: 2,
+                  bgcolor: alpha(theme.palette.primary.main, 0.1),
+                }}
+              />
+              <Typography
+                variant="caption"
+                sx={{
+                  color: "rgba(255,255,255,0.4)",
+                  mt: 1,
+                  display: "block",
+                  letterSpacing: 1,
+                }}
+              >
                 PROCESSING INTERLOCKING TELEMETRY...
               </Typography>
             </Box>
@@ -341,7 +391,7 @@ useEffect(() => {
                 bgcolor: "rgba(18, 18, 18, 0.4)",
                 backdropFilter: "blur(12px)",
                 border: "1px solid rgba(255, 255, 255, 0.08)",
-                overflow: "hidden"
+                overflow: "hidden",
               }}
             >
               <CardContent sx={{ p: 0 }}>
@@ -353,16 +403,15 @@ useEffect(() => {
                     else setFilter(key, "");
                   }}
                   onSort={(key, direction) => {
-
                     if (!direction) {
                       let original = [...allRows];
 
                       if (relay !== "ALL") {
-                        original = original.filter(r => r.relayId === relay);
+                        original = original.filter((r) => r.relayId === relay);
                       }
 
                       if (statusFilter !== "ALL") {
-                        original = original.filter(r => {
+                        original = original.filter((r) => {
                           const s = r.status?.toUpperCase() || "";
                           return statusFilter === "PICKED"
                             ? s.includes("PICKED")
@@ -378,8 +427,12 @@ useEffect(() => {
                       const av = a[key] ?? "";
                       const bv = b[key] ?? "";
                       return direction === "asc"
-                        ? String(av).localeCompare(String(bv), undefined, { numeric: true })
-                        : String(bv).localeCompare(String(av), undefined, { numeric: true });
+                        ? String(av).localeCompare(String(bv), undefined, {
+                            numeric: true,
+                          })
+                        : String(bv).localeCompare(String(av), undefined, {
+                            numeric: true,
+                          });
                     });
 
                     setRows(sorted);
@@ -390,16 +443,24 @@ useEffect(() => {
                     p: 2,
                     display: "flex",
                     justifyContent: "center",
-                    borderTop: "1px solid rgba(255, 255, 255, 0.05)"
+                    borderTop: "1px solid rgba(255, 255, 255, 0.05)",
                   }}
                 >
-                  <PaginationControls page={page} setPage={setPage} totalPages={totalPages} />
+                  <PaginationControls
+                    page={page}
+                    setPage={setPage}
+                    totalPages={totalPages}
+                  />
                 </Box>
               </CardContent>
             </Card>
           </motion.div>
         ) : showNoResult ? (
-          <motion.div key="no-result" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <motion.div
+            key="no-result"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
             <NoResult />
           </motion.div>
         ) : null}
@@ -408,13 +469,15 @@ useEffect(() => {
       <ColumnFilterDialog
         open={columnDialogOpen}
         column="Table Columns"
-        values={INTERLOCKING_COLUMNS.map(c => c.label)}
-        selectedValues={visibleKeys.map(key => INTERLOCKING_COLUMNS.find(c => c.key === key)?.label)}
+        values={INTERLOCKING_COLUMNS.map((c) => c.label)}
+        selectedValues={visibleKeys.map(
+          (key) => INTERLOCKING_COLUMNS.find((c) => c.key === key)?.label,
+        )}
         onClose={() => setColumnDialogOpen(false)}
         onApply={(labels) => {
-          const keys = INTERLOCKING_COLUMNS
-            .filter(c => labels.includes(c.label))
-            .map(c => c.key);
+          const keys = INTERLOCKING_COLUMNS.filter((c) =>
+            labels.includes(c.label),
+          ).map((c) => c.key);
           setVisibleKeys(keys);
           setColumnDialogOpen(false);
         }}

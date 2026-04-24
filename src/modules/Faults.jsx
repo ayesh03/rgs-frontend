@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { Box, Tabs, Tab, Paper, alpha, useTheme } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "react-router-dom";
-
+import Tooltip from "@mui/material/Tooltip";
 import ReportHeader from "../components/ReportHeader";
 import LocoFaults from "../pages/LocoFaults";
 import FaultSummary from "../pages/FaultSummary";
@@ -145,8 +145,13 @@ export default function Faults() {
             },
           }}
         >
-          <Tab label="Station Faults" />
-          <Tab label="Loco Faults" />
+          <Tooltip title="View station fault reports">
+            <Tab label="Station Faults" />
+          </Tooltip>
+
+          <Tooltip title="View loco fault reports">
+            <Tab label="Loco Faults" />
+          </Tooltip>
           {/* <Tab label="Fault Summary" /> */}
         </Tabs>
       </Paper>

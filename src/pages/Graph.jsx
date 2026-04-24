@@ -1,11 +1,37 @@
 import { useState, useEffect, useRef } from "react";
 import {
-  Box, Card, CardContent, Typography, Stack, Select, MenuItem, Grid, LinearProgress, Divider, Chip, alpha, useTheme,
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Stack,
+  Select,
+  MenuItem,
+  Grid,
+  LinearProgress,
+  Divider,
+  Chip,
+  alpha,
+  useTheme,
+  Tooltip,
 } from "@mui/material";
 import { motion } from "framer-motion";
 import { useOutletContext } from "react-router-dom";
 import { Label } from "recharts";
-import { AreaChart, LineChart, BarChart, ComposedChart, ScatterChart, Scatter, Area, Line, Bar, XAxis, YAxis, Tooltip, CartesianGrid, } from "recharts";
+import {
+  AreaChart,
+  LineChart,
+  BarChart,
+  ComposedChart,
+  ScatterChart,
+  Scatter,
+  Area,
+  Line,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+} from "recharts";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
 import TuneIcon from "@mui/icons-material/Tune";
 import ReportHeader from "../components/ReportHeader";
@@ -27,7 +53,7 @@ function frameToTime(frame) {
   const s = sec % 60;
   return `${String(h).padStart(2, "0")}:${String(m).padStart(
     2,
-    "0"
+    "0",
   )}:${String(s).padStart(2, "0")}`;
 }
 /* =====================================================
@@ -63,16 +89,22 @@ function GraphTooltip({ active, payload, graphType }) {
         p: 1.5,
         borderRadius: 2,
         fontSize: 13,
-        color: "#fff"
+        color: "#fff",
       }}
     >
       {graphType.includes("Time") ? (
         <>
-          <Typography sx={{ color: "#fff" }}><b>Time:</b> {p.time}</Typography>
-          <Typography sx={{ color: "#fff" }}><b>Frame:</b> {p.frame}</Typography>
+          <Typography sx={{ color: "#fff" }}>
+            <b>Time:</b> {p.time}
+          </Typography>
+          <Typography sx={{ color: "#fff" }}>
+            <b>Frame:</b> {p.frame}
+          </Typography>
         </>
       ) : (
-        <Typography sx={{ color: "#fff" }}><b>Location:</b> {p.x}</Typography>
+        <Typography sx={{ color: "#fff" }}>
+          <b>Location:</b> {p.x}
+        </Typography>
       )}
 
       <Typography sx={{ color: "#fff" }}>
@@ -109,7 +141,7 @@ export default function Graph() {
       borderColor: theme.palette.primary.main,
     },
     "& .MuiSvgIcon-root": {
-      color: "rgba(255,255,255,0.7)"
+      color: "rgba(255,255,255,0.7)",
     },
   };
 
@@ -175,30 +207,29 @@ export default function Graph() {
     reverseColor,
     bgColor,
     fgColor,
-    showGrid
+    showGrid,
   };
 
   const handleApplyProps = (cfg) => {
+    if (cfg.bgColor === cfg.fgColor) {
+      setError("Background and Foreground colors cannot be the same");
+      return;
+    }
 
-  if (cfg.bgColor === cfg.fgColor) {
-    setError("Background and Foreground colors cannot be the same");
-    return;
-  }
+    if (cfg.lineWidth <= 0) {
+      setError("Line width must be greater than 0");
+      return;
+    }
 
-  if (cfg.lineWidth <= 0) {
-    setError("Line width must be greater than 0");
-    return;
-  }
+    setError(""); // clear old errors
 
-  setError(""); // clear old errors
-
-  setLineWidth(cfg.lineWidth);
-  setNominalColor(cfg.nominalColor);
-  setReverseColor(cfg.reverseColor);
-  setBgColor(cfg.bgColor);
-  setFgColor(cfg.fgColor);
-  setShowGrid(cfg.showGrid);
-};
+    setLineWidth(cfg.lineWidth);
+    setNominalColor(cfg.nominalColor);
+    setReverseColor(cfg.reverseColor);
+    setBgColor(cfg.bgColor);
+    setFgColor(cfg.fgColor);
+    setShowGrid(cfg.showGrid);
+  };
 
   const stage =
     graphData.length > 0 ? "PREVIEW" : loading ? "ENGINE" : "FILTER";
@@ -211,10 +242,8 @@ export default function Graph() {
         setMetaLoading(true);
         setError("");
 
-        const from =
-          fromDate.length === 16 ? `${fromDate}:00` : fromDate;
-        const to =
-          toDate.length === 16 ? `${toDate}:00` : toDate;
+        const from = fromDate.length === 16 ? `${fromDate}:00` : fromDate;
+        const to = toDate.length === 16 ? `${toDate}:00` : toDate;
         if (!selectedFile) return;
         const fileBuffer = await selectedFile.arrayBuffer();
 
@@ -226,7 +255,7 @@ export default function Graph() {
             headers: {
               "Content-Type": "application/octet-stream",
             },
-          }
+          },
         );
         const json = await res.json();
         if (!json.success) throw new Error("Meta API failed");
@@ -254,7 +283,13 @@ export default function Graph() {
 
   // Auto-refresh metadata when file changes
   useEffect(() => {
-    if (fromDate && toDate && isDateRangeValid && selectedFile && meta.locos.length > 0) {
+    if (
+      fromDate &&
+      toDate &&
+      isDateRangeValid &&
+      selectedFile &&
+      meta.locos.length > 0
+    ) {
       // Reload meta data
       const loadMeta = async () => {
         try {
@@ -270,7 +305,7 @@ export default function Graph() {
               method: "POST",
               body: fileBuffer,
               headers: { "Content-Type": "application/octet-stream" },
-            }
+            },
           );
           const json = await res.json();
           if (json.success) {
@@ -293,11 +328,10 @@ export default function Graph() {
 
   /* ================= GENERATE ================= */
   const handleGenerate = async () => {
-
     if (bgColor === fgColor) {
-    setError("Background and Foreground colors cannot be the same");
-    return;
-  }
+      setError("Background and Foreground colors cannot be the same");
+      return;
+    }
     setError("");
     setNoData(false);
 
@@ -309,10 +343,8 @@ export default function Graph() {
     try {
       setLoading(true);
 
-      const from =
-        fromDate.length === 16 ? `${fromDate}:00` : fromDate;
-      const to =
-        toDate.length === 16 ? `${toDate}:00` : toDate;
+      const from = fromDate.length === 16 ? `${fromDate}:00` : fromDate;
+      const to = toDate.length === 16 ? `${toDate}:00` : toDate;
 
       if (!selectedFile) {
         setError("Please upload BIN file");
@@ -321,18 +353,18 @@ export default function Graph() {
       const fileBuffer = await selectedFile.arrayBuffer();
       const res = await fetch(
         `${API_BASE}/api/graph/data` +
-        `?locoId=${locoId}` +
-        `&from=${encodeURIComponent(from)}` +
-        `&to=${encodeURIComponent(to)}` +
-        `&direction=${direction}` +
-        `&graphType=${encodeURIComponent(graphType)}`,
+          `?locoId=${locoId}` +
+          `&from=${encodeURIComponent(from)}` +
+          `&to=${encodeURIComponent(to)}` +
+          `&direction=${direction}` +
+          `&graphType=${encodeURIComponent(graphType)}`,
         {
           method: "POST",
           body: fileBuffer,
           headers: {
             "Content-Type": "application/octet-stream",
           },
-        }
+        },
       );
       const json = await res.json();
       if (!json.success) throw new Error("Graph API failed");
@@ -380,17 +412,28 @@ export default function Graph() {
       setPdfProgress(0);
 
       const svgEl = graphRef.current.querySelector(".recharts-wrapper svg");
-      if (!svgEl) { console.error("No SVG found"); return; }
+      if (!svgEl) {
+        console.error("No SVG found");
+        return;
+      }
 
       const svgWidth = parseFloat(svgEl.getAttribute("width")) || 1400;
       const svgHeight = parseFloat(svgEl.getAttribute("height")) || 420;
 
       const clipPathRect = svgEl.querySelector("defs clipPath rect");
-      const plotX = clipPathRect ? parseFloat(clipPathRect.getAttribute("x") || "0") : 65;
-      const plotWidth = clipPathRect ? parseFloat(clipPathRect.getAttribute("width") || String(svgWidth)) : svgWidth - 65;
+      const plotX = clipPathRect
+        ? parseFloat(clipPathRect.getAttribute("x") || "0")
+        : 65;
+      const plotWidth = clipPathRect
+        ? parseFloat(clipPathRect.getAttribute("width") || String(svgWidth))
+        : svgWidth - 65;
       const rightMarginW = svgWidth - plotX - plotWidth;
-      const plotY = clipPathRect ? parseFloat(clipPathRect.getAttribute("y") || "0") : 10;
-      const plotHeight = clipPathRect ? parseFloat(clipPathRect.getAttribute("height") || String(svgHeight)) : svgHeight - 60;
+      const plotY = clipPathRect
+        ? parseFloat(clipPathRect.getAttribute("y") || "0")
+        : 10;
+      const plotHeight = clipPathRect
+        ? parseFloat(clipPathRect.getAttribute("height") || String(svgHeight))
+        : svgHeight - 60;
 
       const isModeGraph = graphType.includes("Mode");
       const isSpeedGraph = graphType.includes("Speed");
@@ -398,13 +441,18 @@ export default function Graph() {
       // ── Y axis ticks ──
       let yTicks = [];
       if (isModeGraph) {
-        yTicks = Object.entries(MODE_LEGEND).map(([k, v]) => ({ value: Number(k), label: v }));
+        yTicks = Object.entries(MODE_LEGEND).map(([k, v]) => ({
+          value: Number(k),
+          label: v,
+        }));
       } else {
-        const maxY = Math.ceil(Math.max(...graphData.map(d => d.y)) / 50) * 50 || 200;
-        for (let v = 0; v <= maxY; v += 50) yTicks.push({ value: v, label: String(v) });
+        const maxY =
+          Math.ceil(Math.max(...graphData.map((d) => d.y)) / 50) * 50 || 200;
+        for (let v = 0; v <= maxY; v += 50)
+          yTicks.push({ value: v, label: String(v) });
       }
       const yMin = 0;
-      const yMax = isModeGraph ? 12 : (yTicks[yTicks.length - 1]?.value || 200);
+      const yMax = isModeGraph ? 12 : yTicks[yTicks.length - 1]?.value || 200;
 
       const xAxisLabel = graphType.includes("Time") ? "Time" : "Location";
       const yAxisLabel = isSpeedGraph ? "Speed (km/h)" : "Mode";
@@ -431,15 +479,16 @@ export default function Graph() {
       const graphW = graphRight - graphLeft;
       const graphH = graphBottom - graphTop;
 
-      const minDataSlice = Math.ceil((graphW + yAxisPdfW) * svgHeight / graphH) - rightMarginW;
+      const minDataSlice =
+        Math.ceil(((graphW + yAxisPdfW) * svgHeight) / graphH) - rightMarginW;
       const sliceDataW = Math.max(minDataSlice, 600);
       const totalPages = Math.ceil(plotWidth / sliceDataW);
 
       // console.log(`[PDF] pages=${totalPages} sliceW=${sliceDataW}`);
 
       // ── Use lower pixel ratio to reduce per-canvas memory ──
-      const PIXEL_RATIO = 1.5;   // was 2 — saves ~44% memory per canvas
-      const JPEG_Q = 0.85;  // was 0.92
+      const PIXEL_RATIO = 1.5; // was 2 — saves ~44% memory per canvas
+      const JPEG_Q = 0.85; // was 0.92
 
       // Pre-parse the SVG string so we can do targeted string replacements
       // instead of cloning the DOM every iteration (much cheaper)
@@ -449,7 +498,7 @@ export default function Graph() {
         setPdfProgress(Math.round((page / totalPages) * 100));
 
         // Yield to browser every 5 pages so UI can update and GC can run
-        if (page % 5 === 0) await new Promise(r => setTimeout(r, 0));
+        if (page % 5 === 0) await new Promise((r) => setTimeout(r, 0));
 
         const dataOffsetX = page * sliceDataW;
         const thisDataW = Math.min(sliceDataW, plotWidth - dataOffsetX);
@@ -464,14 +513,22 @@ export default function Graph() {
         svgClone.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
         svgClone.setAttribute("width", String(viewBoxW));
         svgClone.setAttribute("height", String(svgHeight));
-        svgClone.setAttribute("viewBox", `${viewBoxX} 0 ${viewBoxW} ${svgHeight}`);
+        svgClone.setAttribute(
+          "viewBox",
+          `${viewBoxX} 0 ${viewBoxW} ${svgHeight}`,
+        );
 
-        svgClone.querySelectorAll("[clip-path]").forEach(el => el.removeAttribute("clip-path"));
+        svgClone
+          .querySelectorAll("[clip-path]")
+          .forEach((el) => el.removeAttribute("clip-path"));
 
         const yAxisEl = svgClone.querySelector(".recharts-yAxis");
         if (yAxisEl) yAxisEl.setAttribute("display", "none");
 
-        const bgRect = svgDoc.createElementNS("http://www.w3.org/2000/svg", "rect");
+        const bgRect = svgDoc.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "rect",
+        );
         bgRect.setAttribute("x", String(viewBoxX));
         bgRect.setAttribute("y", "0");
         bgRect.setAttribute("width", String(viewBoxW + 10));
@@ -483,7 +540,7 @@ export default function Graph() {
         const base64 = btoa(unescape(encodeURIComponent(svgString)));
         const dataUrl = `data:image/svg+xml;base64,${base64}`;
 
-        // ── Create canvas, draw, extract, then IMMEDIATELY destroy 
+        // ── Create canvas, draw, extract, then IMMEDIATELY destroy
         const cW = Math.ceil(viewBoxW * PIXEL_RATIO);
         const cH = Math.ceil(svgHeight * PIXEL_RATIO);
 
@@ -503,7 +560,7 @@ export default function Graph() {
 
             // ── FREE MEMORY immediately after extraction ──
             ctx.clearRect(0, 0, cW, cH);
-            canvas.width = 1;   // forces browser to release GPU texture
+            canvas.width = 1; // forces browser to release GPU texture
             canvas.height = 1;
 
             resolve(data);
@@ -523,16 +580,28 @@ export default function Graph() {
         pdf.setTextColor(40, 107, 206);
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(16);
-        pdf.text(`KAVACH REPORT GENERATION SYSTEM - GRAPH ANALYSIS`, outerMargin, outerMargin - 5);
+        pdf.text(
+          `KAVACH REPORT GENERATION SYSTEM - GRAPH ANALYSIS`,
+          outerMargin,
+          outerMargin - 5,
+        );
 
-        pdf.addImage(areaLogo, "PNG", pdfW - outerMargin - 80, outerMargin - 18, 60, 30);
+        pdf.addImage(
+          areaLogo,
+          "PNG",
+          pdfW - outerMargin - 80,
+          outerMargin - 18,
+          60,
+          30,
+        );
 
         pdf.setFont("helvetica", "normal");
         pdf.setFontSize(8);
         pdf.setTextColor(180, 180, 220);
         pdf.text(
           `${graphType}   |   Loco: ${locoId}   |   Direction: ${direction}   |   Page ${page + 1} of ${totalPages}`,
-          outerMargin, outerMargin + 10
+          outerMargin,
+          outerMargin + 10,
         );
         // ── Graph image ──
         pdf.addImage(imgData, "JPEG", graphLeft, graphTop, graphW, graphH);
@@ -546,7 +615,12 @@ export default function Graph() {
         pdf.line(yAxisRight, graphTop, yAxisRight, graphBottom);
         pdf.setFontSize(8);
         pdf.setTextColor(160, 160, 210);
-        pdf.text(yAxisLabel, outerMargin + yAxisPdfW / 2, graphTop + graphH / 2, { angle: 90, align: "center" });
+        pdf.text(
+          yAxisLabel,
+          outerMargin + yAxisPdfW / 2,
+          graphTop + graphH / 2,
+          { angle: 90, align: "center" },
+        );
 
         yTicks.forEach(({ value, label }) => {
           const pdfPlotTop = graphTop + (plotY / svgHeight) * graphH;
@@ -567,21 +641,32 @@ export default function Graph() {
         // ── X axis label ──
         pdf.setFontSize(8);
         pdf.setTextColor(160, 160, 210);
-        pdf.text(xAxisLabel, graphLeft + graphW / 2, graphBottom + 18, { align: "center" });
+        pdf.text(xAxisLabel, graphLeft + graphW / 2, graphBottom + 18, {
+          align: "center",
+        });
 
         // ── Data range ──
-        const startPct = (dataOffsetX / plotWidth * 100).toFixed(1);
-        const endPct = (Math.min(dataOffsetX + thisDataW, plotWidth) / plotWidth * 100).toFixed(1);
+        const startPct = ((dataOffsetX / plotWidth) * 100).toFixed(1);
+        const endPct = (
+          (Math.min(dataOffsetX + thisDataW, plotWidth) / plotWidth) *
+          100
+        ).toFixed(1);
         pdf.setFontSize(6.5);
         pdf.setTextColor(90, 95, 130);
-        pdf.text(`Data: ${startPct}% – ${endPct}%`, graphRight - 2, graphBottom + 18, { align: "right" });
+        pdf.text(
+          `Data: ${startPct}% – ${endPct}%`,
+          graphRight - 2,
+          graphBottom + 18,
+          { align: "right" },
+        );
 
         // --- CONFIDENTIAL FOOTER ---
         pdf.setFont("helvetica", "normal");
         pdf.setFontSize(9);
         pdf.setTextColor(100, 100, 100);
 
-        const footerText = "This document is confidential. Using it any purpose without permission of Areca Embedded Systems Pvt. Ltd. is strictly prohibited.";
+        const footerText =
+          "This document is confidential. Using it any purpose without permission of Areca Embedded Systems Pvt. Ltd. is strictly prohibited.";
         pdf.text(footerText, outerMargin, pdfH - outerMargin + 10);
 
         const timeText = `Generated at: ${new Date().toLocaleString()}`;
@@ -601,11 +686,13 @@ export default function Graph() {
 
       setPdfProgress(100);
       pdf.save(`Graph_${locoId}_${graphType.replace(/\s+/g, "_")}_Full.pdf`);
-
     } catch (err) {
       console.error("[PDF Export Error]", err);
     } finally {
-      setTimeout(() => { setPdfExporting(false); setPdfProgress(0); }, 800);
+      setTimeout(() => {
+        setPdfExporting(false);
+        setPdfProgress(0);
+      }, 800);
     }
   };
   const handleClear = () => {
@@ -624,10 +711,14 @@ export default function Graph() {
   /* ================= UI ================= */
   const isModeGraph = graphType.includes("Mode");
 
-
   const locDivOptions = [
-    100, 200, 400, 600, 800, 1000,
-    ...Array.from({ length: (10000 - 1000) / 500 }, (_, i) => 1500 + i * 500)
+    100,
+    200,
+    400,
+    600,
+    800,
+    1000,
+    ...Array.from({ length: (10000 - 1000) / 500 }, (_, i) => 1500 + i * 500),
   ];
   return (
     <Box
@@ -686,7 +777,7 @@ export default function Graph() {
           border: "1px solid rgba(255,255,255,0.08)",
           backgroundImage: "none",
           px: 1,
-          py: 1
+          py: 1,
         }}
       >
         {/* <CardContent> */}
@@ -699,97 +790,109 @@ export default function Graph() {
         <Divider sx={{ my: 0.3 }} />
         <Grid container spacing={2} sx={{ mt: 0 }}>
           <Grid item xs={12} sm={2}>
-            <Select
-              fullWidth
-              size="small"
-              value={lineWidth}
-              onChange={e => setLineWidth(e.target.value)}
-              sx={selectStyle}
-              MenuProps={menuProps}
-            >
-              {[1, 2, 3, 4, 5].map(w => (
-                <MenuItem key={w} value={w}>
-                  {`Line Width ${w}`}
-                </MenuItem>
-              ))}
-            </Select>
+            <Tooltip title="Adjust line thickness">
+              <Select
+                fullWidth
+                size="small"
+                value={lineWidth}
+                onChange={(e) => setLineWidth(e.target.value)}
+                sx={selectStyle}
+                MenuProps={menuProps}
+              >
+                {[1, 2, 3, 4, 5].map((w) => (
+                  <MenuItem key={w} value={w}>
+                    {`Line Width ${w}`}
+                  </MenuItem>
+                ))}
+              </Select>
+            </Tooltip>
           </Grid>
           <Grid item xs={12} sm={4}>
-            <Select
-              fullWidth
-              size="small"
-              value={locoId}
-              onChange={e => setLocoId(e.target.value)}
-              displayEmpty
-              sx={selectStyle}
-              MenuProps={menuProps}
-            >
-              <MenuItem value="">Loco Id</MenuItem>
-              {meta.locos.map(l => (
-                <MenuItem key={l} value={l}>{l}</MenuItem>
-              ))}
-            </Select>
+            <Tooltip title="Select loco ID automatically fetch from uploaded file">
+              <Select
+                fullWidth
+                size="small"
+                value={locoId}
+                onChange={(e) => setLocoId(e.target.value)}
+                displayEmpty
+                sx={selectStyle}
+                MenuProps={menuProps}
+              >
+                <MenuItem value="">Loco Id</MenuItem>
+                {meta.locos.map((l) => (
+                  <MenuItem key={l} value={l}>
+                    {l}
+                  </MenuItem>
+                ))}
+              </Select>
+            </Tooltip>
           </Grid>
 
-
           <Grid item xs={12} sm={4}>
-            <Select
-              fullWidth
-              size="small"
-              value={direction}
-              onChange={e => setDirection(e.target.value)}
-              displayEmpty
-              sx={selectStyle}
-              MenuProps={menuProps}
-            >
-              <MenuItem value="">Direction</MenuItem>
-              {meta.directions.map(d => (
-                <MenuItem key={d} value={d}>{d}</MenuItem>
-              ))}
-            </Select>
+            <Tooltip title="Select available movement direction">
+              <Select
+                fullWidth
+                size="small"
+                value={direction}
+                onChange={(e) => setDirection(e.target.value)}
+                displayEmpty
+                sx={selectStyle}
+                MenuProps={menuProps}
+              >
+                <MenuItem value="">Direction</MenuItem>
+                {meta.directions.map((d) => (
+                  <MenuItem key={d} value={d}>
+                    {d}
+                  </MenuItem>
+                ))}
+              </Select>
+            </Tooltip>
           </Grid>
 
-          <Chip
+          <Tooltip title="Open graph customization settings">
+            <Chip
+              label="Update Graph Properties"
+              onClick={() => setOpenProps(true)}
+              sx={{
+                height: 38,
+                fontSize: "0.85rem",
 
-            label="Graph Properties"
-            onClick={() => setOpenProps(true)}
-            sx={{
-              height: 38,
-              fontSize: "0.85rem",
+                bgcolor: "rgba(255, 255, 255, 0.05)",
+                backdropFilter: "blur(10px)",
+                borderRadius: "8px",
+                border: "1px solid rgba(255, 255, 255, 0.1)",
+                color: "#fff",
 
-              bgcolor: "rgba(255, 255, 255, 0.05)",
-              backdropFilter: "blur(10px)",
-              borderRadius: "8px",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-              color: "#fff",
+                "&:hover": {
+                  borderColor: theme.palette.primary.main,
+                  bgcolor: "rgba(255,255,255,0.08)",
+                },
 
-              "&:hover": {
-                borderColor: theme.palette.primary.main,
-                bgcolor: "rgba(255,255,255,0.08)"
-              },
-
-              "& .MuiChip-icon": {
-                color: "rgba(255,255,255,0.7)"
-              }
-            }}
-          />
-
+                "& .MuiChip-icon": {
+                  color: "rgba(255,255,255,0.7)",
+                },
+              }}
+            />
+          </Tooltip>
 
           <Grid item xs={12} sm={4}>
-
-            <Select
-              fullWidth
-              size="small"
-              value={graphType}
-              onChange={e => setGraphType(e.target.value)}
-              displayEmpty
-              sx={selectStyle}
-              MenuProps={menuProps}
-            >
-              {meta.graphTypes.map(g => (
-                <MenuItem key={g} value={g}>{g}</MenuItem>
-              ))}
-            </Select>
+            <Tooltip title="Select graph type">
+              <Select
+                fullWidth
+                size="small"
+                value={graphType}
+                onChange={(e) => setGraphType(e.target.value)}
+                displayEmpty
+                sx={selectStyle}
+                MenuProps={menuProps}
+              >
+                {meta.graphTypes.map((g) => (
+                  <MenuItem key={g} value={g}>
+                    {g}
+                  </MenuItem>
+                ))}
+              </Select>
+            </Tooltip>
           </Grid>
 
           {/* <Grid item xs={12} sm={4}>
@@ -822,43 +925,51 @@ export default function Graph() {
               }}
             />
           </Grid> */}
-
         </Grid>
 
-        {error && <Typography color="error" mt={0.5}>{error}</Typography>}
-        {noData && <Typography color="warning.main" mt={0.5}>No graph data available.</Typography>}
+        {error && (
+          <Typography color="error" mt={0.5}>
+            {error}
+          </Typography>
+        )}
+        {noData && (
+          <Typography color="warning.main" mt={0.5}>
+            No graph data available.
+          </Typography>
+        )}
         {/* </CardContent> */}
       </Card>
       <Stack direction="row" spacing={2} mb={2}>
         <Chip
           label="Zoom +"
-          onClick={() => setZoom(z => z + 0.2)}
+          onClick={() => setZoom((z) => z + 0.2)}
           sx={{ bgcolor: "rgba(255,255,255,0.08)", color: "#fff" }}
         />
 
         <Chip
           label="Zoom -"
-          onClick={() => setZoom(z => Math.max(1, z - 0.2))}
+          onClick={() => setZoom((z) => Math.max(1, z - 0.2))}
           sx={{ bgcolor: "rgba(255,255,255,0.08)", color: "#fff" }}
         />
 
         <Chip
           label="Grid"
           color={showGrid ? "primary" : "default"}
-          onClick={() => setShowGrid(v => !v)}
+          onClick={() => setShowGrid((v) => !v)}
           sx={{ color: "#fff" }}
         />
       </Stack>
-
-
-
 
       {(loading || metaLoading) && (
         <Box py={10} textAlign="center">
           <LinearProgress
             sx={{
-              height: 4, borderRadius: 2, bgcolor: alpha(theme.palette.primary.main, 0.1),
-              "& .MuiLinearProgress-bar": { boxShadow: `0 0 10px ${theme.palette.primary.main}` }
+              height: 4,
+              borderRadius: 2,
+              bgcolor: alpha(theme.palette.primary.main, 0.1),
+              "& .MuiLinearProgress-bar": {
+                boxShadow: `0 0 10px ${theme.palette.primary.main}`,
+              },
             }}
           />
           <Typography
@@ -868,7 +979,7 @@ export default function Graph() {
               color: "rgba(255,255,255,0.5)",
               fontWeight: 800,
               fontSize: "0.8rem",
-              letterSpacing: 2
+              letterSpacing: 2,
             }}
           >
             FETCHING TELEMETRY DATA...
@@ -890,10 +1001,9 @@ export default function Graph() {
             backdropFilter: "blur(20px)",
             border: "1px solid rgba(255, 255, 255, 0.1)",
             backgroundImage: "none",
-            p: 2.5
+            p: 2.5,
           }}
         >
-
           <CardContent>
             <Stack direction="row" spacing={1} mb={2}>
               <Chip
@@ -902,7 +1012,7 @@ export default function Graph() {
                   fontSize: "0.85rem",
                   color: "#fff",
                   bgcolor: "rgba(255,255,255,0.08)",
-                  border: "1px solid rgba(255,255,255,0.2)"
+                  border: "1px solid rgba(255,255,255,0.2)",
                 }}
               />
 
@@ -912,7 +1022,7 @@ export default function Graph() {
                   fontSize: "0.85rem",
                   color: "#fff",
                   bgcolor: "rgba(255,255,255,0.08)",
-                  border: "1px solid rgba(255,255,255,0.2)"
+                  border: "1px solid rgba(255,255,255,0.2)",
                 }}
               />
             </Stack>
@@ -922,14 +1032,16 @@ export default function Graph() {
                 fontWeight: 900,
                 fontSize: "1rem",
                 color: "#fff",
-                letterSpacing: 1
+                letterSpacing: 1,
               }}
             >
               {graphType}
             </Typography>
 
             <Box sx={{ overflowX: "auto" }}>
-              <Box sx={{ minWidth: Math.max(graphData.length * 12 * zoom, 1400) }}>
+              <Box
+                sx={{ minWidth: Math.max(graphData.length * 12 * zoom, 1400) }}
+              >
                 {graphType === "Location Vs Speed" && (
                   <AreaChart
                     width={Math.max(graphData.length * 12 * zoom, 1400)}
@@ -938,9 +1050,23 @@ export default function Graph() {
                     margin={{ top: 10, right: 30, left: 0, bottom: 50 }}
                   >
                     <defs>
-                      <linearGradient id="speedGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={nominalColor} stopOpacity={0.4} />
-                        <stop offset="95%" stopColor={nominalColor} stopOpacity={0} />
+                      <linearGradient
+                        id="speedGradient"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="5%"
+                          stopColor={nominalColor}
+                          stopOpacity={0.4}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor={nominalColor}
+                          stopOpacity={0}
+                        />
                       </linearGradient>
                     </defs>
 
@@ -962,24 +1088,27 @@ export default function Graph() {
                       <Label value="Location" position="bottom" offset={20} />
                     </XAxis>
 
-
-
                     <YAxis
                       tickLine={false}
                       axisLine={false}
                       tick={{ fontSize: 12, fill: fgColor }}
                       domain={[
                         0,
-                        Math.ceil(Math.max(...graphData.map((d) => d.y)) / 10) * 10 + 10,
+                        Math.ceil(Math.max(...graphData.map((d) => d.y)) / 10) *
+                          10 +
+                          10,
                       ]}
                     >
-                      <Label value="Speed (km/h)" angle={-90} position="insideLeft" />
+                      <Label
+                        value="Speed (km/h)"
+                        angle={-90}
+                        position="insideLeft"
+                      />
                     </YAxis>
-
 
                     <Tooltip
                       content={<GraphTooltip graphType={graphType} />}
-                      cursor={{ stroke: '#3949ab', strokeWidth: 2 }}
+                      cursor={{ stroke: "#3949ab", strokeWidth: 2 }}
                     />
 
                     {/* The Area provides the color fill */}
@@ -1000,7 +1129,7 @@ export default function Graph() {
                       strokeWidth={lineWidth}
                       fill="transparent"
                       dot={false}
-                      activeDot={{ r: 6, strokeWidth: 0, fill: '#1a237e' }}
+                      activeDot={{ r: 6, strokeWidth: 0, fill: "#1a237e" }}
                     />
                   </AreaChart>
                 )}
@@ -1016,27 +1145,34 @@ export default function Graph() {
                       <Label value="Time" position="bottom" offset={20} />
                     </XAxis>
 
-
                     <YAxis
                       domain={[
                         0,
-                        Math.ceil(Math.max(...graphData.map(d => d.y)) / 10) * 10,
+                        Math.ceil(Math.max(...graphData.map((d) => d.y)) / 10) *
+                          10,
                       ]}
                     >
-                      <Label value="Speed (km/h)" angle={-90} position="insideLeft" />
+                      <Label
+                        value="Speed (km/h)"
+                        angle={-90}
+                        position="insideLeft"
+                      />
                     </YAxis>
 
                     <Tooltip content={<GraphTooltip graphType={graphType} />} />
                     <Area
                       type="monotone"
                       dataKey="y"
-                      stroke={direction === "Nominal" ? nominalColor : reverseColor}
-                      fill={direction === "Nominal" ? nominalColor : reverseColor}
+                      stroke={
+                        direction === "Nominal" ? nominalColor : reverseColor
+                      }
+                      fill={
+                        direction === "Nominal" ? nominalColor : reverseColor
+                      }
                       fillOpacity={0.3}
-                    // stroke={direction === "Nominal" ? nominalColor : reverseColor}
-                    // fill={direction === "Nominal" ? nominalColor : reverseColor}
+                      // stroke={direction === "Nominal" ? nominalColor : reverseColor}
+                      // fill={direction === "Nominal" ? nominalColor : reverseColor}
                     />
-
                   </AreaChart>
                 )}
 
@@ -1047,12 +1183,26 @@ export default function Graph() {
                     data={getFilteredByTime()}
                     margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
                   >
-                    {showGrid && <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={fgColor} />}
+                    {showGrid && (
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        vertical={false}
+                        stroke={fgColor}
+                      />
+                    )}
 
                     <defs>
                       <linearGradient id="colorY" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={nominalColor} stopOpacity={0.3} />
-                        <stop offset="95%" stopColor={nominalColor} stopOpacity={0} />
+                        <stop
+                          offset="5%"
+                          stopColor={nominalColor}
+                          stopOpacity={0.3}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor={nominalColor}
+                          stopOpacity={0}
+                        />
                       </linearGradient>
                     </defs>
 
@@ -1065,8 +1215,6 @@ export default function Graph() {
                       <Label value="Location" position="bottom" offset={20} />
                     </XAxis>
 
-
-
                     <YAxis
                       domain={[0, 12]}
                       ticks={Object.keys(MODE_LEGEND).map(Number)}
@@ -1078,12 +1226,10 @@ export default function Graph() {
                       <Label value="Mode" angle={-90} position="insideLeft" />
                     </YAxis>
 
-
                     <Tooltip
                       content={<GraphTooltip graphType={graphType} />}
-                      cursor={{ stroke: '#8e24aa', strokeWidth: 1 }}
+                      cursor={{ stroke: "#8e24aa", strokeWidth: 1 }}
                     />
-
 
                     <Area
                       type="monotone"
@@ -1113,9 +1259,23 @@ export default function Graph() {
                   >
                     <defs>
                       {/* A soft, premium indigo-to-transparent wash */}
-                      <linearGradient id="premiumWash" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={nominalColor} stopOpacity={0.15} />
-                        <stop offset="100%" stopColor={nominalColor} stopOpacity={0} />
+                      <linearGradient
+                        id="premiumWash"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="0%"
+                          stopColor={nominalColor}
+                          stopOpacity={0.15}
+                        />
+                        <stop
+                          offset="100%"
+                          stopColor={nominalColor}
+                          stopOpacity={0}
+                        />
                       </linearGradient>
                     </defs>
 
@@ -1138,7 +1298,6 @@ export default function Graph() {
                       <Label value="Time" position="bottom" offset={20} />
                     </XAxis>
 
-
                     <YAxis
                       domain={[0, 12]}
                       ticks={Object.keys(MODE_LEGEND).map(Number)}
@@ -1151,9 +1310,8 @@ export default function Graph() {
                       <Label value="Mode" angle={-90} position="insideLeft" />
                     </YAxis>
 
-
                     <Tooltip
-                      cursor={{ stroke: '#e2e8f0', strokeWidth: 2 }}
+                      cursor={{ stroke: "#e2e8f0", strokeWidth: 2 }}
                       content={<GraphTooltip graphType={graphType} />}
                     />
 
@@ -1185,9 +1343,21 @@ export default function Graph() {
                         return (
                           <g>
                             {/* The outer ring for depth */}
-                            <circle cx={cx} cy={cy} r={5} fill="#fff" stroke={nominalColor} strokeWidth={1} />
+                            <circle
+                              cx={cx}
+                              cy={cy}
+                              r={5}
+                              fill="#fff"
+                              stroke={nominalColor}
+                              strokeWidth={1}
+                            />
                             {/* The inner solid core */}
-                            <circle cx={cx} cy={cy} r={2.5} fill={nominalColor} />
+                            <circle
+                              cx={cx}
+                              cy={cy}
+                              r={2.5}
+                              fill={nominalColor}
+                            />
                           </g>
                         );
                       }}
@@ -1201,12 +1371,15 @@ export default function Graph() {
                       strokeWidth={3}
                       strokeLinecap="round"
                       dot={false}
-                      activeDot={{ r: 6, fill: '#4f46e5', stroke: '#fff', strokeWidth: 2 }}
+                      activeDot={{
+                        r: 6,
+                        fill: "#4f46e5",
+                        stroke: "#fff",
+                        strokeWidth: 2,
+                      }}
                     />
                   </ComposedChart>
                 )}
-
-
               </Box>
             </Box>
           </CardContent>
@@ -1219,39 +1392,76 @@ export default function Graph() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           sx={{
-            position: "fixed", inset: 0, zIndex: 9999,
+            position: "fixed",
+            inset: 0,
+            zIndex: 9999,
             bgcolor: "rgba(0,0,0,0.75)",
             backdropFilter: "blur(6px)",
-            display: "flex", flexDirection: "column",
-            alignItems: "center", justifyContent: "center", gap: 3,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 3,
           }}
         >
-          <Box sx={{
-            bgcolor: "#0f0f1a", border: "1px solid rgba(99,102,241,0.4)",
-            borderRadius: "16px", p: 4, minWidth: 340, textAlign: "center",
-            boxShadow: "0 0 40px rgba(99,102,241,0.3)"
-          }}>
-            <Typography variant="h6" fontWeight={700} sx={{ color: "#fff", mb: 0.5, letterSpacing: 1 }}>
+          <Box
+            sx={{
+              bgcolor: "#0f0f1a",
+              border: "1px solid rgba(99,102,241,0.4)",
+              borderRadius: "16px",
+              p: 4,
+              minWidth: 340,
+              textAlign: "center",
+              boxShadow: "0 0 40px rgba(99,102,241,0.3)",
+            }}
+          >
+            <Typography
+              variant="h6"
+              fontWeight={700}
+              sx={{ color: "#fff", mb: 0.5, letterSpacing: 1 }}
+            >
               Exporting PDF
             </Typography>
-            <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.4)", letterSpacing: 2, display: "block", mb: 3 }}>
+            <Typography
+              variant="caption"
+              sx={{
+                color: "rgba(255,255,255,0.4)",
+                letterSpacing: 2,
+                display: "block",
+                mb: 3,
+              }}
+            >
               PROCESSING {pdfProgress}% COMPLETE
             </Typography>
 
             {/* Animated progress bar */}
-            <Box sx={{ width: "100%", height: 8, bgcolor: "rgba(255,255,255,0.08)", borderRadius: 4, overflow: "hidden", mb: 2 }}>
+            <Box
+              sx={{
+                width: "100%",
+                height: 8,
+                bgcolor: "rgba(255,255,255,0.08)",
+                borderRadius: 4,
+                overflow: "hidden",
+                mb: 2,
+              }}
+            >
               <Box
                 component={motion.div}
                 animate={{ width: `${pdfProgress}%` }}
                 transition={{ duration: 0.3 }}
                 sx={{
-                  height: "100%", bgcolor: "#6366f1", borderRadius: 4,
-                  boxShadow: "0 0 12px rgba(99,102,241,0.8)"
+                  height: "100%",
+                  bgcolor: "#6366f1",
+                  borderRadius: 4,
+                  boxShadow: "0 0 12px rgba(99,102,241,0.8)",
                 }}
               />
             </Box>
 
-            <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.3)" }}>
+            <Typography
+              variant="caption"
+              sx={{ color: "rgba(255,255,255,0.3)" }}
+            >
               {pdfProgress < 100
                 ? `Rendering pages... please wait`
                 : "✓ Saving file..."}

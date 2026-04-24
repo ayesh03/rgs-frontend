@@ -1,4 +1,5 @@
 import areaLogo from "../assets/arecaLogo.png";
+import Tooltip from "@mui/material/Tooltip";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import React, { useState, useEffect, useRef } from "react";
 import {
@@ -63,28 +64,22 @@ export default function MainLayout() {
         const currentSize = latestFile.size;
         const lastSize = lastModifiedRef.lastSize || 0;
 
-        // Compare file SIZE - new packets = larger file
         if (currentSize > lastSize) {
-          // console.log(`📡 NEW PACKETS! ${lastSize} bytes → ${currentSize} bytes`);
-
           // Update refs
           lastModifiedRef.current = latestFile.lastModified;
           lastModifiedRef.lastSize = currentSize;
 
-          // CRITICAL: Create new File object reference
-          // This forces React to see it as "changed"
           const newFileRef = new File([latestFile], latestFile.name, {
             type: latestFile.type,
             lastModified: latestFile.lastModified,
           });
 
           setSelectedFile(newFileRef);
-          // console.log("File updated - triggering all page refreshes");
         }
       } catch (err) {
         console.warn("File polling error:", err);
       }
-    }, 2000); // Poll every 2 seconds (aggressive!)
+    }, 2000); // Poll every 2 seconds
   };
 
   useEffect(() => {
@@ -218,7 +213,7 @@ export default function MainLayout() {
     { label: "Graphs", path: "graphs" },
     { label: "RSSI Message", path: "rssi" },
     { label: "Adjacent Kavach Info", path: "adjacent-kavach" },
-    { label: "TSRMS", path: "tsrms" },
+    // { label: "TSRMS", path: "tsrms" },
     { label: "DMI Events", path: "dmi" },
     { label: "Tag Data", path: "tag-data" },
     { label: "Onboard Radio", path: "onboard-radio" },
@@ -406,25 +401,27 @@ export default function MainLayout() {
               >
                 From:
               </Typography>
-              <Button
-                size="small"
-                variant="outlined"
-                onClick={handleFromOpen}
-                startIcon={<CalendarTodayIcon sx={{ fontSize: 14 }} />}
-                sx={{
-                  textTransform: "none",
-                  fontSize: "0.75rem",
-                  minWidth: 160,
-                  color: "#eee",
-                  borderColor: "rgba(255,255,255,0.2)",
-                  "&:hover": {
-                    borderColor: "rgba(255,255,255,0.4)",
-                    bgcolor: "rgba(255,255,255,0.05)",
-                  },
-                }}
-              >
-                {formatDateTimeForDisplay(fromDate)}
-              </Button>
+              <Tooltip title="Select start date and time">
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={handleFromOpen}
+                  startIcon={<CalendarTodayIcon sx={{ fontSize: 14 }} />}
+                  sx={{
+                    textTransform: "none",
+                    fontSize: "0.75rem",
+                    minWidth: 160,
+                    color: "#eee",
+                    borderColor: "rgba(255,255,255,0.2)",
+                    "&:hover": {
+                      borderColor: "rgba(255,255,255,0.4)",
+                      bgcolor: "rgba(255,255,255,0.05)",
+                    },
+                  }}
+                >
+                  {formatDateTimeForDisplay(fromDate)}
+                </Button>
+              </Tooltip>
               <Popover
                 open={Boolean(fromAnchorEl)}
                 anchorEl={fromAnchorEl}
@@ -533,25 +530,27 @@ export default function MainLayout() {
               >
                 To:
               </Typography>
-              <Button
-                size="small"
-                variant="outlined"
-                onClick={handleToOpen}
-                startIcon={<CalendarTodayIcon sx={{ fontSize: 14 }} />}
-                sx={{
-                  textTransform: "none",
-                  fontSize: "0.75rem",
-                  minWidth: 160,
-                  color: "#eee",
-                  borderColor: "rgba(255,255,255,0.2)",
-                  "&:hover": {
-                    borderColor: "rgba(255,255,255,0.4)",
-                    bgcolor: "rgba(255,255,255,0.05)",
-                  },
-                }}
-              >
-                {formatDateTimeForDisplay(toDate)}
-              </Button>
+              <Tooltip title="Select end date and time">
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={handleToOpen}
+                  startIcon={<CalendarTodayIcon sx={{ fontSize: 14 }} />}
+                  sx={{
+                    textTransform: "none",
+                    fontSize: "0.75rem",
+                    minWidth: 160,
+                    color: "#eee",
+                    borderColor: "rgba(255,255,255,0.2)",
+                    "&:hover": {
+                      borderColor: "rgba(255,255,255,0.4)",
+                      bgcolor: "rgba(255,255,255,0.05)",
+                    },
+                  }}
+                >
+                  {formatDateTimeForDisplay(toDate)}
+                </Button>
+              </Tooltip>
               <Popover
                 open={Boolean(toAnchorEl)}
                 anchorEl={toAnchorEl}
@@ -660,20 +659,22 @@ export default function MainLayout() {
               >
                 BIN:
               </Typography>
-              <Button
-                size="small"
-                variant="outlined"
-                startIcon={<FolderOpenIcon sx={{ fontSize: 14 }} />}
-                onClick={handleFileSelect}
-                sx={{
-                  textTransform: "none",
-                  fontSize: "0.75rem",
-                  color: "#eee",
-                  borderColor: "rgba(255,255,255,0.2)",
-                }}
-              >
-                {selectedFile ? selectedFile.name : "Select File"}
-              </Button>
+              <Tooltip title="Select BIN file">
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={<FolderOpenIcon sx={{ fontSize: 14 }} />}
+                  onClick={handleFileSelect}
+                  sx={{
+                    textTransform: "none",
+                    fontSize: "0.75rem",
+                    color: "#eee",
+                    borderColor: "rgba(255,255,255,0.2)",
+                  }}
+                >
+                  {selectedFile ? selectedFile.name : "Select File"}
+                </Button>
+              </Tooltip>
             </Stack>
 
             <Divider
@@ -688,20 +689,24 @@ export default function MainLayout() {
 
             {/* ACTIONS */}
             <Stack direction="row" spacing={0.5}>
-              <IconButton
-                size="small"
-                onClick={() => setAboutOpen(true)}
-                sx={{ color: "#aaa" }}
-              >
-                <SettingsIcon fontSize="small" />
-              </IconButton>
-              <IconButton
-                size="small"
-                onClick={handleLogoutClick}
-                sx={{ color: "#ff5252" }}
-              >
-                <LogoutIcon fontSize="small" />
-              </IconButton>
+              <Tooltip title="About / Settings">
+                <IconButton
+                  size="small"
+                  onClick={() => setAboutOpen(true)}
+                  sx={{ color: "#aaa" }}
+                >
+                  <SettingsIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Logout">
+                <IconButton
+                  size="small"
+                  onClick={handleLogoutClick}
+                  sx={{ color: "#ff5252" }}
+                >
+                  <LogoutIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
             </Stack>
           </Box>
         </Toolbar>
@@ -713,25 +718,27 @@ export default function MainLayout() {
           {navItems.map((item) => {
             const isActive = location.pathname.includes(item.path);
             return (
-              <Button
-                key={item.path}
-                component={Link}
-                to={item.path}
-                sx={{
-                  px: 1,
-                  py: 0.5,
-                  textTransform: "none",
-                  fontSize: "1.2rem",
-                  fontWeight: isActive ? 700 : 500,
-                  color: isActive ? "#fff" : "#888",
-                  bgcolor: isActive ? "#0b4dbb" : "transparent",
-                  "&:hover": {
-                    bgcolor: isActive ? "#083a8d" : "rgba(255,255,255,0.05)",
-                  },
-                }}
-              >
-                {item.label}
-              </Button>
+              <Tooltip title={item.label}>
+                <Button
+                  key={item.path}
+                  component={Link}
+                  to={item.path}
+                  sx={{
+                    px: 1,
+                    py: 0.5,
+                    textTransform: "none",
+                    fontSize: "1.2rem",
+                    fontWeight: isActive ? 700 : 500,
+                    color: isActive ? "#fff" : "#888",
+                    bgcolor: isActive ? "#0b4dbb" : "transparent",
+                    "&:hover": {
+                      bgcolor: isActive ? "#083a8d" : "rgba(255,255,255,0.05)",
+                    },
+                  }}
+                >
+                  {item.label}
+                </Button>
+              </Tooltip>
             );
           })}
         </Box>
