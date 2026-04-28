@@ -224,7 +224,7 @@ export default function DMIEventsTable({
                 setSearchVal("");
                 setAnchorEl(null);
               }}
-              sx={{ color: "#aaa" }}
+              sx={{ color: "#bdbbbb" }}
             >
               Clear
             </IconButton>

@@ -131,54 +131,56 @@ export default function LocoMovementTable({
                       </Typography>
 
                       {/* SORT BUTTON */}
-<Tooltip title="Sort column">
-  <IconButton
-    size="small"
-    onClick={() => {
-                          let next;
+                      <Tooltip title="Sort column">
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            let next;
 
-                          if (!sort) next = "asc";
-                          else if (sort === "asc") next = "desc";
-                          else next = null;
+                            if (!sort) next = "asc";
+                            else if (sort === "asc") next = "desc";
+                            else next = null;
 
-                          setSortState((prev) => ({
-                            ...prev,
-                            [col.key]: next,
-                          }));
+                            setSortState((prev) => ({
+                              ...prev,
+                              [col.key]: next,
+                            }));
 
-                          onSort?.(col.key, next);
-                        }}
-                        sx={{
-                          p: 0.2,
-                          color: sort ? "#5b8ffe" : "rgba(255, 255, 255, 0.78)",
-                        }}
-                      >
-                        {sort === "desc" ? (
-                          <ArrowDownwardIcon sx={{ fontSize: 13 }} />
-                        ) : (
-                          <ArrowUpwardIcon sx={{ fontSize: 13 }} />
-                        )}
+                            onSort?.(col.key, next);
+                          }}
+                          sx={{
+                            p: 0.2,
+                            color: sort
+                              ? "#5b8ffe"
+                              : "rgba(255, 255, 255, 0.78)",
+                          }}
+                        >
+                          {sort === "desc" ? (
+                            <ArrowDownwardIcon sx={{ fontSize: 13 }} />
+                          ) : (
+                            <ArrowUpwardIcon sx={{ fontSize: 13 }} />
+                          )}
                         </IconButton>
-</Tooltip>
+                      </Tooltip>
 
                       {/* FILTER BUTTON */}
-<Tooltip title="Filter column">
-  <IconButton
-    size="small"
-    onClick={(e) => {
-                          setAnchorEl(e.currentTarget);
-                          setActiveCol(col.key);
-                          setSearchVal("");
-                        }}
-                        sx={{
-                          p: 0.2,
-                          color: "rgba(255, 253, 253, 0.77)",
-                          "&:hover": { color: "#5b8ffe" },
-                        }}
-                      >
-                        <FilterListIcon sx={{ fontSize: 13 }} />
+                      <Tooltip title="Filter column">
+                        <IconButton
+                          size="small"
+                          onClick={(e) => {
+                            setAnchorEl(e.currentTarget);
+                            setActiveCol(col.key);
+                            setSearchVal("");
+                          }}
+                          sx={{
+                            p: 0.2,
+                            color: "rgba(255, 253, 253, 0.77)",
+                            "&:hover": { color: "#5b8ffe" },
+                          }}
+                        >
+                          <FilterListIcon sx={{ fontSize: 13 }} />
                         </IconButton>
-</Tooltip>
+                      </Tooltip>
                     </Stack>
                   </TableCell>
                 );
@@ -192,10 +194,22 @@ export default function LocoMovementTable({
                   <TableRow
                     key={row.id || i}
                     sx={{
+                      backgroundColor:
+                        row.condition === "RFID Mismatch"
+                          ? "rgba(255, 0, 0, 0.08)"
+                          : row.condition === "Route Changed"
+                            ? "rgba(255, 165, 0, 0.06)"
+                            : "transparent",
+
                       "&:hover": {
-                        backgroundColor: "rgba(77, 171, 247, 0.04)",
+                        backgroundColor:
+                          row.condition === "RFID Mismatch"
+                            ? "rgba(255, 0, 0, 0.15)"
+                            : "rgba(77, 171, 247, 0.04)",
                       },
+
                       transition: "background-color 0.2s ease",
+
                       "& td": {
                         borderBottom: "1px solid rgba(255,255,255,0.04)",
                       },
@@ -269,7 +283,13 @@ export default function LocoMovementTable({
                           </Typography>
                         ) : col.key === "expected_rfids" ? (
                           <Typography
-                            sx={{ fontSize: "0.9rem", color: "#ffd54f" }}
+                            sx={{
+                              fontSize: "0.9rem",
+                              color:
+                                row.condition === "RFID Mismatch"
+                                  ? "#ff0000"
+                                  : "#ffd54f",
+                            }}
                           >
                             {row.expected_rfids
                               ? row.expected_rfids
@@ -301,7 +321,10 @@ export default function LocoMovementTable({
                                               if (isCurrent) return "#25dcaf";
                                               if (isMissing) return "#ff0000";
 
-                                              return "#ffd54f";
+                                              return row.condition ===
+                                                "RFID Mismatch"
+                                                ? "#ff0000"
+                                                : "#ffd54f";
                                             })(),
 
                                             fontWeight: (() => {
