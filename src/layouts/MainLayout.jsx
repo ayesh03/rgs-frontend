@@ -213,7 +213,7 @@ export default function MainLayout() {
     { label: "Graphs", path: "graphs" },
     { label: "RSSI Message", path: "rssi" },
     { label: "Adjacent Kavach Info", path: "adjacent-kavach" },
-    // { label: "TSRMS", path: "tsrms" },
+    { label: "TSRMS", path: "tsrms" },
     { label: "DMI Events", path: "dmi" },
     { label: "Tag Data", path: "tag-data" },
     { label: "Onboard Radio", path: "onboard-radio" },

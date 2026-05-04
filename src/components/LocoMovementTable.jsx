@@ -287,7 +287,7 @@ export default function LocoMovementTable({
                               fontSize: "0.9rem",
                               color:
                                 row.condition === "RFID Mismatch"
-                                  ? "#ff0000"
+                                  ? "#ff0101"
                                   : "#ffd54f",
                             }}
                           >
