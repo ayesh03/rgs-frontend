@@ -20,13 +20,19 @@ import LocoMovementTable from "../components/LocoMovementTable";
 import useTableFilter from "../hooks/useFilterTable";
 const hexToAscii = (hex) => {
   if (!hex) return "";
+
+  // detect empty / invalid receiver
+  if (/^0+$/.test(hex) || /^30+0+$/.test(hex)) {
+    return "N/A";   
+  }
+
   try {
     return hex
       .match(/.{1,2}/g)
       .map((b) => String.fromCharCode(parseInt(b, 16)))
       .join("")
       .replace(/\u0000/g, "")
-      .split("##")[0]; 
+      .split("##")[0];
   } catch {
     return hex;
   }
