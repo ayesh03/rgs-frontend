@@ -83,7 +83,7 @@ const TYPE_COLUMNS = {
     "sender_id",
     "receiver_id",
     "pdi_version",
-    "random",
+    // "random",
   ],
   pdi_res: [
     "msg_type",
@@ -96,8 +96,8 @@ const TYPE_COLUMNS = {
     "receiver_id",
     "result",
     "pdi_version",
-    "random",
-    "mac_code",
+    // "random",
+    // "mac_code",
   ],
   heartbeat: [
     "msg_type",
@@ -110,7 +110,7 @@ const TYPE_COLUMNS = {
     "receiver_id",
     "frame_number",
     "inner_sequence",
-    "mac_code",
+    // "mac_code",
   ],
   handover_req: [
     "msg_type",
@@ -124,7 +124,7 @@ const TYPE_COLUMNS = {
     "frame_number",
     "inner_sequence",
     "border_tag",
-    "mac_code",
+    // "mac_code",
   ],
   rri: [
     "msg_type",
@@ -139,7 +139,7 @@ const TYPE_COLUMNS = {
     "inner_sequence",
     "border_tag",
     "onboard_kavach_id",
-    "mac_code",
+    // "mac_code",
   ],
   taken_over: [
     "msg_type",
@@ -154,7 +154,7 @@ const TYPE_COLUMNS = {
     "inner_sequence",
     "border_tag",
     "onboard_kavach_id",
-    "mac_code",
+    // "mac_code",
   ],
   cancel: [
     "msg_type",
@@ -169,7 +169,7 @@ const TYPE_COLUMNS = {
     "inner_sequence",
     "border_tag",
     "onboard_kavach_id",
-    "mac_code",
+    // "mac_code",
   ],
   length_info: [
     "msg_type",
@@ -184,7 +184,7 @@ const TYPE_COLUMNS = {
     "inner_sequence",
     "border_tag",
     "onboard_kavach_id",
-    "mac_code",
+    // "mac_code",
   ],
   length_ack: [
     "msg_type",
@@ -199,7 +199,7 @@ const TYPE_COLUMNS = {
     "inner_sequence",
     "border_tag",
     "onboard_kavach_id",
-    "mac_code",
+    // "mac_code",
   ],
   tsl_req: [
     "msg_type",
@@ -215,7 +215,7 @@ const TYPE_COLUMNS = {
     "border_tag",
     "onboard_kavach_id",
     "tsl_route_id",
-    "mac_code",
+    // "mac_code",
   ],
   tsl_auth: [
     "msg_type",
@@ -231,7 +231,7 @@ const TYPE_COLUMNS = {
     "border_tag",
     "onboard_kavach_id",
     "tsl_authority",
-    "mac_code",
+    // "mac_code",
   ],
   field_req: [
     "msg_type",
@@ -244,7 +244,7 @@ const TYPE_COLUMNS = {
     "receiver_id",
     "frame_number",
     "inner_sequence",
-    "mac_code",
+    // "mac_code",
   ],
   field_status: [
     "msg_type",
@@ -257,7 +257,7 @@ const TYPE_COLUMNS = {
     "receiver_id",
     "frame_number",
     "inner_sequence",
-    "mac_code",
+    // "mac_code",
   ],
   cancel_ack: [
     "msg_type",
@@ -272,7 +272,7 @@ const TYPE_COLUMNS = {
     "inner_sequence",
     "border_tag",
     "onboard_kavach_id",
-    "mac_code",
+    // "mac_code",
   ],
 };
 
