@@ -6,6 +6,7 @@ export const HEALTH_ALL_COLUMNS = [
   { key: "stationary_kavach_id", label: "Stationary / Onboard ID" },
   { key: "nms_system_id", label: "NMS System ID" },
   { key: "system_version", label: "System Version" },
+  { key: "event_count", label: "Event Count" },
   { key: "event_id", label: "Event ID" },
   { key: "event_name", label: "Event Name" },
   { key: "event_description", label: "Event Description" },
