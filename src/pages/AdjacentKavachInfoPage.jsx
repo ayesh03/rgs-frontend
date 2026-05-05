@@ -26,7 +26,7 @@ const hexToAscii = (hex) => {
       .map((b) => String.fromCharCode(parseInt(b, 16)))
       .join("")
       .replace(/\u0000/g, "")
-      .trim();
+      .split("##")[0]; 
   } catch {
     return hex;
   }
