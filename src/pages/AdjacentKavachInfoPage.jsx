@@ -32,7 +32,6 @@ const hexToAscii = (hex) => {
       .map((b) => String.fromCharCode(parseInt(b, 16)))
       .join("")
       .replace(/\u0000/g, "")
-      .split("##")[0];
   } catch {
     return hex;
   }
@@ -366,6 +365,13 @@ const AdjacentKavachInfoPage = forwardRef(({ tableType }, ref) => {
         <LinearProgress />
       ) : (
         <CardContent sx={{ p: 0 }}>
+          {filteredRows.length > 0 && (
+                    <RowsPerPageControl
+                      rowsPerPage={rowsPerPage}
+                      setRowsPerPage={setRowsPerPage}
+                      setPage={setPage}
+                    />
+                  )}
           <LocoMovementTable
             rows={filteredRows.slice(
               (page - 1) * rowsPerPage,
