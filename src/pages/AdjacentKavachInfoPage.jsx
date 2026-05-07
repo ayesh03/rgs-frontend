@@ -299,6 +299,8 @@ const AdjacentKavachInfoPage = forwardRef(({ tableType }, ref) => {
   const [dialog, setDialog] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
+  const [fileBuffer, setFileBuffer] = useState(null);
+
   const { filteredRows, setFilter, clearFilters } = useTableFilter(rows);
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -306,11 +308,30 @@ const AdjacentKavachInfoPage = forwardRef(({ tableType }, ref) => {
   const pollingRef = useRef(null);
 
   useEffect(() => {
+  if (!selectedFile) return;
+
+  const loadBuffer = async () => {
+    try {
+      const freshBuffer = await selectedFile.arrayBuffer();
+      setFileBuffer(freshBuffer);
+    } catch (err) {
+      console.error("Buffer read failed:", err);
+    }
+  };
+
+  loadBuffer();
+
+  const interval = setInterval(loadBuffer, 2000);
+
+  return () => clearInterval(interval);
+}, [selectedFile]);
+
+  useEffect(() => {
     setVisibleKeys(TYPE_COLUMNS[tableType] || COLUMNS.map((c) => c.key));
   }, [tableType]);
 
   const generate = async () => {
-    if (!fromDate || !toDate || !selectedFile || !isDateRangeValid) {
+    if (!fromDate || !toDate || !selectedFile || !fileBuffer || !isDateRangeValid) {
       alert("Invalid input");
       return;
     }
@@ -319,14 +340,16 @@ const AdjacentKavachInfoPage = forwardRef(({ tableType }, ref) => {
     clearFilters();
 
     try {
-      const formData = new FormData();
-      formData.append("file", selectedFile);
+      
 
       const res = await fetch(
         `${API_BASE}/api/adjacent-kavach/by-date?from=${fromDate}&to=${toDate}`,
         {
           method: "POST",
-          body: formData,
+          body: fileBuffer,
+headers: {
+  "Content-Type": "application/octet-stream",
+},
         },
       );
 
@@ -360,18 +383,20 @@ const AdjacentKavachInfoPage = forwardRef(({ tableType }, ref) => {
   };
 
   useEffect(() => {
-    if (!rows.length || !selectedFile) return;
+    if (!rows.length || !fileBuffer) return;
 
     pollingRef.current = setInterval(async () => {
       try {
-        const formData = new FormData();
-        formData.append("file", selectedFile);
+        
 
         const res = await fetch(
           `${API_BASE}/api/adjacent-kavach/by-date?from=${fromDate}&to=${toDate}`,
           {
             method: "POST",
-            body: formData,
+            body: fileBuffer,
+headers: {
+  "Content-Type": "application/octet-stream",
+},
           },
         );
 
@@ -413,13 +438,17 @@ const AdjacentKavachInfoPage = forwardRef(({ tableType }, ref) => {
         clearInterval(pollingRef.current);
       }
     };
-  }, [rows.length, selectedFile, tableType, fromDate, toDate]);
+ }, [rows.length, fileBuffer, tableType, fromDate, toDate]);
 
   const clear = () => {
-    setRows([]);
-    setPage(1);
-    clearFilters();
-  };
+  packetKeysRef.current.clear();
+
+  setRows([]);
+  setAllRows([]);
+  setPage(1);
+
+  clearFilters();
+};
 
   useImperativeHandle(ref, () => ({
     generate,
