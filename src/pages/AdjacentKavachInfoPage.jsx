@@ -1,4 +1,10 @@
-import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
+import {
+  useState,
+  useEffect,
+  forwardRef,
+  useImperativeHandle,
+  useRef,
+} from "react";
 
 import {
   Box,
@@ -23,7 +29,7 @@ const hexToAscii = (hex) => {
 
   // detect empty / invalid receiver
   if (/^0+$/.test(hex) || /^30+0+$/.test(hex)) {
-    return "N/A";   
+    return "N/A";
   }
 
   try {
@@ -31,7 +37,7 @@ const hexToAscii = (hex) => {
       .match(/.{1,2}/g)
       .map((b) => String.fromCharCode(parseInt(b, 16)))
       .join("")
-      .replace(/\u0000/g, "")
+      .replace(/\u0000/g, "");
   } catch {
     return hex;
   }
@@ -296,6 +302,9 @@ const AdjacentKavachInfoPage = forwardRef(({ tableType }, ref) => {
   const { filteredRows, setFilter, clearFilters } = useTableFilter(rows);
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
+  const packetKeysRef = useRef(new Set());
+  const pollingRef = useRef(null);
+
   useEffect(() => {
     setVisibleKeys(TYPE_COLUMNS[tableType] || COLUMNS.map((c) => c.key));
   }, [tableType]);
@@ -333,6 +342,15 @@ const AdjacentKavachInfoPage = forwardRef(({ tableType }, ref) => {
           receiver_id: hexToAscii(r.receiver_id),
         }));
 
+      const keys = new Set(
+        filtered.map(
+          (r) =>
+            `${r.event_time}_${r.sequence}_${r.msg_type}_${r.frame_number}`,
+        ),
+      );
+
+      packetKeysRef.current = keys;
+
       setAllRows(filtered);
       setRows(filtered);
       setPage(1);
@@ -340,6 +358,62 @@ const AdjacentKavachInfoPage = forwardRef(({ tableType }, ref) => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!rows.length || !selectedFile) return;
+
+    pollingRef.current = setInterval(async () => {
+      try {
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+
+        const res = await fetch(
+          `${API_BASE}/api/adjacent-kavach/by-date?from=${fromDate}&to=${toDate}`,
+          {
+            method: "POST",
+            body: formData,
+          },
+        );
+
+        const json = await res.json();
+
+        if (!json.success) return;
+
+        const latestPackets = json.data
+          .filter((r) => Number(r.msg_type) === Number(TYPE_MAP[tableType]))
+          .map((r) => ({
+            ...r,
+            sender_id: hexToAscii(r.sender_id),
+            receiver_id: hexToAscii(r.receiver_id),
+          }));
+
+        const newPackets = latestPackets.filter((r) => {
+          const key = `${r.event_time}_${r.sequence}_${r.msg_type}_${r.frame_number}`;
+
+          if (packetKeysRef.current.has(key)) {
+            return false;
+          }
+
+          packetKeysRef.current.add(key);
+          return true;
+        });
+
+        if (!newPackets.length) return;
+
+        setAllRows((prev) => [...newPackets, ...prev]);
+
+        setRows((prev) => [...newPackets, ...prev]);
+      } catch (err) {
+        console.error("Live packet polling failed:", err);
+      }
+    }, 2000);
+
+    return () => {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+      }
+    };
+  }, [rows.length, selectedFile, tableType, fromDate, toDate]);
 
   const clear = () => {
     setRows([]);
@@ -366,12 +440,12 @@ const AdjacentKavachInfoPage = forwardRef(({ tableType }, ref) => {
       ) : (
         <CardContent sx={{ p: 0 }}>
           {filteredRows.length > 0 && (
-                    <RowsPerPageControl
-                      rowsPerPage={rowsPerPage}
-                      setRowsPerPage={setRowsPerPage}
-                      setPage={setPage}
-                    />
-                  )}
+            <RowsPerPageControl
+              rowsPerPage={rowsPerPage}
+              setRowsPerPage={setRowsPerPage}
+              setPage={setPage}
+            />
+          )}
           <LocoMovementTable
             rows={filteredRows.slice(
               (page - 1) * rowsPerPage,
