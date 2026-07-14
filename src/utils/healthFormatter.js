@@ -37,10 +37,10 @@ const gpsLinkStatus = {
   3: "GPS Link OK, PPS OK"
 };
 
-const moduleHealth = {
-  0: "NOT OK",
-  1: "OK"
-};
+// const moduleHealth = {
+//   0: "NOT OK",
+//   1: "OK"
+// };
 
 export const decodeSystemVersion = (v) => {
   const version = parseInt(v);
