@@ -13,8 +13,8 @@ const hex32 = (v) => `0x${(v >>> 0).toString(16).toUpperCase().padStart(8, "0")}
 
 const extractLocoId3B = (v) => (v >>> 8);
 const extractLastByte = (v) => (v & 0xFF);
-// const extractModuleId = (v) => (v >>> 4);
-// const extractModuleHealth = (v) => (v & 0x0F);
+const extractModuleId = (v) => (v >>> 4);
+const extractModuleHealth = (v) => (v & 0x0F);
 
 /* ===================== COMMON ENUMS ===================== */
 
