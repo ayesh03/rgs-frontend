@@ -647,12 +647,6 @@ export function formatOnboardHealth(eventId, value) {
     desc: `Module ID: ${value >>> 4}, Module Health: ${value & 0x0F}`
   };
 }
-    
-    return {
-      name: "Onboard KAVACH Modules Health",
-      desc: `Module ID: ${moduleId}, Module Health: ${healthMap[moduleHealthStatus] || moduleHealthStatus}`
-    };
-  }
 
   /* ===================== EVENT ID 55: Conflict Route RFID ===================== */
   if (eventId === 55) {
