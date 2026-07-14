@@ -13,8 +13,8 @@ const hex32 = (v) => `0x${(v >>> 0).toString(16).toUpperCase().padStart(8, "0")}
 
 const extractLocoId3B = (v) => (v >>> 8);
 const extractLastByte = (v) => (v & 0xFF);
-const extractModuleId = (v) => (v >>> 4);
-const extractModuleHealth = (v) => (v & 0x0F);
+// const extractModuleId = (v) => (v >>> 4);
+// const extractModuleHealth = (v) => (v & 0x0F);
 
 /* ===================== COMMON ENUMS ===================== */
 
@@ -153,11 +153,11 @@ export function formatStationaryHealth(eventId, value) {
   }
 
   if (eventId === 45) {
-    return {
-      name: "Station Modules Health",
-      desc: `Module ${extractModuleId(value)} – ${moduleHealth[extractModuleHealth(value)]}`
-    };
-  }
+  return {
+    name: "Station Modules Health",
+    desc: `Module ID: ${value >>> 4}, Module Health: ${value & 0x0F}`
+  };
+}
 
   if (eventId >= 46 && eventId <= 199)
     return { name: "Reserved", desc: "Reserved Field" };
@@ -642,13 +642,11 @@ export function formatOnboardHealth(eventId, value) {
 
   /* ===================== EVENT ID 54: Onboard KAVACH Modules Health ===================== */
   if (eventId === 54) {
-    const moduleId = (value >>> 4) & 0x0FFF;
-    const moduleHealthStatus = value & 0x0F;
-    
-    const healthMap = {
-      0: "NOT OK",
-      1: "OK"
-    };
+  return {
+    name: "Onboard KAVACH Modules Health",
+    desc: `Module ID: ${value >>> 4}, Module Health: ${value & 0x0F}`
+  };
+}
     
     return {
       name: "Onboard KAVACH Modules Health",
